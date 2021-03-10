@@ -1,0 +1,38 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.env
+*.bin
+*.run
+*.log
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+*.cov
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+*.terraform
+*.zip
+.DS_Store
+*.tfplan
+# intellij
+.idea/
+*.iml
+#vscode
+.vscode
+
+
+# makefile binary
+*test_build_out
+# mergetools
+*.orig
+artifacts/
+
+

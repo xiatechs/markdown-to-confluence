@@ -1,0 +1,7 @@
+name: Markdown to Confluence
+inputs:
+  secrets:
+
+runs:
+  using: docker
+  image: Dockerfile
