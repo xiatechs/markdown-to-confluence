@@ -8,14 +8,11 @@ RUN apk update && apk add --no-cache git ca-certificates
 ENV USER=appuser
 ENV UID=10001 
 # See https://stackoverflow.com/a/55757473/12429735RUN 
-RUN adduser \    
-    --disabled-password \    
-    --gecos "" \    
-    --home "/nonexistent" \    
-    --shell "/sbin/nologin" \    
-    --no-create-home \    
-    --uid "${UID}" \    
-    "${USER}"
+# RUN adduser \    
+#     --disabled-password \    
+#     --gecos "" \    
+#     --uid "${UID}" \    
+#     "${USER}"
 
 COPY . .
 
@@ -31,8 +28,8 @@ RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /bin/app
 FROM scratch
 
 # Import the user and group files from the builder.
-COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /etc/group /etc/group
+# COPY --from=builder /etc/passwd /etc/passwd
+# COPY --from=builder /etc/group /etc/group
 
 # Copy over SSL certificates from the first step - this is required
 # if our code makes any outbound SSL connections because it contains
