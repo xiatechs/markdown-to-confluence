@@ -30,11 +30,11 @@ func main() {
 
 		if strings.HasSuffix(info.Name(), ".md") {
 			if err := processFile(path); err != nil {
-				return err
+				log.Println(err)
 			}
 		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -42,6 +42,8 @@ func main() {
 }
 
 func processFile(path string) error {
+	log.Println("Processing:", filepath.Clean(path))
+
 	f, err := os.Open(filepath.Clean(path))
 	if err != nil {
 		log.Printf("error opening file (%s): %v", path, err)
@@ -50,7 +52,6 @@ func processFile(path string) error {
 
 	contents, err := markdown.ParseMarkdown(f)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
