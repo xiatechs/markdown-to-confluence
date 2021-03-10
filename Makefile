@@ -13,3 +13,7 @@ lint:
 update:
 	@go get -u ./...
 	go mod tidy
+
+run-docker:
+	docker build . -t mdtc
+	docker run -v $(shell pwd):/github/workspace mdtc 

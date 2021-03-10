@@ -23,7 +23,7 @@ ENV GOPATH=""
 RUN go mod download
 RUN go mod verify
 
-RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /bin/app
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /bin/app
 
 FROM scratch
 
