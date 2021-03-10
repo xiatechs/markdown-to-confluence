@@ -8,10 +8,13 @@ name: Markdown-to-Confluence
 jobs:
   markdown-to-confluence:
     name: markdown-to-confluence
-    uses: ./ # Uses an action in the root directory
-    with:
-      confluence_api_key: "REPLACE WITH SECRET"
-      confluence_space: "REPLACE WITH SPACE"
+    runs-on: ubuntu-latest
+    steps: 
+      - name: submit markdown to confluence
+        uses: ./ # Uses an action in the root directory
+        with:
+          confluence_api_key: "REPLACE WITH SECRET"
+          confluence_space: "REPLACE WITH SPACE"
 
   test:
     name: Unit Tests
