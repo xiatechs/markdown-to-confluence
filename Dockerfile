@@ -44,4 +44,6 @@ COPY --from=builder /bin/app /bin/app
 # Use an unprivileged user.
 USER appuser:appuser
 
+ENV PROJECT_PATH="/github/workspace/"
+
 ENTRYPOINT ["/bin/app"]

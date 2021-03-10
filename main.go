@@ -12,11 +12,36 @@ import (
 	"github.com/yuin/goldmark"
 )
 
+const projectPathEnv = "PROJECT_PATH"
+const confluenceAPIKeyEnv = "INPUT_CONFLUENCE_API_KEY"
+const confluenceSpaceEnv = "INPUT_CONFLUENCE_SPACE"
+
 func main() {
-	err := filepath.WalkDir("./", func(path string, info os.DirEntry, err error) error {
+	projectPath, exists := os.LookupEnv(projectPathEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
+		projectPath = "./"
+	}
+
+	apiKey, exists := os.LookupEnv(confluenceAPIKeyEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s", confluenceAPIKeyEnv)
+	} else {
+		log.Printf("API KEY: %s", apiKey)
+	}
+
+	space, exists := os.LookupEnv(confluenceSpaceEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s", confluenceSpaceEnv)
+	} else {
+		log.Printf("SPACE: %s", space)
+	}
+
+	err := filepath.WalkDir(projectPath, func(path string, info os.DirEntry, err error) error {
 		if strings.Contains(path, "vendor") || strings.Contains(path, ".github") {
 			return filepath.SkipDir
 		}
+
 		if strings.HasSuffix(info.Name(), ".md") {
 			if err := parseContent(path); err != nil {
 				log.Println(err)
@@ -25,6 +50,7 @@ func main() {
 
 		return err
 	})
+
 	if err != nil {
 		log.Fatal(err)
 	}
