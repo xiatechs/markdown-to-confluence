@@ -40,7 +40,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /bin/app /bin/app
 
 # Use an unprivileged user.
-USER appuser:appuser
+# USER appuser:appuser
 
 ENV PROJECT_PATH="/github/workspace/"
 
