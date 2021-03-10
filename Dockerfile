@@ -19,13 +19,14 @@ RUN adduser \
 
 COPY . .
 
+# We don't need GOPATH so unset it. 
+# If GOPATH is set go mod download will fail as it thinks there's a go.mod in the GOPATH
+ENV GOPATH=""
+
 RUN go mod download
 RUN go mod verify
 
 RUN GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /bin/app
-
-# Strip any symbols - this is not a library
-RUN strip /bin/action
 
 FROM scratch
 
