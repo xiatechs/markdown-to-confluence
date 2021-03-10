@@ -4,12 +4,15 @@ on:
   pull_request:
     branches: [master]
 
-name: Markdown-to-Confluence
+name: Markdown to Confluence
 jobs:
   markdown-to-confluence:
-    name: markdown-to-confluence
+    name: Markdown to Confluence
     runs-on: ubuntu-latest
     steps: 
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
       - name: submit markdown to confluence
         uses: ./ # Uses an action in the root directory
         with:
