@@ -3,8 +3,9 @@
 package confluence
 
 import (
-	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-retryablehttp"
 	"net/http"
 	"os"
@@ -14,36 +15,46 @@ import (
 // APIClient for interacting with confluence
 type APIClient struct{
 	BaseURL string
-	headers header
+	Space string
+	Username string
+	Password string
 }
 
-type header struct{
-	Authorization string
+type Page struct{
+	ID string `json:"id"`
+	Type string `json:"type"`
+	Status string `json:"status"`
+	Title string `json:"title"`
 }
+
+type findPageResult struct {
+	Results []Page `json:"results"`
+}
+
 
 // New returns an APIClient with dependencies defaulted to sane values
-func NewAPIClient() *APIClient {
+func NewAPIClient() (*APIClient,bool) {
+	username, ok := os.LookupEnv("INPUT_USERNAME")
+	if !ok {
+		return nil, false
+	}
+
+	password, ok := os.LookupEnv("INPUT_PASSWORD")
+	if !ok {
+		return nil, false
+	}
+
+	space, ok := os.LookupEnv("INPUT_SPACE")
+	if !ok {
+		return nil, false
+	}
+
 	return &APIClient{
 		BaseURL: "https://xiatech.atlassian.net",
-		headers: header{
-			Authorization: "Basic " + getHeader(),
-		},
-	}
-}
-
-func getHeader() string {
-	uname, ok := os.LookupEnv("USERNAME")
-	if !ok {
-		return ""
-	}
-	pword, ok := os.LookupEnv("PASSWORD")
-	if !ok {
-		return ""
-	}
-
-	encoded := base64.StdEncoding.EncodeToString([]byte(uname + ":" +  pword))
-
-	return encoded
+		Space: space,
+		Username: username,
+		Password: password,
+	}, true
 }
 
 // CreatePage in confluence
@@ -57,15 +68,18 @@ func (a *APIClient) UpdatePage() error {
 }
 
 // FindPage in confluence
-func (a *APIClient) FindPage () (error, bool) {
-	NewAPIClient()
-
-	lookUpURL := a.BaseURL + "/wiki/rest/api/content/"
+// Docs for this API endpoint are here
+// https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-api-content-get
+func (a *APIClient) FindPage (title string) (error, bool) {
+	fmt.Printf("%+v", a)
+	lookUpURL := fmt.Sprintf("%s/wiki/rest/api/content?type=page&spaceKey=%s&title=%s",a.BaseURL,a.Space, title)
 
 	req, err := retryablehttp.NewRequest(http.MethodGet, lookUpURL, nil)
 	if err != nil{
 		return err, false
 	}
+
+	req.SetBasicAuth(a.Username,a.Password)
 
 	resp, err :=  retryablehttp.NewClient().Do(req)
 	if err != nil {
@@ -77,5 +91,12 @@ func (a *APIClient) FindPage () (error, bool) {
 	fmt.Println("req: ", req, lookUpURL)
 
 	fmt.Println("response: ", resp.Body)
+	r := findPageResult{}
+
+	if err := json.NewDecoder(resp.Body).Decode(&r); err !=nil {
+		return err,true
+	}
+
+	spew.Dump(r)
 	return nil, true
 }

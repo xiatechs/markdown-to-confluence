@@ -70,7 +70,11 @@ func checkConfluenceFunc() error{
 	// update or create logic
 	// push new data to page
 	fmt.Println("running find page function: ")
-	a := confluence.NewAPIClient()
-	a.FindPage()
+	a, ok := confluence.NewAPIClient()
+	if !ok {
+		log.Println("error")
+		return nil
+	}
+	a.FindPage("Architecture")
 	return nil
 }
