@@ -16,6 +16,7 @@ jobs:
       - name: submit markdown to confluence
         uses: ./ # Uses an action in the root directory
         with:
+          confluence_username: "REPLACE_WITH_SECRET"
           confluence_api_key: "REPLACE WITH SECRET"
           confluence_space: "REPLACE WITH SPACE"
 

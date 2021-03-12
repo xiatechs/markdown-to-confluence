@@ -10,6 +10,7 @@ import (
 )
 
 const projectPathEnv = "PROJECT_PATH"
+const confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
 const confluenceAPIKeyEnv = "INPUT_CONFLUENCE_API_KEY"
 const confluenceSpaceEnv = "INPUT_CONFLUENCE_SPACE"
 
@@ -61,6 +62,13 @@ func processFile(path string) error {
 }
 
 func checkConfluenceEnv() {
+	username, exists := os.LookupEnv(confluenceUsernameEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s", confluenceUsernameEnv)
+	} else {
+		log.Printf("API KEY: %s", username)
+	}
+
 	apiKey, exists := os.LookupEnv(confluenceAPIKeyEnv)
 	if !exists {
 		log.Printf("Environment variable not set for %s", confluenceAPIKeyEnv)
