@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/xiatechs/markdown-to-confluence/confluence"
 	"log"
 	"os"
 	"path/filepath"
@@ -55,6 +56,21 @@ func parseContent(filename string) error {
 	}
 
 	log.Println(buf.String())
+	err = checkConfluenceFunc()
+	if err != nil{
+		return err
+	}
+	return nil
+}
 
+
+func checkConfluenceFunc() error{
+	// todo: search confluence for filename
+	// some logic to see if content is accurate
+	// update or create logic
+	// push new data to page
+	fmt.Println("running find page function: ")
+	a := confluence.NewAPIClient()
+	a.FindPage()
 	return nil
 }
