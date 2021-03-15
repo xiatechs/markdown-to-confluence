@@ -9,3 +9,6 @@ title = "Markdown to Confluence Action Guide"
 # Markdown to Confluence
 
 This is a guide on how to use the action to automatically sync your in repo markdown documentation to a confluence workspace.
+
+## Action specifics
+
