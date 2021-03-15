@@ -23,12 +23,14 @@ type FileContents struct {
 // metadata map and a converts its body into HTML
 // The resulting information is put into a FileContents for use.
 func ParseMarkdown(r io.Reader) (*FileContents, error) {
-	cfm, err := pageparser.ParseFrontMatterAndContent(r)
+	// fmc is a shorthand for frontmatter and content, the 2 sections of a doc page.
+	// we subsequently put this into a FileContents type.
+	fmc, err := pageparser.ParseFrontMatterAndContent(r)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing file contents and front matter: %w", err)
 	}
 
-	if len(cfm.FrontMatter) == 0 {
+	if len(fmc.FrontMatter) == 0 {
 		return nil, fmt.Errorf("no frontmatter")
 	}
 
@@ -38,12 +40,12 @@ func ParseMarkdown(r io.Reader) (*FileContents, error) {
 
 	var buf bytes.Buffer
 
-	if err := md.Convert(cfm.Content, &buf); err != nil {
+	if err := md.Convert(fmc.Content, &buf); err != nil {
 		return nil, fmt.Errorf("error converting markdown to HTML: %w", err)
 	}
 
 	return &FileContents{
-		MetaData: cfm.FrontMatter,
+		MetaData: fmc.FrontMatter,
 		Body:     buf.Bytes(),
 	}, nil
 }

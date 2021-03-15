@@ -42,6 +42,9 @@ func main() {
 	}
 }
 
+// processFile is the function called on eligible files to handle uploads.
+// API calls should be in here.
+// Potentially this could hang off a struct type that contains an instance of API
 func processFile(path string) error {
 	log.Println("Processing:", filepath.Clean(path))
 
@@ -61,6 +64,7 @@ func processFile(path string) error {
 	return nil
 }
 
+// checkConfluenceEnv is a placeholder function for checking the required env vars are set
 func checkConfluenceEnv() {
 	username, exists := os.LookupEnv(confluenceUsernameEnv)
 	if !exists {
