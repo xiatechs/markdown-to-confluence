@@ -44,6 +44,7 @@ func parseContent(filename string) error {
 
 	log.Println(filename)
 	log.Println(cfm.FrontMatter)
+	log.Printf("title: %s, type: %T", cfm.FrontMatter["title"], cfm.FrontMatter["title"])
 
 	if len(cfm.FrontMatter) == 0 {
 		return fmt.Errorf("no frontmatter")
@@ -56,15 +57,17 @@ func parseContent(filename string) error {
 	}
 
 	log.Println(buf.String())
-	err = checkConfluenceFunc()
-	if err != nil{
+
+	// Todo: dont understand why string is recognised as a interface
+	pageTitle := cfm.FrontMatter["title"]
+	err = checkConfluenceFunc(buf, pageTitle.(string))
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
-
-func checkConfluenceFunc() error{
+func checkConfluenceFunc(newPageContents bytes.Buffer, title string) error {
 	// todo: search confluence for filename
 	// some logic to see if content is accurate
 	// update or create logic
@@ -72,9 +75,21 @@ func checkConfluenceFunc() error{
 	fmt.Println("running find page function: ")
 	a, ok := confluence.NewAPIClient()
 	if !ok {
-		log.Println("error")
+		log.Println("error creating a new client")
 		return nil
 	}
-	a.FindPage("Architecture")
+	// return ID and also the version number bool
+	id, version, exists, err := a.FindPage(title)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		//create page
+	} else {
+		//do some check and update if required
+		a.UpdatePage(id, version, newPageContents)
+	}
+
 	return nil
 }
