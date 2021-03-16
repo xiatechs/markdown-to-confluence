@@ -3,11 +3,11 @@
 package confluence
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/xiatechs/markdown-to-confluence/markdown"
 	"net/http"
 	"os"
 	"strconv"
@@ -49,7 +49,7 @@ func (a *APIClient) CreatePage() error {
 }
 
 // UpdatePage in confluence
-func (a *APIClient) UpdatePage(pageID, pageVersion int, pageContents bytes.Buffer) error {
+func (a *APIClient) UpdatePage(pageID, pageVersion int, pageContents *markdown.FileContents) error {
 	pageVersion++
 
 	return nil

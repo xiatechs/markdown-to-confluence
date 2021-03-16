@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/xiatechs/markdown-to-confluence/confluence"
 	"log"
@@ -9,65 +8,90 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gohugoio/hugo/parser/pageparser"
-	"github.com/yuin/goldmark"
+	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
+const projectPathEnv = "PROJECT_PATH"
+const confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
+const confluenceAPIKeyEnv = "INPUT_CONFLUENCE_API_KEY"
+const confluenceSpaceEnv = "INPUT_CONFLUENCE_SPACE"
+
 func main() {
-	err := filepath.WalkDir("./", func(path string, info os.DirEntry, err error) error {
+	projectPath, exists := os.LookupEnv(projectPathEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
+
+		projectPath = "./"
+	}
+
+	checkConfluenceEnv()
+
+	err := filepath.WalkDir(projectPath, func(path string, info os.DirEntry, err error) error {
 		if strings.Contains(path, "vendor") || strings.Contains(path, ".github") {
 			return filepath.SkipDir
 		}
+
 		if strings.HasSuffix(info.Name(), ".md") {
-			if err := parseContent(path); err != nil {
+			if err := processFile(path); err != nil {
 				log.Println(err)
 			}
 		}
 
-		return err
+		return nil
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func parseContent(filename string) error {
-	r, err := os.Open(filepath.Clean(filename))
+// processFile is the function called on eligible files to handle uploads.
+// API calls should be in here.
+// Potentially this could hang off a struct type that contains an instance of API
+func processFile(path string) error {
+	log.Println("Processing:", filepath.Clean(path))
+
+	f, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		log.Printf("error opening file (%s): %v", path, err)
+		return err
+	}
+
+	contents, err := markdown.ParseMarkdown(f)
 	if err != nil {
 		return err
 	}
 
-	cfm, err := pageparser.ParseFrontMatterAndContent(r)
-	if err != nil {
-		return err
-	}
 
-	log.Println(filename)
-	log.Println(cfm.FrontMatter)
-	log.Printf("title: %s, type: %T", cfm.FrontMatter["title"], cfm.FrontMatter["title"])
+	log.Printf("%+v", contents)
 
-	if len(cfm.FrontMatter) == 0 {
-		return fmt.Errorf("no frontmatter")
-	}
-
-	var buf bytes.Buffer
-
-	if err := goldmark.Convert(cfm.Content, &buf); err != nil {
-		return err
-	}
-
-	log.Println(buf.String())
-
-	// Todo: dont understand why string is recognised as a interface
-	pageTitle := cfm.FrontMatter["title"]
-	err = checkConfluenceFunc(buf, pageTitle.(string))
+	err = checkConfluenceFunc(contents)
 	if err != nil {
 		return err
 	}
 	return nil
+
+	return nil
 }
 
-func checkConfluenceFunc(newPageContents bytes.Buffer, title string) error {
+// checkConfluenceEnv is a placeholder function for checking the required env vars are set
+func checkConfluenceEnv() {
+	username, exists := os.LookupEnv(confluenceUsernameEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s", confluenceUsernameEnv)
+	} else {
+		log.Printf("API KEY: %s", username)
+	}
+
+	space, exists := os.LookupEnv(confluenceSpaceEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s", confluenceSpaceEnv)
+	} else {
+		log.Printf("SPACE: %s", space)
+	}
+
+}
+
+func checkConfluenceFunc(newPageContents *markdown.FileContents) error {
 	// todo: search confluence for filename
 	// some logic to see if content is accurate
 	// update or create logic
@@ -79,7 +103,7 @@ func checkConfluenceFunc(newPageContents bytes.Buffer, title string) error {
 		return nil
 	}
 	// return ID and also the version number bool
-	id, version, exists, err := a.FindPage(title)
+	id, version, exists, err := a.FindPage(newPageContents.MetaData["title"].(string))
 	if err != nil {
 		return err
 	}
@@ -87,7 +111,7 @@ func checkConfluenceFunc(newPageContents bytes.Buffer, title string) error {
 	if !exists {
 		//create page
 	} else {
-		//do some check and update if required
+		//do some check and update if required, possibly decode newPageContents.Body
 		a.UpdatePage(id, version, newPageContents)
 	}
 
