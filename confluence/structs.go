@@ -13,7 +13,7 @@ type Page struct {
 	Type    string  `json:"type"`
 	Status  string  `json:"status"`
 	Title   string  `json:"title"`
-	Version int     `json:"version"`
+	Version Num     `json:"version"`
 	Body    BodyObj `json:"body,omitempty"`
 }
 
@@ -27,7 +27,7 @@ type StorageObj struct {
 }
 
 type Num struct {
-	Number int `json:"number,omitempty"`
+	Number int64 `json:"number,omitempty"`
 }
 type findPageResult struct {
 	Results []Page `json:"results"`

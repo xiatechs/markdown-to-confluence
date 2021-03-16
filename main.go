@@ -69,7 +69,7 @@ func processFile(path string) error {
 
 // checkConfluencePages runs through the CRUD operations for confluence
 func checkConfluencePages(newPageContents *markdown.FileContents) error {
-	fmt.Println("running find page function: ")
+	fmt.Println("running find page function: ") //todo remove
 	a, ok := confluence.NewAPIClient()
 	if !ok {
 		log.Println("error creating a new client")
