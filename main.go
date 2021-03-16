@@ -12,9 +12,6 @@ import (
 )
 
 const projectPathEnv = "PROJECT_PATH"
-const confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
-const confluenceAPIKeyEnv = "INPUT_CONFLUENCE_API_KEY"
-const confluenceSpaceEnv = "INPUT_CONFLUENCE_SPACE"
 
 func main() {
 	projectPath, exists := os.LookupEnv(projectPathEnv)
@@ -23,8 +20,6 @@ func main() {
 
 		projectPath = "./"
 	}
-
-	checkConfluenceEnv()
 
 	err := filepath.WalkDir(projectPath, func(path string, info os.DirEntry, err error) error {
 		if strings.Contains(path, "vendor") || strings.Contains(path, ".github") {
@@ -61,10 +56,9 @@ func processFile(path string) error {
 		return err
 	}
 
-
 	log.Printf("%+v", contents)
 
-	err = checkConfluenceFunc(contents)
+	err = checkConfluencePages(contents)
 	if err != nil {
 		return err
 	}
@@ -73,45 +67,26 @@ func processFile(path string) error {
 	return nil
 }
 
-// checkConfluenceEnv is a placeholder function for checking the required env vars are set
-func checkConfluenceEnv() {
-	username, exists := os.LookupEnv(confluenceUsernameEnv)
-	if !exists {
-		log.Printf("Environment variable not set for %s", confluenceUsernameEnv)
-	} else {
-		log.Printf("API KEY: %s", username)
-	}
-
-	space, exists := os.LookupEnv(confluenceSpaceEnv)
-	if !exists {
-		log.Printf("Environment variable not set for %s", confluenceSpaceEnv)
-	} else {
-		log.Printf("SPACE: %s", space)
-	}
-
-}
-
-func checkConfluenceFunc(newPageContents *markdown.FileContents) error {
-	// todo: search confluence for filename
-	// some logic to see if content is accurate
-	// update or create logic
-	// push new data to page
+// checkConfluencePages runs through the CRUD operations for confluence
+func checkConfluencePages(newPageContents *markdown.FileContents) error {
 	fmt.Println("running find page function: ")
 	a, ok := confluence.NewAPIClient()
 	if !ok {
 		log.Println("error creating a new client")
 		return nil
 	}
-	// return ID and also the version number bool
-	id, version, exists, err := a.FindPage(newPageContents.MetaData["title"].(string))
+
+	pageTitle := newPageContents.MetaData["title"].(string)
+
+	id, version, exists, err := a.FindPage(pageTitle)
 	if err != nil {
 		return err
 	}
 
 	if !exists {
-		//create page
+		//todo: create page
 	} else {
-		//do some check and update if required, possibly decode newPageContents.Body
+		//do some check and update if required
 		a.UpdatePage(id, version, newPageContents)
 	}
 

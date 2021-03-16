@@ -22,7 +22,8 @@ type BodyObj struct {
 }
 
 type StorageObj struct {
-	Value string `json:"value"`
+	Value          string `json:"value"`
+	Representation string `json:"representation,omitempty"`
 }
 
 type Num struct {
@@ -30,4 +31,15 @@ type Num struct {
 }
 type findPageResult struct {
 	Results []Page `json:"results"`
+}
+
+type PutPageContent struct {
+	Type    string     `json:"type"`
+	Title   string     `json:"title,omitempty"`
+	Version VersionObj `json:"version"`
+	Body    BodyObj    `json:"body"`
+}
+
+type VersionObj struct {
+	Number int `json:"number"`
 }

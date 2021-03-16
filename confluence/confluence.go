@@ -8,31 +8,39 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 )
 
+const (
+	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
+	confluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
+	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
+)
+
 // New returns an APIClient with dependencies defaulted to sane values
 func NewAPIClient() (*APIClient, bool) {
-	username, ok := os.LookupEnv("INPUT_USERNAME")
-	if !ok {
-		fmt.Println("env INPUT_USERNAME not set")
-		return nil, false
+	password, exists := os.LookupEnv(confluenceAPIKeyEnv)
+	if !exists {
+		fmt.Printf("Environment variable not set for %s", confluenceAPIKeyEnv)
+	} else {
+		log.Printf("API KEY: %s", password)
 	}
 
-	password, ok := os.LookupEnv("INPUT_PASSWORD")
-	if !ok {
-		fmt.Println("env INPUT_PASSWORD not set")
-
-		return nil, false
+	username, exists := os.LookupEnv(confluenceUsernameEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s", confluenceUsernameEnv)
+	} else {
+		log.Printf("API KEY: %s", username)
 	}
 
-	space, ok := os.LookupEnv("INPUT_SPACE")
-	if !ok {
-		fmt.Println("env INPUT_SPACE not set")
-
-		return nil, false
+	space, exists := os.LookupEnv(confluenceSpaceEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s", confluenceSpaceEnv)
+	} else {
+		log.Printf("SPACE: %s", space)
 	}
 
 	return &APIClient{
@@ -48,9 +56,39 @@ func (a *APIClient) CreatePage() error {
 	return nil
 }
 
-// UpdatePage in confluence
+// UpdatePage updates a confluence page with our newly created data and increases the
+// version by 1 each time.
 func (a *APIClient) UpdatePage(pageID, pageVersion int, pageContents *markdown.FileContents) error {
-	pageVersion++
+
+	var newPageJson PutPageContent
+	newPageJson.Type = "page"
+	newPageJson.Title = pageContents.MetaData["title"].(string)
+	newPageJson.Version.Number = pageVersion + 1
+	newPageJson.Body.Storage.Value = string(pageContents.Body)
+
+	fmt.Println(pageID, newPageJson) //todo: remove
+
+	URL := fmt.Sprintf("%s/wiki/rest/api/content/%d?expand=%v", a.BaseURL, pageID, newPageJson)
+
+	fmt.Println(URL) //todo: remove
+
+	req, err := retryablehttp.NewRequest(http.MethodPut, URL, nil)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(req) //todo: remove
+
+	req.SetBasicAuth(a.Username, a.Password)
+
+	resp, err := retryablehttp.NewClient().Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to do the request: %w", err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	fmt.Println("1") //todo: remove
 
 	return nil
 }
