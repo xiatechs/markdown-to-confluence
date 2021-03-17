@@ -1,11 +1,21 @@
 package confluence
 
+import (
+	"net/http"
+)
+
 // APIClient for interacting with confluence
 type APIClient struct {
 	BaseURL  string
 	Space    string
 	Username string
 	Password string
+	Client   HTTPClient
+}
+
+// Request is for the mocking of the retryablehttp Do() func
+type Request struct {
+	*http.Request
 }
 
 type Page struct {

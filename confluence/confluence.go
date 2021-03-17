@@ -22,35 +22,36 @@ const (
 	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
 )
 
-// New returns an APIClient with dependencies defaulted to sane values
-func NewAPIClient() (*APIClient, bool) {
-	password, exists := os.LookupEnv(confluenceAPIKeyEnv)
-	if !exists {
-		fmt.Printf("Environment variable not set for %s", confluenceAPIKeyEnv)
-	} else {
-		log.Printf("API KEY: %s", password)
-	}
+type HTTPClient interface {
+	Do(req *Request) (*http.Response, error)
+}
 
-	username, exists := os.LookupEnv(confluenceUsernameEnv)
-	if !exists {
-		log.Printf("Environment variable not set for %s", confluenceUsernameEnv)
-	} else {
-		log.Printf("API KEY: %s", username)
+func CreateAPIClient() *APIClient {
+	apiClient, ok := APIClientWithAuths(retryablehttp.NewClient())
+	if !ok {
+		return nil
 	}
+	return apiClient
+}
 
-	space, exists := os.LookupEnv(confluenceSpaceEnv)
-	if !exists {
-		log.Printf("Environment variable not set for %s", confluenceSpaceEnv)
-	} else {
-		log.Printf("SPACE: %s", space)
-	}
-
+// APIClientWithAuths returns an APIClient with dependencies defaulted to sane values
+func APIClientWithAuths(httpClient *HTTPClient) (*APIClient, bool) {
 	return &APIClient{
 		BaseURL:  "https://xiatech.atlassian.net",
-		Space:    space,
-		Username: username,
-		Password: password,
+		Space:    lookupEnv(confluenceSpaceEnv),
+		Username: lookupEnv(confluenceUsernameEnv),
+		Password: lookupEnv(confluenceAPIKeyEnv),
+		Client:   *httpClient,
 	}, true
+}
+
+func lookupEnv(env string) string {
+	v, exists := os.LookupEnv(env)
+	if !exists {
+		log.Printf("Environment variable not set for: %s", env)
+		return ""
+	}
+	return v
 }
 
 // CreatePage in confluence
