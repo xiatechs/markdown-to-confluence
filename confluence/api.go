@@ -38,13 +38,13 @@ func CreateAPIClient() (*APIClient, error) {
 }
 
 // APIClientWithAuths returns an APIClient with dependencies defaulted to sane values
-func APIClientWithAuths(httpClient *HTTPClient) *APIClient {
+func APIClientWithAuths(httpClient HTTPClient) *APIClient {
 	return &APIClient{
 		BaseURL:  "https://xiatech.atlassian.net",
 		Space:    lookupEnv(confluenceSpaceEnv),
 		Username: lookupEnv(confluenceUsernameEnv),
 		Password: lookupEnv(confluenceAPIKeyEnv),
-		Client:   *httpClient,
+		Client:   httpClient,
 	}
 }
 

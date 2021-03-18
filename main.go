@@ -72,7 +72,7 @@ func checkConfluencePages(newPageContents *markdown.FileContents) error {
 	fmt.Println("running find page function: ") //todo remove
 	Client, err := confluence.CreateAPIClient()
 	if err != nil {
-		log.Printf("error creating APIClient new client: %s", err)
+		log.Printf("error creating APIClient: %s", err)
 		return nil
 	}
 
