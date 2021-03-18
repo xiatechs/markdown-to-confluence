@@ -4,12 +4,12 @@ import (
 	"net/http"
 )
 
-
 // Request is for the mocking of the retryablehttp Do() func
 type Request struct {
 	*http.Request
 }
 
+// Page holds returned confluence data
 type Page struct {
 	ID      string  `json:"id"`
 	Type    string  `json:"type"`
@@ -19,15 +19,18 @@ type Page struct {
 	Body    BodyObj `json:"body,omitempty"`
 }
 
+// BodyObj stores body object
 type BodyObj struct {
 	Storage StorageObj `json:"storage"`
 }
 
+// StorageObj stores storage object
 type StorageObj struct {
 	Value          string `json:"value"`
 	Representation string `json:"representation,omitempty"`
 }
 
+// Num stores page version
 type Num struct {
 	Number int64 `json:"number,omitempty"`
 }
@@ -35,6 +38,7 @@ type findPageResult struct {
 	Results []Page `json:"results"`
 }
 
+// PutPageContent stores data intended to be updated to confluence
 type PutPageContent struct {
 	Type    string     `json:"type"`
 	Title   string     `json:"title,omitempty"`
@@ -42,6 +46,7 @@ type PutPageContent struct {
 	Body    BodyObj    `json:"body"`
 }
 
+// VersionObj stores page version increased by 1 for PUT request
 type VersionObj struct {
 	Number int `json:"number"`
 }

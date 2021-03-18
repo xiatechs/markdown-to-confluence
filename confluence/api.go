@@ -45,6 +45,7 @@ func CreateAPIClient() (*APIClient, error) {
 			confluenceSpaceEnv,
 			confluenceUsernameEnv)
 	}
+
 	return apiClient, nil
 }
 
@@ -66,5 +67,6 @@ func lookupEnv(env string) string {
 		log.Printf("Environment variable not set for: %s", env)
 		return ""
 	}
+
 	return v
 }

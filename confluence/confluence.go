@@ -15,7 +15,6 @@ import (
 	"strconv"
 )
 
-
 // CreatePage in confluence
 func (a *APIClient) CreatePage() error {
 	return nil
@@ -24,9 +23,9 @@ func (a *APIClient) CreatePage() error {
 // UpdatePage updates a confluence page with our newly created data and increases the
 // version by 1 each time.
 func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error {
-
 	fmt.Println("running update now....") //todo: remove
-	newPageJson := PutPageContent{
+
+	newPageJSON := PutPageContent{
 		Type:  "page",
 		Title: pageContents.MetaData["title"].(string),
 		Version: VersionObj{
@@ -42,7 +41,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 
 	URL := fmt.Sprintf("%s/wiki/rest/api/content/%d", a.BaseURL, pageID)
 
-	b, err := json.Marshal(newPageJson)
+	b, err := json.Marshal(newPageJSON)
 	if err != nil {
 		return err
 	}
@@ -69,7 +68,9 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 	if err != nil {
 		fmt.Println("error ioutil", err)
 	}
+
 	fmt.Println("response: ", string(r))
+
 	defer func() { _ = resp.Body.Close() }()
 
 	return nil
@@ -79,8 +80,9 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 // Docs for this API endpoint are here
 // https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-api-content-get
 func (a *APIClient) FindPage(title string) (int, int64, bool, error) {
-	fmt.Printf("%+v", a) //todo remove
-	lookUpURL := fmt.Sprintf("%s/wiki/rest/api/content?expand=version&type=page&spaceKey=%s&title=%s", a.BaseURL, a.Space, title)
+	fmt.Printf("%+v", a) // todo remove
+	lookUpURL := fmt.Sprintf("%s/wiki/rest/api/content?expand=version&type=page&spaceKey=%s&title=%s",
+		a.BaseURL, a.Space, title)
 
 	req, err := retryablehttp.NewRequest(http.MethodGet, lookUpURL, nil)
 	if err != nil {
@@ -102,16 +104,18 @@ func (a *APIClient) FindPage(title string) (int, int64, bool, error) {
 		return 0, 0, false, err
 	}
 
-	spew.Dump(r)                                 //todo remove
+	spew.Dump(r) // todo remove
 
 	if len(r.Results) == 0 {
 		return 0, 0, false, fmt.Errorf("no page present")
 	}
 
-	pageId, err := strconv.Atoi(r.Results[0].ID)
+	pageID, err := strconv.Atoi(r.Results[0].ID)
 	if err != nil {
-		fmt.Errorf("error converting ID to int value")
+		fmt.Println("error converting ID to int value")
+
 		return 0, 0, false, err
 	}
-	return pageId, r.Results[0].Version.Number, true, nil
+
+	return pageID, r.Results[0].Version.Number, true, nil
 }

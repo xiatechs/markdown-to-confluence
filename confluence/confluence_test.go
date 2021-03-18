@@ -13,37 +13,36 @@ import (
 )
 
 func TestAPIClient_UpdatePage(t *testing.T) {
-	newPages := []struct{
-		name string
-		pageVersion int64
-		pageID int
-		pageContent *markdown.FileContents
-		setup func(*confluencemocks.MockHTTPClient)
+	newPages := []struct {
+		name          string
+		pageVersion   int64
+		pageID        int
+		pageContent   *markdown.FileContents
+		setup         func(*confluencemocks.MockHTTPClient)
 		expectedError error
 	}{
 		{
-			name: "happy path, updates page successfully",
+			name:        "happy path, updates page successfully",
 			pageVersion: int64(1),
-			pageID: 321,
+			pageID:      321,
 			pageContent: &markdown.FileContents{
-				MetaData: map[string]interface{}{"title" : "pageTitle"},
+				MetaData: map[string]interface{}{"title": "pageTitle"},
 				Body:     []byte("some text"),
 			},
-			setup: func(m *confluencemocks.MockHTTPClient){
+			setup: func(m *confluencemocks.MockHTTPClient) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
-					Status:           "OKI page updated",
-					StatusCode:       200,
-					Body:             ioutil.NopCloser(strings.NewReader("some text")),
+					Status:     "OKI page updated",
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(strings.NewReader("some text")),
 				}, nil)
 			},
 			expectedError: nil,
 		},
-
 	}
 
-	for _,test := range newPages{
+	for _, test := range newPages {
 		test := test
-		t.Run(test.name, func(t *testing.T){
+		t.Run(test.name, func(t *testing.T) {
 			asserts := assert.New(t)
 
 			mockCtrl := gomock.NewController(t)
@@ -65,7 +64,7 @@ func TestAPIClient_UpdatePage(t *testing.T) {
 }
 
 func setEnvs(envs []string) {
-	for _, env := range envs{
+	for _, env := range envs {
 		os.Setenv(env, "username_space_password")
 	}
 }

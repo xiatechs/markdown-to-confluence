@@ -62,14 +62,14 @@ func processFile(path string) error {
 	if err != nil {
 		return err
 	}
-	return nil
 
 	return nil
 }
 
 // checkConfluencePages runs through the CRUD operations for confluence
 func checkConfluencePages(newPageContents *markdown.FileContents) error {
-	fmt.Println("running find page function: ") //todo remove
+	fmt.Println("running find page function: ") // todo remove
+
 	Client, err := confluence.CreateAPIClient()
 	if err != nil {
 		log.Printf("error creating APIClient: %s", err)
@@ -86,8 +86,11 @@ func checkConfluencePages(newPageContents *markdown.FileContents) error {
 	if !exists {
 		//todo: create page
 	} else {
-		//do some check and update if required
-		Client.UpdatePage(id, version, newPageContents)
+		// do some check and update if required
+		err := Client.UpdatePage(id, version, newPageContents)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
