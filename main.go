@@ -56,7 +56,7 @@ func processFile(path string) error {
 		return err
 	}
 
-	log.Printf("%+v", contents)
+	log.Printf("%T, %+v", contents, contents)
 
 	err = checkConfluencePages(contents)
 	if err != nil {
