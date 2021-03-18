@@ -352,7 +352,6 @@ linters:
     - errcheck
     - exhaustive
     - funlen
-    - gci
     - gocognit
     - goconst
     - gocritic
