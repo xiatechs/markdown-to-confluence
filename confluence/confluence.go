@@ -59,8 +59,6 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 
 	req.Header.Set("Content-Type", "application/json")
 
-	fmt.Println("request:   ", req)
-
 	resp, err := a.Client.Do(req)
 	if err != nil {
 		fmt.Println("error was: ", resp.Status, err)
@@ -98,15 +96,12 @@ func (a *APIClient) FindPage(title string) (int, int64, bool, error) {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	fmt.Println("req: ", req, lookUpURL) //todo remove
-
 	r := findPageResult{}
 
 	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
 		return 0, 0, false, err
 	}
 
-	fmt.Println("response decoded: ", r.Results) //todo remove
 	spew.Dump(r)                                 //todo remove
 
 	if len(r.Results) == 0 {
