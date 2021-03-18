@@ -12,47 +12,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 )
 
-const (
-	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
-	confluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
-	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
-)
-
-type HTTPClient interface {
-	Do(req *Request) (*http.Response, error)
-}
-
-func CreateAPIClient() *APIClient {
-	apiClient, ok := APIClientWithAuths(retryablehttp.NewClient())
-	if !ok {
-		return nil
-	}
-	return apiClient
-}
-
-// APIClientWithAuths returns an APIClient with dependencies defaulted to sane values
-func APIClientWithAuths(httpClient *HTTPClient) (*APIClient, bool) {
-	return &APIClient{
-		BaseURL:  "https://xiatech.atlassian.net",
-		Space:    lookupEnv(confluenceSpaceEnv),
-		Username: lookupEnv(confluenceUsernameEnv),
-		Password: lookupEnv(confluenceAPIKeyEnv),
-		Client:   *httpClient,
-	}, true
-}
-
-func lookupEnv(env string) string {
-	v, exists := os.LookupEnv(env)
-	if !exists {
-		log.Printf("Environment variable not set for: %s", env)
-		return ""
-	}
-	return v
-}
 
 // CreatePage in confluence
 func (a *APIClient) CreatePage() error {
