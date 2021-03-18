@@ -61,7 +61,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 
 	fmt.Println("request:   ", req)
 
-	resp, err := retryablehttp.NewClient().Do(req)
+	resp, err := a.Client.Do(req)
 	if err != nil {
 		fmt.Println("error was: ", resp.Status, err)
 		return fmt.Errorf("failed to do the request: %w", err)
@@ -91,7 +91,7 @@ func (a *APIClient) FindPage(title string) (int, int64, bool, error) {
 
 	req.SetBasicAuth(a.Username, a.Password)
 
-	resp, err := retryablehttp.NewClient().Do(req)
+	resp, err := a.Client.Do(req)
 	if err != nil {
 		return 0, 0, false, fmt.Errorf("failed to do the request: %w", err)
 	}

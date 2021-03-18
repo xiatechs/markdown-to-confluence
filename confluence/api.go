@@ -8,12 +8,23 @@ import (
 	"os"
 )
 
+//go:generate mockgen --source=api.go -package confluencemocks -destination=test/confluencemocks/api.go
+
 const (
 	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
 	confluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
 	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
 	envsNotSetError       = "environment variable not set, please assign values for: "
 )
+
+// APIClient struct for interacting with confluence
+type APIClient struct {
+	BaseURL  string
+	Space    string
+	Username string
+	Password string
+	Client   HTTPClient
+}
 
 // HTTPClient is required to mock the http requests
 type HTTPClient interface {
