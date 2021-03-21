@@ -27,8 +27,14 @@ func main() {
 		}
 
 		if strings.HasSuffix(info.Name(), ".md") {
-			if err := processFile(path); err != nil {
-				log.Println(err)
+			pageContent, err := processFile(path)
+			if err != nil {
+				log.Printf("error processing file: %s", err)
+			}
+
+			err = checkConfluencePages(pageContent)
+			if err != nil {
+				log.Printf("error completing confluence operations: %s", err)
 			}
 		}
 
@@ -42,28 +48,23 @@ func main() {
 // processFile is the function called on eligible files to handle uploads.
 // API calls should be in here.
 // Potentially this could hang off a struct type that contains an instance of API
-func processFile(path string) error {
+func processFile(path string) (*markdown.FileContents, error) {
 	log.Println("Processing:", filepath.Clean(path))
 
 	f, err := os.Open(filepath.Clean(path))
 	if err != nil {
 		log.Printf("error opening file (%s): %v", path, err)
-		return err
+		return nil, err
 	}
 
 	contents, err := markdown.ParseMarkdown(f)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Printf("%T, %+v", contents, contents)
 
-	err = checkConfluencePages(contents)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return contents, nil
 }
 
 // checkConfluencePages runs through the CRUD operations for confluence
@@ -84,10 +85,14 @@ func checkConfluencePages(newPageContents *markdown.FileContents) error {
 	}
 
 	if !exists {
-		//todo: create page
+
+		err = Client.CreatePage(newPageContents)
+		if err != nil {
+			return err
+		}
 	} else {
 		// do some check and update if required
-		err := Client.UpdatePage(id, version, newPageContents)
+		err = Client.UpdatePage(id, version, newPageContents)
 		if err != nil {
 			return err
 		}

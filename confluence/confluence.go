@@ -16,7 +16,30 @@ import (
 )
 
 // CreatePage in confluence
-func (a *APIClient) CreatePage() error {
+// todo: function not tested live on confluence yet! test written on expected results
+func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
+	newPageContents, err := json.Marshal(contents.Body)
+	if err != nil {
+		return err
+	}
+
+	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL) // todo: might need space specification in url
+
+	req, err := retryablehttp.NewRequest(http.MethodPost, URL, newPageContents)
+
+	req.SetBasicAuth(a.Username, a.Password)
+
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	resp, err := a.Client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
+	}
+
 	return nil
 }
 
@@ -80,7 +103,6 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 // Docs for this API endpoint are here
 // https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-api-content-get
 func (a *APIClient) FindPage(title string) (int, int64, bool, error) {
-	fmt.Printf("%+v", a) // todo remove
 	lookUpURL := fmt.Sprintf("%s/wiki/rest/api/content?expand=version&type=page&spaceKey=%s&title=%s",
 		a.BaseURL, a.Space, title)
 
