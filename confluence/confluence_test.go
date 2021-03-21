@@ -89,11 +89,13 @@ func TestAPIClient_FindPage(t *testing.T) {
 			Value: "some text",
 		}},
 	}}}
+
 	returnedJSON, err := json.Marshal(returnedPage)
-	fmt.Println("test data: ", string(returnedJSON))
 	if err != nil {
 		fmt.Println("error marshaling test data: ", err)
 	}
+
+	fmt.Println("test data: ", string(returnedJSON))
 
 	pageInputs := []struct {
 		Name            string
@@ -203,9 +205,7 @@ func TestAPIClient_CreatePage(t *testing.T) {
 
 			client := APIClientWithAuths(mock)
 			err := client.CreatePage(test.pageContent)
-
 			asserts.Equal(err, test.expectedError)
-
 		})
 	}
 }

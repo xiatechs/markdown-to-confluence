@@ -26,6 +26,9 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL) // todo: might need space specification in url
 
 	req, err := retryablehttp.NewRequest(http.MethodPost, URL, newPageContents)
+	if err != nil {
+		return err
+	}
 
 	req.SetBasicAuth(a.Username, a.Password)
 
@@ -36,7 +39,9 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return err
 	}
 
-	if resp.StatusCode != 200 {
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
 	}
 
