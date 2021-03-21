@@ -166,7 +166,8 @@ func TestAPIClient_CreatePage(t *testing.T) {
 			setUp: func(m *confluencemocks.MockHTTPClient) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
 					Status:     "OK, Page Found",
-					StatusCode: 200,
+					StatusCode: http.StatusOK,
+					Body:       ioutil.NopCloser(strings.NewReader("some text")),
 				}, nil)
 			},
 			expectedError: nil,
@@ -180,7 +181,8 @@ func TestAPIClient_CreatePage(t *testing.T) {
 			setUp: func(m *confluencemocks.MockHTTPClient) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
 					Status:     "Not Found",
-					StatusCode: 404,
+					StatusCode: http.StatusNotFound,
+					Body:       ioutil.NopCloser(strings.NewReader("some text")),
 				}, nil)
 			},
 			expectedError: fmt.Errorf("failed to create confluence page: %s", "Not Found"),

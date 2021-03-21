@@ -39,6 +39,7 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return err
 	}
 
+	// todo: error is created in this defer statement
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
