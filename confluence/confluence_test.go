@@ -80,11 +80,11 @@ func setEnvs(envs []string, setEnvs bool) {
 }
 
 func TestAPIClient_FindPage(t *testing.T) {
-	returnedPage := findPageResult{Results: []Page{{
+	returnedPage := PageResults{Results: []Page{{
 		ID:      "321",
 		Type:    "page",
 		Title:   "PageTitle",
-		Version: Num{2},
+		Version: VersionObj{2},
 		Body: BodyObj{Storage: StorageObj{
 			Value: "some text",
 		}},
@@ -140,11 +140,8 @@ func TestAPIClient_FindPage(t *testing.T) {
 			defer setEnvs(envs, false)
 
 			client := APIClientWithAuths(mock)
-			id, ver, exists, err := client.FindPage(test.PageTitle)
+			_, err := client.FindPage(test.PageTitle)
 
-			asserts.Equal(test.ExpectedVersion, ver)
-			asserts.Equal(test.ExpectedID, id)
-			asserts.Equal(test.ExpectedBool, exists)
 			asserts.Equal(test.ExpectedErr, err)
 		})
 	}
@@ -173,7 +170,7 @@ func TestAPIClient_CreatePage(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			name: "un-happy path, creates page",
+			name: "un-happy path",
 			pageContent: &markdown.FileContents{
 				MetaData: map[string]interface{}{"title": "pageTitle"},
 				Body:     []byte("some text"),
@@ -182,7 +179,7 @@ func TestAPIClient_CreatePage(t *testing.T) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
 					Status:     "Not Found",
 					StatusCode: http.StatusNotFound,
-					Body:       ioutil.NopCloser(strings.NewReader("some text")),
+					Body:       nil,
 				}, nil)
 			},
 			expectedError: fmt.Errorf("failed to create confluence page: %s", "Not Found"),

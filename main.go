@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/xiatechs/markdown-to-confluence/markdown"
@@ -56,8 +57,6 @@ func processFile(path string) error {
 		return err
 	}
 
-	log.Printf("%T, %+v", contents, contents)
-
 	err = checkConfluencePages(contents)
 	if err != nil {
 		log.Printf("error completing confluence operations: %s", err)
@@ -78,19 +77,27 @@ func checkConfluencePages(newPageContents *markdown.FileContents) error {
 
 	pageTitle := newPageContents.MetaData["title"].(string)
 
-	id, version, exists, err := Client.FindPage(pageTitle)
+	pageResult, err := Client.FindPage(pageTitle)
 	if err != nil {
 		return err
 	}
 
-	if !exists {
+	if pageResult == nil {
+		fmt.Println("page does not exists, creating it now...")
+
 		err = Client.CreatePage(newPageContents)
 		if err != nil {
 			return err
 		}
 	} else {
-		// do some check and update if required
-		err = Client.UpdatePage(id, version, newPageContents)
+		fmt.Println("page exists, updating confluence now...")
+
+		pageID, err := strconv.Atoi(pageResult.Results[0].ID)
+		if err != nil {
+			return err
+		}
+
+		err = Client.UpdatePage(pageID, int64(pageResult.Results[0].Version.Number), newPageContents)
 		if err != nil {
 			return err
 		}

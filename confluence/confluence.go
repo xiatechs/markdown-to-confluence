@@ -12,39 +12,50 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 // CreatePage in confluence
 // todo: function not tested live on confluence yet! test written on expected results
 func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
-	newPageContents, err := json.Marshal(contents.Body)
+	newPageContent := Page{
+		Type:  "page",
+		Title: contents.MetaData["title"].(string),
+		Space: SpaceObj{Key: a.Space},
+		Body: BodyObj{Storage: StorageObj{
+			Value:          string(contents.Body),
+			Representation: "view",
+		}},
+	}
+
+	newPageContentsJSON, err := json.Marshal(newPageContent)
 	if err != nil {
 		return err
 	}
 
-	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL) // todo: might need space specification in url
+	fmt.Println("create page input: ", string(newPageContentsJSON))//todo: remove
 
-	req, err := retryablehttp.NewRequest(http.MethodPost, URL, newPageContents)
+	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL)
+
+	req, err := retryablehttp.NewRequest(http.MethodPost, URL, newPageContentsJSON)
 	if err != nil {
 		return err
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
 
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
 		return err
 	}
 
-	// todo: error is created in this defer statement
-	defer func() { _ = resp.Body.Close() }()
-
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
 	}
+
+	defer func() { _ = resp.Body.Close() }()
 
 	return nil
 }
@@ -54,12 +65,13 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error {
 	fmt.Println("running update now....") //todo: remove
 
-	newPageJSON := PutPageContent{
+	newPageJSON := Page{
 		Type:  "page",
 		Title: pageContents.MetaData["title"].(string),
 		Version: VersionObj{
 			Number: int(pageVersion) + 1,
 		},
+		Space: SpaceObj{Key: a.Space},
 		Body: BodyObj{
 			Storage: StorageObj{
 				Value:          string(pageContents.Body),
@@ -74,8 +86,6 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(string(b)) //todo:remove
 
 	req, err := retryablehttp.NewRequest(http.MethodPut, URL, bytes.NewBuffer(b))
 	if err != nil {
@@ -108,42 +118,35 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 // FindPage in confluence
 // Docs for this API endpoint are here
 // https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-api-content-get
-func (a *APIClient) FindPage(title string) (int, int64, bool, error) {
+func (a *APIClient) FindPage(title string) (*PageResults, error) {
 	lookUpURL := fmt.Sprintf("%s/wiki/rest/api/content?expand=version&type=page&spaceKey=%s&title=%s",
 		a.BaseURL, a.Space, title)
 
 	req, err := retryablehttp.NewRequest(http.MethodGet, lookUpURL, nil)
 	if err != nil {
-		return 0, 0, false, err
+		return nil, err
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
 
 	resp, err := a.Client.Do(req)
-	if err != nil {
-		return 0, 0, false, fmt.Errorf("failed to do the request: %w", err)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, err
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
-	r := findPageResult{}
+	pageResultVar := PageResults{}
 
-	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return 0, 0, false, err
+	if err = json.NewDecoder(resp.Body).Decode(&pageResultVar); err != nil {
+		return nil, err
 	}
 
-	spew.Dump(r) // todo remove
+	spew.Dump(pageResultVar) // todo remove
 
-	if len(r.Results) == 0 {
-		return 0, 0, false, fmt.Errorf("no page present")
+	if len(pageResultVar.Results) == 0 {
+		return nil, nil
 	}
 
-	pageID, err := strconv.Atoi(r.Results[0].ID)
-	if err != nil {
-		fmt.Println("error converting ID to int value")
-
-		return 0, 0, false, err
-	}
-
-	return pageID, r.Results[0].Version.Number, true, nil
+	return &pageResultVar, nil
 }

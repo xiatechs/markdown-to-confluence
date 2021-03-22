@@ -1,22 +1,24 @@
 package confluence
 
-import (
-	"net/http"
-)
-
-// Request is for the mocking of the retryablehttp Do() func
-type Request struct {
-	*http.Request
+// PageResults contains the returned page values
+type PageResults struct {
+	Results []Page `json:"results"`
 }
 
 // Page holds returned confluence data
 type Page struct {
-	ID      string  `json:"id"`
-	Type    string  `json:"type"`
-	Status  string  `json:"status"`
-	Title   string  `json:"title"`
-	Version Num     `json:"version"`
-	Body    BodyObj `json:"body,omitempty"`
+	ID      string     `json:"id,omitempty"`
+	Type    string     `json:"type"`
+	Status  string     `json:"status"`
+	Title   string     `json:"title"`
+	Space   SpaceObj   `json:"space,omitempty"`
+	Version VersionObj `json:"version,omitempty"`
+	Body    BodyObj    `json:"body,omitempty"`
+}
+
+// SpaceObj contains the confluence space value
+type SpaceObj struct {
+	Key string `json:"key,omitempty"`
 }
 
 // BodyObj stores body object
@@ -28,22 +30,6 @@ type BodyObj struct {
 type StorageObj struct {
 	Value          string `json:"value"`
 	Representation string `json:"representation,omitempty"`
-}
-
-// Num stores page version
-type Num struct {
-	Number int64 `json:"number,omitempty"`
-}
-type findPageResult struct {
-	Results []Page `json:"results"`
-}
-
-// PutPageContent stores data intended to be updated to confluence
-type PutPageContent struct {
-	Type    string     `json:"type"`
-	Title   string     `json:"title,omitempty"`
-	Version VersionObj `json:"version"`
-	Body    BodyObj    `json:"body"`
 }
 
 // VersionObj stores page version increased by 1 for PUT request
