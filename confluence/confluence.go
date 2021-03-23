@@ -5,13 +5,16 @@ package confluence
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/hashicorp/go-retryablehttp"
-	"github.com/xiatechs/markdown-to-confluence/markdown"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/hashicorp/go-retryablehttp"
+	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
 // CreatePage in confluence
@@ -23,7 +26,7 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		Space: SpaceObj{Key: a.Space},
 		Body: BodyObj{Storage: StorageObj{
 			Value:          string(contents.Body),
-			Representation: "view",
+			Representation: "storage",
 		}},
 	}
 
@@ -32,7 +35,7 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return err
 	}
 
-	fmt.Println("create page input: ", string(newPageContentsJSON))//todo: remove
+	fmt.Println("create page input: ", string(newPageContentsJSON)) //todo: remove
 
 	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL)
 
@@ -55,7 +58,7 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
 	}
 
-	defer func() { _ = resp.Body.Close() }()
+	// defer func() { _ = resp.Body.Close() }()
 
 	return nil
 }
@@ -139,6 +142,10 @@ func (a *APIClient) FindPage(title string) (*PageResults, error) {
 	pageResultVar := PageResults{}
 
 	if err = json.NewDecoder(resp.Body).Decode(&pageResultVar); err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 

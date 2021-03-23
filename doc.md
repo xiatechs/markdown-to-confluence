@@ -3,7 +3,7 @@ categories = ["Development", "Github Actions"]
 date = "2021-03-10"
 description = "A guide on how to use the markdown to confluence action"
 slug = "markdown-to-confluence-guide"
-title = "Test3"
+title = "Test4"
 +++
 
 # Markdown to Confluence
@@ -37,3 +37,17 @@ First Header | Second Header
 ------------ | -------------
 Content from cell 1 | Content from cell 2
 Content in the first column | Content in the second column
+
+```GO
+package main 
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello World")
+}
+```
+
+```JS
+console.log("Hello World");
+```
