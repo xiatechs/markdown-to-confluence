@@ -9,36 +9,52 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
-const projectPathEnv = "PROJECT_PATH"
-const confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
-const confluenceAPIKeyEnv = "INPUT_CONFLUENCE_API_KEY"
-const confluenceSpaceEnv = "INPUT_CONFLUENCE_SPACE"
+const (
+	// add your confluence username / api key / space here before build app
+	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
+	confluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
+	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
+)
 
-func main() {
-	projectPath, exists := os.LookupEnv(projectPathEnv)
-	if !exists {
-		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
-
-		projectPath = "./"
+// grab 1 argument (filepath) when calling app
+func grabargs() (valid bool, projectPath string) {
+	if len(os.Args) == 2 {
+		projectPath = os.Args[1]
+	} else {
+		log.Println("usage: app filepath")
+		return false, ""
 	}
+	return true, projectPath
+}
 
-	checkConfluenceEnv()
-
-	err := filepath.WalkDir(projectPath, func(path string, info os.DirEntry, err error) error {
+//thefilepath is the relative filepath of the app, localpath is the folder you want to run this app through
+func iterate(thefilepath, localpath string) {
+	//Go 1.15 doesn't have the WalkDir method for filepath package so adjusted it below
+	filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		path := info.Name()
 		if strings.Contains(path, "vendor") || strings.Contains(path, ".github") {
 			return filepath.SkipDir
 		}
-
 		if strings.HasSuffix(info.Name(), ".md") {
-			if err := processFile(path); err != nil {
+			if err := processFile(fpath); err != nil {
 				log.Println(err)
 			}
 		}
-
 		return nil
 	})
-	if err != nil {
-		log.Fatal(err)
+}
+
+func main() {
+	if ok, projectPath := grabargs(); ok {
+		checkConfluenceEnv()
+		path, err := os.Getwd() //get the working directory where the application is
+		if err != nil {
+			log.Println(err)
+		}
+		iterate(path, projectPath) //pass the working directory and the project path
 	}
 }
 
