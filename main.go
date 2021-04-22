@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	// add your confluence username / api key / space here before build app
+	// add your confluence username / api key / space here before building app
 	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
 	confluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
 	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
@@ -21,14 +21,14 @@ func grabargs() (valid bool, projectPath string) {
 	if len(os.Args) == 2 {
 		projectPath = os.Args[1]
 	} else {
-		log.Println("usage: app filepath")
+		log.Println("usage: app [folder/.]")
 		return false, ""
 	}
 	return true, projectPath
 }
 
 //thefilepath is the relative filepath of the app, localpath is the folder you want to run this app through
-func iterate(thefilepath, localpath string) {
+func iterate(localpath string) {
 	//Go 1.15 doesn't have the WalkDir method for filepath package so adjusted it below
 	filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -45,17 +45,6 @@ func iterate(thefilepath, localpath string) {
 		}
 		return nil
 	})
-}
-
-func main() {
-	if ok, projectPath := grabargs(); ok {
-		checkConfluenceEnv()
-		path, err := os.Getwd() //get the working directory where the application is
-		if err != nil {
-			log.Println(err)
-		}
-		iterate(path, projectPath) //pass the working directory and the project path
-	}
 }
 
 // processFile is the function called on eligible files to handle uploads.
@@ -101,5 +90,12 @@ func checkConfluenceEnv() {
 		log.Printf("Environment variable not set for %s", confluenceSpaceEnv)
 	} else {
 		log.Printf("SPACE: %s", space)
+	}
+}
+
+func main() {
+	if ok, projectPath := grabargs(); ok {
+		checkConfluenceEnv()
+		iterate(projectPath) //pass the project path
 	}
 }
