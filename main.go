@@ -25,7 +25,7 @@ func grabargs() (valid bool, projectPath string) {
 
 // iterates through files in a filepath. localpath is the folder you want to run this app through
 func iterate(localpath string) {
-	//Go 1.15 doesn't have the WalkDir method for filepath package so adjusted it below
+	// Go 1.15 doesn't have the WalkDir method for filepath package so adjusted it below
 	filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Fatalf(err.Error())
@@ -102,7 +102,7 @@ func (c confluenceVars) checkConfluenceEnv() bool {
 func main() {
 	if ok := confluenceobject.Load(); ok {
 		if ok, projectPath := grabargs(); ok {
-			iterate(projectPath) //pass the project path
+			iterate(projectPath) // pass the project path
 		}
 	}
 }

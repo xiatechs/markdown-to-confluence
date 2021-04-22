@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-//ConfluenceVars is a struct to store the username/APIKey/Space variables to work with confluence API
+// ConfluenceVars is a struct to store the username/APIKey/Space variables to work with confluence API
 type ConfluenceVars struct {
 	ConfluenceUsernameEnv string
 	ConfluenceAPIKeyEnv   string
@@ -17,7 +17,7 @@ type ConfluenceVars struct {
 // ConfluenceObject that is used in the application
 var ConfluenceObject = ConfluenceVars{}
 
-//Save a ConfluenceVars obj down to json named 'confobject.json' located in same folder as the app
+// Save a ConfluenceVars obj down to json named 'confobject.json' located in same folder as the app
 func (p ConfluenceVars) save() {
 	item := &p
 	output, err := json.MarshalIndent(item, "", "\t")

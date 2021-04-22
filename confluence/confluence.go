@@ -35,7 +35,7 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return err
 	}
 
-	fmt.Println("create page input: ", string(newPageContentsJSON)) //todo: remove
+	fmt.Println("create page input: ", string(newPageContentsJSON)) // todo: remove
 
 	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL)
 
@@ -66,7 +66,7 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 // UpdatePage updates a confluence page with our newly created data and increases the
 // version by 1 each time.
 func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error {
-	fmt.Println("running update now....") //todo: remove
+	fmt.Println("running update now....") // todo: remove
 
 	newPageJSON := Page{
 		Type:  "page",
@@ -137,7 +137,7 @@ func (a *APIClient) FindPage(title string) (*PageResults, error) {
 		return nil, err
 	}
 
-	defer func() { _ = resp.Body.Close() }() //defer after Do req has no error
+	defer func() { _ = resp.Body.Close() }() // defer after Do req has no error
 
 	pageResultVar := PageResults{}
 
