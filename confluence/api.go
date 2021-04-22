@@ -9,7 +9,7 @@ import (
 )
 
 //go:generate mockgen --source=api.go -package confluencemocks -destination=test/confluencemocks/api.go
-var confluenceobject = object.ConfluenceObject //the struct containing the username/api/space vars from object
+var confluenceobject = object.ConfluenceObject // the struct containing the username/api/space vars from object
 
 // here we are grabbing the variables in the confluence object
 var (

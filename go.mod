@@ -9,4 +9,5 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.6.8
 	github.com/stretchr/testify v1.6.1
 	github.com/yuin/goldmark v1.3.2
+	golang.org/x/tools v0.1.0 // indirect
 )

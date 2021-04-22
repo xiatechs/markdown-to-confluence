@@ -14,33 +14,42 @@ var confluenceobject = object.ConfluenceObject
 
 // grab 1 argument (filepath) when calling app
 func grabargs() (valid bool, projectPath string) {
-	if len(os.Args) == 2 {
+	if len(os.Args) > 1 {
 		projectPath = os.Args[1]
 	} else {
 		log.Println("usage: app [folder]")
+
 		return false, ""
 	}
+
 	return true, projectPath
+}
+
+// check to see if the name of the file ends with .md i.e it's a markdown file
+func checkinfoname(fpath, name string) {
+	if strings.HasSuffix(name, ".md") {
+		if err := processFile(fpath); err != nil {
+			log.Println(err)
+		}
+	}
 }
 
 // iterates through files in a filepath. localpath is the folder you want to run this app through
 func iterate(localpath string) {
 	// Go 1.15 doesn't have the WalkDir method for filepath package so adjusted it below
-	filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
+	err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Fatalf(err.Error())
 		}
-		path := info.Name()
-		if strings.Contains(path, "vendor") || strings.Contains(path, ".github") {
+		if strings.Contains(info.Name(), "vendor") || strings.Contains(info.Name(), ".github") {
 			return filepath.SkipDir
 		}
-		if strings.HasSuffix(info.Name(), ".md") {
-			if err := processFile(fpath); err != nil {
-				log.Println(err)
-			}
-		}
+		checkinfoname(fpath, info.Name())
 		return nil
 	})
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // processFile is the function called on eligible files to handle uploads.

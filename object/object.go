@@ -1,3 +1,4 @@
+// Package object is where to store the confluence variables
 package object
 
 import (
@@ -18,29 +19,41 @@ type ConfluenceVars struct {
 var ConfluenceObject = ConfluenceVars{}
 
 // Save a ConfluenceVars obj down to json named 'confobject.json' located in same folder as the app
-func (p ConfluenceVars) save() {
-	item := &p
+func (c ConfluenceVars) save() {
+	item := &c
+
 	output, err := json.MarshalIndent(item, "", "\t")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	err = ioutil.WriteFile("confobject.json", output, 0666)
+
+	err = ioutil.WriteFile("confobject.json", output, 0600)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 // Load a json into a ConfluenceVars obj
-func (p *ConfluenceVars) Load() bool {
-	item := *p
+func (c *ConfluenceVars) Load() bool {
+	item := *c
 	jsonFile, _ := ioutil.ReadFile("confobject.json")
-	json.Unmarshal([]byte(jsonFile), &item)
-	if ok := item.isNotEmpty(); !ok {
-		item.save()
+
+	err := json.Unmarshal(jsonFile, &item)
+	if err != nil {
+		fmt.Println(err)
+
 		return false
 	}
-	*p = item
+
+	if ok := item.isNotEmpty(); !ok {
+		item.save()
+
+		return false
+	}
+
+	*c = item
+
 	return true
 }
 
@@ -52,11 +65,13 @@ func (c ConfluenceVars) isNotEmpty() bool {
 		log.Printf("API KEY: %s", c.ConfluenceAPIKeyEnv)
 		log.Printf("SPACE: %s", c.ConfluenceSpaceEnv)
 		log.Println("Please update the confobject.json located wherever this application is located")
+
 		return false
-	} else {
-		log.Printf("Username: %s", c.ConfluenceUsernameEnv)
-		log.Printf("API KEY: %s", c.ConfluenceAPIKeyEnv)
-		log.Printf("SPACE: %s", c.ConfluenceSpaceEnv)
 	}
+
+	log.Printf("Username: %s", c.ConfluenceUsernameEnv)
+	log.Printf("API KEY: %s", c.ConfluenceAPIKeyEnv)
+	log.Printf("SPACE: %s", c.ConfluenceSpaceEnv)
+
 	return true
 }
