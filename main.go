@@ -1,43 +1,46 @@
 package main
 
 import (
-	"fmt"
-	"github.com/xiatechs/markdown-to-confluence/confluence"
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/xiatechs/markdown-to-confluence/markdown"
+	"github.com/xiatechs/markdown-to-confluence/object"
 )
 
-const projectPathEnv = "PROJECT_PATH"
+var confluenceobject = object.ConfluenceObject
 
-func main() {
-	projectPath, exists := os.LookupEnv(projectPathEnv)
-	if !exists {
-		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
-
-		projectPath = "./"
+// grab 1 argument (filepath) when calling app
+func grabargs() (valid bool, projectPath string) {
+	if len(os.Args) == 2 {
+		projectPath = os.Args[1]
+	} else {
+		log.Println("usage: app [folder]")
+		return false, ""
 	}
+	return true, projectPath
+}
 
-	err := filepath.WalkDir(projectPath, func(path string, info os.DirEntry, err error) error {
+// iterates through files in a filepath. localpath is the folder you want to run this app through
+func iterate(localpath string) {
+	//Go 1.15 doesn't have the WalkDir method for filepath package so adjusted it below
+	filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		path := info.Name()
 		if strings.Contains(path, "vendor") || strings.Contains(path, ".github") {
 			return filepath.SkipDir
 		}
-
 		if strings.HasSuffix(info.Name(), ".md") {
-			if err := processFile(path); err != nil {
-				log.Printf("error processing file: %s", err)
+			if err := processFile(fpath); err != nil {
+				log.Println(err)
 			}
 		}
-
 		return nil
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 // processFile is the function called on eligible files to handle uploads.
@@ -57,51 +60,49 @@ func processFile(path string) error {
 		return err
 	}
 
-	err = checkConfluencePages(contents)
-	if err != nil {
-		log.Printf("error completing confluence operations: %s", err)
-	}
+	log.Printf("%+v", contents)
 
 	return nil
 }
 
-// checkConfluencePages runs through the CRUD operations for confluence
-func checkConfluencePages(newPageContents *markdown.FileContents) error {
-	fmt.Println("running find page function: ") // todo remove
-
-	Client, err := confluence.CreateAPIClient()
-	if err != nil {
-		log.Printf("error creating APIClient: %s", err)
-		return nil
-	}
-
-	pageTitle := newPageContents.MetaData["title"].(string)
-
-	pageResult, err := Client.FindPage(pageTitle)
-	if err != nil {
-		return err
-	}
-
-	if pageResult == nil {
-		fmt.Println("page does not exists, creating it now...")
-
-		err = Client.CreatePage(newPageContents)
-		if err != nil {
-			return err
-		}
+/* Since this is a local binary that would be ran, do we need this?
+// checkConfluenceEnv is a placeholder function for checking the required env vars are set
+func (c confluenceVars) checkConfluenceEnv() bool {
+	var somethingWrong bool
+	username, exists := os.LookupEnv(c.ConfluenceUsernameEnv)
+	if !exists {
+		log.Println("Environment variable Username not set")
+		somethingWrong = true
 	} else {
-		fmt.Println("page exists, updating confluence now...")
-
-		pageID, err := strconv.Atoi(pageResult.Results[0].ID)
-		if err != nil {
-			return err
-		}
-
-		err = Client.UpdatePage(pageID, int64(pageResult.Results[0].Version.Number), newPageContents)
-		if err != nil {
-			return err
-		}
+		log.Printf("Username: %s", username)
 	}
 
-	return nil
+	apiKey, exists := os.LookupEnv(c.ConfluenceAPIKeyEnv)
+	if !exists {
+		log.Println("Environment variable ConfluenceAPIKeyEnv not set")
+		somethingWrong = true
+	} else {
+		log.Printf("API KEY: %s", apiKey)
+	}
+
+	space, exists := os.LookupEnv(c.ConfluenceSpaceEnv)
+	if !exists {
+		log.Println("Environment variable ConfluenceSpaceEnv not set")
+		somethingWrong = true
+	} else {
+		log.Printf("SPACE: %s", space)
+	}
+	if somethingWrong {
+		log.Println("Please update the confobject.json located where this application is located")
+		return false
+	}
+	return true
+}*/
+
+func main() {
+	if ok := confluenceobject.Load(); ok {
+		if ok, projectPath := grabargs(); ok {
+			iterate(projectPath) //pass the project path
+		}
+	}
 }

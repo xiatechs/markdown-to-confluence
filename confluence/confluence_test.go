@@ -3,15 +3,16 @@ package confluence
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
-	"github.com/xiatechs/markdown-to-confluence/confluence/test/confluencemocks"
-	"github.com/xiatechs/markdown-to-confluence/markdown"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/xiatechs/markdown-to-confluence/confluence/test/confluencemocks"
+	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
 func TestAPIClient_UpdatePage(t *testing.T) {

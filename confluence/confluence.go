@@ -54,11 +54,11 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return err
 	}
 
+	defer func() { _ = resp.Body.Close() }()
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
 	}
-
-	// defer func() { _ = resp.Body.Close() }()
 
 	return nil
 }
@@ -106,14 +106,14 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 		return fmt.Errorf("failed to do the request: %w", err)
 	}
 
+	defer func() { _ = resp.Body.Close() }()
+
 	r, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("error ioutil", err)
 	}
 
 	fmt.Println("response: ", string(r))
-
-	defer func() { _ = resp.Body.Close() }()
 
 	return nil
 }
@@ -137,7 +137,7 @@ func (a *APIClient) FindPage(title string) (*PageResults, error) {
 		return nil, err
 	}
 
-	defer func() { _ = resp.Body.Close() }()
+	defer func() { _ = resp.Body.Close() }() //defer after Do req has no error
 
 	pageResultVar := PageResults{}
 
