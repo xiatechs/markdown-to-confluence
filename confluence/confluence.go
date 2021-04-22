@@ -54,11 +54,11 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return err
 	}
 
-	defer func() { _ = resp.Body.Close() }()
-
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
 	}
+
+	func() { _ = resp.Body.Close() }()
 
 	return nil
 }
