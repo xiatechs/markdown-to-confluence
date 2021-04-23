@@ -1,54 +1,43 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
+	"github.com/xiatechs/markdown-to-confluence/confluence"
+
 	"github.com/xiatechs/markdown-to-confluence/markdown"
-	"github.com/xiatechs/markdown-to-confluence/object"
 )
 
-var confluenceobject = object.ConfluenceObject
+const projectPathEnv = "PROJECT_PATH"
 
-// grab 1 argument (filepath) when calling app
-func grabargs() (valid bool, projectPath string) {
-	if len(os.Args) > 1 {
-		projectPath = os.Args[1]
-	} else {
-		log.Println("usage: app [folder]")
+func main() {
+	projectPath, exists := os.LookupEnv(projectPathEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
 
-		return false, ""
+		projectPath = "./"
 	}
 
-	return true, projectPath
-}
-
-// check to see if the name of the file ends with .md i.e it's a markdown file
-func checkinfoname(fpath, name string) {
-	if strings.HasSuffix(name, ".md") {
-		if err := processFile(fpath); err != nil {
-			log.Println(err)
-		}
-	}
-}
-
-// iterates through files in a filepath. localpath is the folder you want to run this app through
-func iterate(localpath string) {
-	// Go 1.15 doesn't have the WalkDir method for filepath package so adjusted it below
-	err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
-		if err != nil {
-			log.Fatalf(err.Error())
-		}
-		if strings.Contains(info.Name(), "vendor") || strings.Contains(info.Name(), ".github") {
+	err := filepath.Walk(projectPath, func(path string, info os.DirEntry, err error) error {
+		if strings.Contains(path, "vendor") || strings.Contains(path, ".github") {
 			return filepath.SkipDir
 		}
-		checkinfoname(fpath, info.Name())
+
+		if strings.HasSuffix(info.Name(), ".md") {
+			if err := processFile(path); err != nil {
+				log.Printf("error processing file: %s", err)
+			}
+		}
+
 		return nil
 	})
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 	}
 }
 
@@ -69,49 +58,51 @@ func processFile(path string) error {
 		return err
 	}
 
-	log.Printf("%+v", contents)
+	err = checkConfluencePages(contents)
+	if err != nil {
+		log.Printf("error completing confluence operations: %s", err)
+	}
 
 	return nil
 }
 
-/* Since this is a local binary that would be ran, do we need this?
-// checkConfluenceEnv is a placeholder function for checking the required env vars are set
-func (c confluenceVars) checkConfluenceEnv() bool {
-	var somethingWrong bool
-	username, exists := os.LookupEnv(c.ConfluenceUsernameEnv)
-	if !exists {
-		log.Println("Environment variable Username not set")
-		somethingWrong = true
-	} else {
-		log.Printf("Username: %s", username)
+// checkConfluencePages runs through the CRUD operations for confluence
+func checkConfluencePages(newPageContents *markdown.FileContents) error {
+	fmt.Println("running find page function: ") // todo remove
+
+	Client, err := confluence.CreateAPIClient()
+	if err != nil {
+		log.Printf("error creating APIClient: %s", err)
+		return nil
 	}
 
-	apiKey, exists := os.LookupEnv(c.ConfluenceAPIKeyEnv)
-	if !exists {
-		log.Println("Environment variable ConfluenceAPIKeyEnv not set")
-		somethingWrong = true
-	} else {
-		log.Printf("API KEY: %s", apiKey)
+	pageTitle := newPageContents.MetaData["title"].(string)
+
+	pageResult, err := Client.FindPage(pageTitle)
+	if err != nil {
+		return err
 	}
 
-	space, exists := os.LookupEnv(c.ConfluenceSpaceEnv)
-	if !exists {
-		log.Println("Environment variable ConfluenceSpaceEnv not set")
-		somethingWrong = true
-	} else {
-		log.Printf("SPACE: %s", space)
-	}
-	if somethingWrong {
-		log.Println("Please update the confobject.json located where this application is located")
-		return false
-	}
-	return true
-}*/
+	if pageResult == nil {
+		fmt.Println("page does not exists, creating it now...")
 
-func main() {
-	if ok := confluenceobject.Load(); ok {
-		if ok, projectPath := grabargs(); ok {
-			iterate(projectPath) // pass the project path
+		err = Client.CreatePage(newPageContents)
+		if err != nil {
+			return err
+		}
+	} else {
+		fmt.Println("page exists, updating confluence now...")
+
+		pageID, err := strconv.Atoi(pageResult.Results[0].ID)
+		if err != nil {
+			return err
+		}
+
+		err = Client.UpdatePage(pageID, int64(pageResult.Results[0].Version.Number), newPageContents)
+		if err != nil {
+			return err
 		}
 	}
+
+	return nil
 }

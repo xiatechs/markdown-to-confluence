@@ -2,21 +2,20 @@ package confluence
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/xiatechs/markdown-to-confluence/object"
 )
 
 //go:generate mockgen --source=api.go -package confluencemocks -destination=test/confluencemocks/api.go
-var confluenceobject = object.ConfluenceObject // the struct containing the username/api/space vars from object
 
-// here we are grabbing the variables in the confluence object
-var (
-	confluenceUsernameEnv = confluenceobject.ConfluenceUsernameEnv
-	confluenceAPIKeyEnv   = confluenceobject.ConfluenceAPIKeyEnv
-	confluenceSpaceEnv    = confluenceobject.ConfluenceSpaceEnv
-	envsNotSetError       = "environment variable(s) not set"
+const (
+	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
+	confluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
+	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
+	envsNotSetError       = "environment variable not set, please assign values for: "
 )
 
 // APIClient struct for interacting with confluence
@@ -55,9 +54,20 @@ func CreateAPIClient() (*APIClient, error) {
 func APIClientWithAuths(httpClient HTTPClient) *APIClient {
 	return &APIClient{
 		BaseURL:  "https://xiatech.atlassian.net",
-		Space:    confluenceSpaceEnv,
-		Username: confluenceUsernameEnv,
-		Password: confluenceAPIKeyEnv,
+		Space:    lookupEnv(confluenceSpaceEnv),
+		Username: lookupEnv(confluenceUsernameEnv),
+		Password: lookupEnv(confluenceAPIKeyEnv),
 		Client:   httpClient,
 	}
+}
+
+// lookupEnv checks the environment variables required for creating the client have been set
+func lookupEnv(env string) string {
+	v, exists := os.LookupEnv(env)
+	if !exists {
+		log.Printf("Environment variable not set for: %s", env)
+		return ""
+	}
+
+	return v
 }
