@@ -69,11 +69,11 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return err
 	}
 
+	defer httpResponseClose(resp)
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
 	}
-
-	httpResponseClose(resp)
 
 	return nil
 }
@@ -104,14 +104,14 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 		return fmt.Errorf("failed to do the request: %w", err)
 	}
 
+	httpResponseClose(resp)
+
 	r, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("error ioutil", err)
 	}
 
 	fmt.Println("response: ", string(r))
-
-	httpResponseClose(resp)
 
 	return nil
 }
