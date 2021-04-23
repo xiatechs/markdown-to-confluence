@@ -12,7 +12,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
@@ -35,8 +34,6 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return err
 	}
 
-	fmt.Println("create page input: ", string(newPageContentsJSON)) // todo: remove
-
 	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL)
 
 	req, err := retryablehttp.NewRequest(http.MethodPost, URL, newPageContentsJSON)
@@ -58,7 +55,12 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
 	}
 
-	func() { _ = resp.Body.Close() }()
+	func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	return nil
 }
@@ -106,7 +108,12 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 		return fmt.Errorf("failed to do the request: %w", err)
 	}
 
-	defer func() { _ = resp.Body.Close() }()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	r, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -116,6 +123,14 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 	fmt.Println("response: ", string(r))
 
 	return nil
+}
+
+// close body response
+func httpResponseClose(resp *http.Response) {
+	err := resp.Body.Close()
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // FindPage in confluence
@@ -137,8 +152,6 @@ func (a *APIClient) FindPage(title string) (*PageResults, error) {
 		return nil, err
 	}
 
-	defer func() { _ = resp.Body.Close() }() // defer after Do req has no error
-
 	pageResultVar := PageResults{}
 
 	if err = json.NewDecoder(resp.Body).Decode(&pageResultVar); err != nil {
@@ -149,11 +162,13 @@ func (a *APIClient) FindPage(title string) (*PageResults, error) {
 		return nil, err
 	}
 
-	spew.Dump(pageResultVar) // todo remove
-
 	if len(pageResultVar.Results) == 0 {
 		return nil, nil
 	}
+
+	httpResponseClose(resp) // lint was failing complexity check of defer func() below:
+	// { err := resp.Body.Close(); if err != nil {log.Println(err)}}()
+	// so wrapped it in a function
 
 	return &pageResultVar, nil
 }
