@@ -16,9 +16,16 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
-// CreatePage in confluence
-// todo: function not tested live on confluence yet! test written on expected results
-func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
+// close body response
+func httpResponseClose(resp *http.Response) {
+	err := resp.Body.Close()
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+// grab the page contents and return as a []byte to be used
+func (a *APIClient) grabPageContentsAsJSON(contents *markdown.FileContents) ([]byte, error) {
 	newPageContent := Page{
 		Type:  "page",
 		Title: contents.MetaData["title"].(string),
@@ -30,6 +37,17 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 	}
 
 	newPageContentsJSON, err := json.Marshal(newPageContent)
+	if err != nil {
+		return nil, err
+	}
+
+	return newPageContentsJSON, nil
+}
+
+// CreatePage in confluence
+// todo: function not tested live on confluence yet! test written on expected results
+func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
+	newPageContentsJSON, err := a.grabPageContentsAsJSON(contents)
 	if err != nil {
 		return err
 	}
@@ -55,12 +73,7 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
 	}
 
-	func() {
-		err := resp.Body.Close()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
+	httpResponseClose(resp)
 
 	return nil
 }
@@ -68,31 +81,14 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 // UpdatePage updates a confluence page with our newly created data and increases the
 // version by 1 each time.
 func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error {
-	fmt.Println("running update now....") // todo: remove
-
-	newPageJSON := Page{
-		Type:  "page",
-		Title: pageContents.MetaData["title"].(string),
-		Version: VersionObj{
-			Number: int(pageVersion) + 1,
-		},
-		Space: SpaceObj{Key: a.Space},
-		Body: BodyObj{
-			Storage: StorageObj{
-				Value:          string(pageContents.Body),
-				Representation: "storage",
-			},
-		},
-	}
-
-	URL := fmt.Sprintf("%s/wiki/rest/api/content/%d", a.BaseURL, pageID)
-
-	b, err := json.Marshal(newPageJSON)
+	newPageContentsJSON, err := a.grabPageContentsAsJSON(pageContents)
 	if err != nil {
 		return err
 	}
 
-	req, err := retryablehttp.NewRequest(http.MethodPut, URL, bytes.NewBuffer(b))
+	URL := fmt.Sprintf("%s/wiki/rest/api/content/%d", a.BaseURL, pageID)
+
+	req, err := retryablehttp.NewRequest(http.MethodPut, URL, bytes.NewBuffer(newPageContentsJSON))
 	if err != nil {
 		log.Println(err)
 		return err
@@ -108,13 +104,6 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 		return fmt.Errorf("failed to do the request: %w", err)
 	}
 
-	defer func() {
-		err := resp.Body.Close()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
-
 	r, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("error ioutil", err)
@@ -122,15 +111,9 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 
 	fmt.Println("response: ", string(r))
 
-	return nil
-}
+	httpResponseClose(resp)
 
-// close body response
-func httpResponseClose(resp *http.Response) {
-	err := resp.Body.Close()
-	if err != nil {
-		log.Println(err)
-	}
+	return nil
 }
 
 // FindPage in confluence
@@ -166,9 +149,7 @@ func (a *APIClient) FindPage(title string) (*PageResults, error) {
 		return nil, nil
 	}
 
-	httpResponseClose(resp) // lint was failing complexity check of defer func() below:
-	// { err := resp.Body.Close(); if err != nil {log.Println(err)}}()
-	// so wrapped it in a function
+	httpResponseClose(resp)
 
 	return &pageResultVar, nil
 }
