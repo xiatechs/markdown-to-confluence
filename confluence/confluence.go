@@ -104,7 +104,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 		return fmt.Errorf("failed to do the request: %w", err)
 	}
 
-	httpResponseClose(resp)
+	defer httpResponseClose(resp)
 
 	r, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -135,6 +135,8 @@ func (a *APIClient) FindPage(title string) (*PageResults, error) {
 		return nil, err
 	}
 
+	defer httpResponseClose(resp)
+
 	pageResultVar := PageResults{}
 
 	if err = json.NewDecoder(resp.Body).Decode(&pageResultVar); err != nil {
@@ -148,8 +150,6 @@ func (a *APIClient) FindPage(title string) (*PageResults, error) {
 	if len(pageResultVar.Results) == 0 {
 		return nil, nil
 	}
-
-	httpResponseClose(resp)
 
 	return &pageResultVar, nil
 }
