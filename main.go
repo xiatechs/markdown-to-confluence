@@ -23,7 +23,7 @@ func main() {
 		projectPath = "./"
 	}
 
-	err := filepath.Walk(projectPath, func(path string, info os.DirEntry, err error) error {
+	err := filepath.WalkDir(projectPath, func(path string, info os.DirEntry, err error) error {
 		if strings.Contains(path, "vendor") || strings.Contains(path, ".github") {
 			return filepath.SkipDir
 		}
