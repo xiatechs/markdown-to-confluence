@@ -180,7 +180,7 @@ func TestAPIClient_CreatePage(t *testing.T) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
 					Status:     "Not Found",
 					StatusCode: http.StatusNotFound,
-					Body:       nil,
+					Body:       ioutil.NopCloser(strings.NewReader("")),
 				}, nil)
 			},
 			expectedError: fmt.Errorf("failed to create confluence page: %s", "Not Found"),

@@ -66,7 +66,8 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		return err
+		log.Println("error was: ", resp.Status, err)
+		return fmt.Errorf("failed to do the request: %w", err)
 	}
 
 	defer httpResponseClose(resp)
@@ -100,7 +101,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		fmt.Println("error was: ", resp.Status, err)
+		log.Println("error was: ", resp.Status, err)
 		return fmt.Errorf("failed to do the request: %w", err)
 	}
 
