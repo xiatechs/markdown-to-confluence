@@ -1,0 +1,18 @@
+@startuml
+package ...mainrepo.confluence{
+class API {
+
++*CreatePage(): error
++*UpdatePage(): error
++*FindPage(): error
+}
+}
+package ...mainrepo.markdown{
+class FileContents {
++MetaData: map[string]interface
++Body: []byte
+
+}
+}
+
+@enduml
