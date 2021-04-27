@@ -1,0 +1,51 @@
+name: Generate plantuml files (.puml) & png diagram
+
+#TODO: create composite or docker action for puml job (row 27-39)
+
+on:
+  push:
+    tags:
+      - puml**
+    branches:
+      - master
+      - main
+  pull_request:
+jobs:
+  puml:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+      - name: Checkout Source
+        uses: actions/checkout@v2
+        with:
+          path: './mainrepo'
+          fetch-depth: 0
+      - name: checkout plantuml
+        uses: actions/checkout@v2
+        with:
+          repository: bykof/go-plantuml
+          path: './plantuml'
+      - name: create puml file
+        run: |
+            cd ./plantuml
+            go mod tidy
+            go run . generate -d ../mainrepo -r
+            rm ../mainrepo/graph.puml
+            rm ../mainrepo/graph.png
+            cp graph.puml ../mainrepo
+      - name: generate puml png diagram
+        uses: cloudbees/plantuml-github-action@master
+        with:
+            args: -v -tpng ./mainrepo/graph.puml
+      - name: pull & push
+        run: |
+            cd  ./mainrepo
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git pull
+            git add .
+            git diff-index --quiet HEAD || git commit -m "generated puml & png image"
+            git push
