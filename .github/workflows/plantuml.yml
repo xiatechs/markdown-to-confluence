@@ -44,6 +44,7 @@ jobs:
         uses: cloudbees/plantuml-github-action@master
         with:
             args: -v -tpng ./mainrepo/graph.puml
+            branch: ${{ github.head_ref }}
       - name: pull & push
         run: |
             cd  ./mainrepo
@@ -53,3 +54,4 @@ jobs:
             git add .
             git diff-index --quiet HEAD || git commit -m "generated puml & png image"
             git push
+
