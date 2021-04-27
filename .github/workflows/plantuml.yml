@@ -6,15 +6,12 @@ on:
   push:
     branches:
       - '*'
-  pull_request:
 jobs:
   puml:
     runs-on: ubuntu-latest
+    env:
+      REPO_PATH: feature/plantuml
     steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF##*/})"
-        id: extract_branch
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -22,8 +19,8 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v2
         with:
+          ref: ${{ env.REPO_PATH }}
           path: './mainrepo'
-          ref: ${{ steps.extract_branch.outputs.branch }}
           fetch-depth: 0
       - name: checkout plantuml
         uses: actions/checkout@v2
