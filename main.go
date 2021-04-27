@@ -15,7 +15,7 @@ const confluenceAPIKeyEnv = "INPUT_CONFLUENCE_API_KEY"
 const confluenceSpaceEnv = "INPUT_CONFLUENCE_SPACE"
 
 func main() {
-	projectPath, exists := os.LookupEnv(projectPathEnv)
+	projectPath, exists := os.LookupEnv(projectPathEnv) // test
 	if !exists {
 		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
 
