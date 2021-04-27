@@ -4,11 +4,10 @@ name: Generate plantuml files (.puml) & png diagram
 
 on:
   push:
-    tags:
-      - puml**
     branches:
-      - master
-      - main
+      - '*'
+      #- master
+      #- main
   pull_request:
 jobs:
   puml:
