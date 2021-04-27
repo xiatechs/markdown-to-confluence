@@ -11,16 +11,16 @@ func New() *API {
 }
 
 // CreatePage in confluence
-func (a *API) CreatePage() error {
+func (api *API) CreatePage() error {
 	return nil
 }
 
 // UpdatePage in confluence
-func (a *API) UpdatePage() error {
+func (api *API) UpdatePage() error {
 	return nil
 }
 
 // FindPage in confluence
-func (a *API) FindPage() error {
+func (api *API) FindPage() error {
 	return nil
 }
