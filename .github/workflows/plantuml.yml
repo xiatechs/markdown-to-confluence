@@ -33,8 +33,12 @@ jobs:
             cd ./plantuml
             go mod tidy
             go run . generate -d ../mainrepo -r
-            rm ../mainrepo/graph.puml
-            rm ../mainrepo/graph.png
+            if [ -f "../mainrepo/graph.puml" ] ; then
+              rm "../mainrepo/graph.puml"
+            fi
+            if [ -f "../mainrepo/graph.png" ] ; then
+              rm "../mainrepo/graph.png"
+            fi
             cp graph.puml ../mainrepo
       - name: generate puml png diagram
         uses: cloudbees/plantuml-github-action@master
