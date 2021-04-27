@@ -11,7 +11,7 @@ jobs:
   puml:
     runs-on: ubuntu-latest
     env:
-      REPO_PATH: feature/plantuml
+      REPO_BRANCH: feature/plantuml
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v2
         with:
-          ref: ${{ env.REPO_PATH }}
+          ref: ${{ env.REPO_BRANCH }}
           path: './mainrepo'
           fetch-depth: 0
       - name: checkout plantuml
