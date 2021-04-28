@@ -90,6 +90,7 @@ func checkConfluencePages(newPageContents *markdown.FileContents) error {
 		if err != nil {
 			return err
 		}
+		
 		fmt.Println("Page ID is: " + ID)
 	} else {
 		fmt.Println("page exists, updating confluence now...")
