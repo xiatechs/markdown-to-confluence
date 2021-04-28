@@ -225,8 +225,5 @@ func TestAPIClient_UploadAttachment(t *testing.T) {
 	client := APIClientWithAuths(mock)
 	_, err := client.UploadAttachment("thisfiledoesnotexist", 0)
 
-	var pathError *os.PathError
-
-	result := errors.Is(err, pathError)
-	asserts.Equal(true, result)
+	asserts.Equal(err.Error(), "open thisfiledoesnotexist: no such file or directory")
 }
