@@ -21,7 +21,7 @@ inputs:
 runs:
     using: 'composite'
     steps:
-    - run: go mod download ; go mod verify ; go run ${{ github.action_path }}/main.go
+    - run: go mod tidy ; go run ${{ github.action_path }}/main.go
       shell: bash
       env:
         GOPATH: ""
