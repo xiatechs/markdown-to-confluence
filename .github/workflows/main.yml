@@ -10,15 +10,55 @@ jobs:
     name: Markdown to Confluence
     runs-on: ubuntu-latest
     steps: 
+      - name: Branch details
+        shell: bash
+        run: |
+             if [ -z "${GITHUB_HEAD_REF}" ]
+             then
+              echo NOT pull request, branch = $(echo ${GITHUB_REF#refs/heads/})
+              echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+             else
+              echo pull request, branch = $(echo ${GITHUB_HEAD_REF})
+              echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
+             fi
+        id: extract_branch          
+      - name: Checkout branch
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          path: './mainrepo'
+          fetch-depth: 0
+      - name: checkout plantuml
+        uses: actions/checkout@v2
+        with: 
+          repository: bykof/go-plantuml
+          path: './plantuml'
+      - name: create puml file
+        run: |
+            cd ./plantuml
+            go mod tidy
+            go run . generate -d ../mainrepo -r
+            if [ -f "../mainrepo/graph.puml" ] ; then
+              rm "../mainrepo/graph.puml"
+            fi
+            if [ -f "../mainrepo/graph.png" ] ; then
+              rm "../mainrepo/graph.png"
+            fi
+            cp graph.puml ../mainrepo
+      - name: generate puml png diagram
+        uses: cloudbees/plantuml-github-action@master
+        with:
+            args: -v -tpng ./mainrepo/graph.puml
       - name: Checkout code
         uses: actions/checkout@v2
         
-      - name: submit markdown to confluence
-        uses: ./ # Uses an action in the root directory
+      - name: markdown to confluence action
+        uses: ./mainrepo/action.yml
         with:
-          confluence_username: "REPLACE_WITH_SECRET"
-          confluence_api_key: "REPLACE WITH SECRET"
-          confluence_space: "REPLACE WITH SPACE"
+          user: "REPLACE_WITH_SECRET"
+          apikey: "REPLACE WITH SECRET"
+          space: "REPLACE WITH SPACE"
+          repopath: './mainrepo'
 
   test:
     name: Unit Tests
