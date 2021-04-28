@@ -1,12 +1,25 @@
-name: Markdown to Confluence
+name: 'Markdown to Confluence'
+
 inputs:
-  confluence_api_key:
-    description: 'API key for communicating with Confluence REST API'
-    required : true
-  confluence_space: 
-    description: 'Space in confluence to push docs to'
+  repopath:
+    description: 'Repo Path'
     required: true
+    default: './'
+  apikey:
+    description: 'User'
+    required: true
+    default: '???'
+  space:
+    description: 'API Key'
+    required: true
+    default: '???'
+
 runs:
-  using: docker
-  image: Dockerfile
-  
+    using: 'composite'
+    steps:
+    - run: go run ${{ github.action_path }}/main.go
+      shell: bash
+      env:
+        INPUT_TEST_API_KEY: ${{ inputs.apikey }}
+        INPUT_TEST_SPACE: ${{ inputs.space }}
+        INPUT_REPO_PATH: ${{ inputs.repopath }} 
