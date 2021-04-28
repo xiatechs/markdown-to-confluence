@@ -204,8 +204,25 @@ func TestAPIClient_CreatePage(t *testing.T) {
 			defer setEnvs(envs, false)
 
 			client := APIClientWithAuths(mock)
-			err := client.CreatePage(test.pageContent)
+			_, err := client.CreatePage(test.pageContent)
 			asserts.Equal(err, test.expectedError)
 		})
 	}
+}
+
+func TestAPIClient_UploadAttachment(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	asserts := assert.New(t)
+	mock := confluencemocks.NewMockHTTPClient(mockCtrl)
+
+	defer mockCtrl.Finish()
+
+	envs := []string{"INPUT_CONFLUENCE_USERNAME", "INPUT_CONFLUENCE_API_KEY", "INPUT_CONFLUENCE_SPACE"}
+	setEnvs(envs, true)
+
+	defer setEnvs(envs, false)
+
+	client := APIClientWithAuths(mock)
+	_, err := client.UploadAttachment("thisfiledoesnotexist", 0)
+	asserts.Equal(err, err.(*os.PathError))
 }

@@ -10,7 +10,10 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
@@ -83,17 +86,17 @@ func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.Fil
 
 // CreatePage in confluence
 // todo: function not tested live on confluence yet! test written on expected results
-func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
+func (a *APIClient) CreatePage(contents *markdown.FileContents) (string, error) {
 	newPageContentsJSON, err := a.grabPageContents(contents)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL)
 
 	req, err := retryablehttp.NewRequest(http.MethodPost, URL, newPageContentsJSON)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
@@ -104,7 +107,7 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 	resp, err := a.Client.Do(req)
 	if err != nil {
 		log.Println("error was: ", resp.Status, err)
-		return fmt.Errorf("failed to do the request: %w", err)
+		return "", fmt.Errorf("failed to do the request: %w", err)
 	}
 
 	defer func() {
@@ -115,10 +118,23 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) error {
 	}()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to create confluence page: %s", resp.Status)
+		return "", fmt.Errorf("failed to create confluence page: %s", resp.Status)
 	}
 
-	return nil
+	decoder := json.NewDecoder(resp.Body)
+	output := make(map[string]string)
+
+	err = decoder.Decode(&output)
+	if err != nil {
+		log.Println("error was: ", resp.Status, err)
+		return "", nil
+	}
+
+	if item, ok := output["id"]; ok {
+		return item, nil
+	}
+
+	return "", nil
 }
 
 // UpdatePage updates a confluence page with our newly created data and increases the
@@ -205,4 +221,77 @@ func (a *APIClient) FindPage(title string) (*PageResults, error) {
 	}
 
 	return results, nil
+}
+
+func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Request, error) {
+	file, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	part, err := writer.CreateFormFile(paramName, filepath.Base(path))
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(part, file)
+	if err != nil {
+		return nil, err
+	}
+
+	params := map[string]string{
+		"comment":   "uploaded using markdown-github-action",
+		"minorEdit": "true",
+	}
+
+	for key, val := range params {
+		_ = writer.WriteField(key, val)
+	}
+
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := retryablehttp.NewRequest("PUT", uri, body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	return req, err
+}
+
+// UploadAttachment to a page identify by page ID
+// you need the page ID to upload the attachment(file path)
+func (a *APIClient) UploadAttachment(filename string, id int) (string, error) {
+	targetURL := fmt.Sprintf("https://xiatech-markup.atlassian.net/wiki/rest/api/content/%d/child/attachment", id)
+
+	req, err := newfileUploadRequest(targetURL, "file", filename)
+	if err != nil {
+		return "", err
+	}
+
+	req.SetBasicAuth(a.Username, a.Password)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := a.Client.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to upload attachment: %s", resp.Status)
+	}
+
+	func() { _ = resp.Body.Close() }()
+
+	return "", nil
 }
