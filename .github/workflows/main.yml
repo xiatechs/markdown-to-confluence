@@ -49,11 +49,8 @@ jobs:
         uses: cloudbees/plantuml-github-action@master
         with:
             args: -v -tpng ./mainrepo/graph.puml
-      - name: Checkout code
-        uses: actions/checkout@v2
-        
       - name: markdown to confluence action
-        uses: ./mainrepo/action.yml
+        uses: './mainrepo/action.yml'
         with:
           user: "REPLACE_WITH_SECRET"
           apikey: "REPLACE WITH SECRET"
