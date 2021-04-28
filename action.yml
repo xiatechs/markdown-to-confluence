@@ -21,9 +21,10 @@ inputs:
 runs:
     using: 'composite'
     steps:
-    - run: go mod download ; go run ${{ github.action_path }}/main.go
+    - run: go mod download ; go mod verify ; go run ${{ github.action_path }}/main.go
       shell: bash
       env:
+        GOPATH: ""
         INPUT_CONFLUENCE_API_KEY: ${{ inputs.apikey }}
         INPUT_CONFLUENCE_SPACE: ${{ inputs.space }}
         PROJECT_PATH: ${{ inputs.repopath }} 
