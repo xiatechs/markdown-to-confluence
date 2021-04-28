@@ -50,7 +50,7 @@ jobs:
         with:
             args: -v -tpng ./mainrepo/graph.puml
       - name: markdown to confluence action
-        uses: './mainrepo/action.yml'
+        uses: './mainrepo'
         with:
           user: "REPLACE_WITH_SECRET"
           apikey: "REPLACE WITH SECRET"
