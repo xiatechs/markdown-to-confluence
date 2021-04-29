@@ -6,6 +6,9 @@ inputs:
   confluence_space: 
     description: 'Space in confluence to push docs to'
     required: true
+  confluence_username: 
+    description: 'Username for communicating with Confluence REST API'
+    required: true
 runs:
   using: docker
   image: Dockerfile
