@@ -83,4 +83,4 @@ jobs:
           confluence_username: "REPLACE_WITH_SECRET"
           confluence_api_key: "REPLACE_WITH_SECRET"
           confluence_space: "REPLACE_WITH_SECRET"
-          repo_path: "./"
+          repo_path: "./mainrepo"
