@@ -1,9 +1,9 @@
 +++
+title = "Markdown to Confluence Guide"
 categories = ["Development", "Github Actions"]
 date = "2021-03-10"
 description = "A guide on how to use the markdown to confluence action"
 slug = "markdown-to-confluence-guide"
-title = "Test4"
 +++
 
 # Markdown to Confluence

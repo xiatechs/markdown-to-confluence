@@ -223,7 +223,7 @@ func TestAPIClient_UploadAttachment(t *testing.T) {
 	defer setEnvs(envs, false)
 
 	client := APIClientWithAuths(mock)
-	_, err := client.UploadAttachment("thisfiledoesnotexist", 0)
+	err := client.UploadAttachment("thisfiledoesnotexist", 0)
 
 	asserts.Equal(err.Error(), "open thisfiledoesnotexist: no such file or directory")
 }

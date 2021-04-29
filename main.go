@@ -15,24 +15,51 @@ import (
 
 const projectPathEnv = "PROJECT_PATH"
 
-func main() {
-	projectPath, exists := os.LookupEnv(projectPathEnv)
-	if !exists {
-		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
+var mainpageID int
 
-		projectPath = "./"
+// check to see if the name of the file ends with .md i.e it's a markdown file
+func checkreadme(fpath, name string) {
+	if strings.HasSuffix(name, ".md") && strings.Contains(name, "README") {
+		if err := processFile(fpath); err != nil {
+			log.Println(err)
+		}
 	}
+}
 
-	err := filepath.WalkDir(projectPath, func(path string, info os.DirEntry, err error) error {
-		if strings.Contains(path, "vendor") || strings.Contains(path, ".github") {
+// iterates through files in a filepath. localpath is the folder you want to run this app through
+func grabmarkdown(localpath string) {
+	// Go 1.15 -- err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.16 -- err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
+		if strings.Contains(info.Name(), "vendor") || strings.Contains(info.Name(), ".github") {
 			return filepath.SkipDir
 		}
+		checkreadme(fpath, info.Name())
+		return nil
+	})
+	if err != nil {
+		log.Println(err)
+	}
+}
 
-		if strings.HasSuffix(info.Name(), ".md") {
-			if err := processFile(path); err != nil {
-				log.Printf("error processing file: %s", err)
-			}
+// check to see if the name of the file ends with .md i.e it's a markdown file
+func checkpuml(fpath, name string, pageID int) {
+	if strings.Contains(name, "graph.puml") || strings.Contains(name, "graph.png") {
+		if err := uploadFile(fpath, pageID); err != nil {
+			log.Println(err)
 		}
+	}
+}
+
+// iterates through files in a filepath. localpath is the folder you want to run this app through
+func grabpuml(localpath string, pageID int) {
+	// Go 1.15 -- err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.16 -- err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
+		if strings.Contains(info.Name(), "vendor") || strings.Contains(info.Name(), ".github") {
+			return filepath.SkipDir
+		}
+		checkpuml(fpath, info.Name(), pageID)
 
 		return nil
 	})
@@ -66,6 +93,24 @@ func processFile(path string) error {
 	return nil
 }
 
+func uploadFile(path string, pageID int) error {
+	log.Println("Processing:", filepath.Clean(path))
+
+	Client, err := confluence.CreateAPIClient()
+	if err != nil {
+		log.Printf("error creating APIClient: %s", err)
+		return err
+	}
+
+	err = Client.UploadAttachment(filepath.Clean(path), pageID)
+	if err != nil {
+		log.Printf("error uploading attachment: %s", err)
+		return err
+	}
+
+	return nil
+}
+
 // checkConfluencePages runs through the CRUD operations for confluence
 func checkConfluencePages(newPageContents *markdown.FileContents) error {
 	fmt.Println("running find page function: ") // todo remove
@@ -76,7 +121,7 @@ func checkConfluencePages(newPageContents *markdown.FileContents) error {
 		return nil
 	}
 
-	pageTitle := newPageContents.MetaData["title"].(string)
+	pageTitle := strings.Join(strings.Split(newPageContents.MetaData["title"].(string), " "), "+")
 
 	pageResult, err := Client.FindPage(pageTitle)
 	if err != nil {
@@ -86,25 +131,42 @@ func checkConfluencePages(newPageContents *markdown.FileContents) error {
 	if pageResult == nil {
 		fmt.Println("page does not exists, creating it now...")
 
-		ID, err := Client.CreatePage(newPageContents)
+		var err error
+
+		mainpageID, err = Client.CreatePage(newPageContents)
 		if err != nil {
 			return err
 		}
-		
-		fmt.Println("Page ID is: " + ID)
+
+		fmt.Printf("Page ID is: %d\n", mainpageID)
 	} else {
 		fmt.Println("page exists, updating confluence now...")
-
-		pageID, err := strconv.Atoi(pageResult.Results[0].ID)
+		var err error
+		mainpageID, err = strconv.Atoi(pageResult.Results[0].ID)
 		if err != nil {
 			return err
 		}
 
-		err = Client.UpdatePage(pageID, int64(pageResult.Results[0].Version.Number), newPageContents)
+		err = Client.UpdatePage(mainpageID, int64(pageResult.Results[0].Version.Number), newPageContents)
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("Page ID is: %d\n", mainpageID)
 	}
 
 	return nil
+}
+
+func main() {
+	projectPath, exists := os.LookupEnv(projectPathEnv)
+	if !exists {
+		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
+
+		projectPath = "./"
+	}
+
+	grabmarkdown(projectPath)
+
+	grabpuml(projectPath, mainpageID)
 }

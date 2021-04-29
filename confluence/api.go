@@ -10,6 +10,7 @@ import (
 )
 
 //go:generate mockgen --source=api.go -package confluencemocks -destination=test/confluencemocks/api.go
+var constantsHardCoded bool
 
 const (
 	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
@@ -53,7 +54,7 @@ func CreateAPIClient() (*APIClient, error) {
 // APIClientWithAuths returns an APIClient with dependencies defaulted to sane values
 func APIClientWithAuths(httpClient HTTPClient) *APIClient {
 	return &APIClient{
-		BaseURL:  "https://xiatech.atlassian.net",
+		BaseURL:  "https://xiatech-markup.atlassian.net",
 		Space:    lookupEnv(confluenceSpaceEnv),
 		Username: lookupEnv(confluenceUsernameEnv),
 		Password: lookupEnv(confluenceAPIKeyEnv),
@@ -63,11 +64,15 @@ func APIClientWithAuths(httpClient HTTPClient) *APIClient {
 
 // lookupEnv checks the environment variables required for creating the client have been set
 func lookupEnv(env string) string {
-	v, exists := os.LookupEnv(env)
-	if !exists {
-		log.Printf("Environment variable not set for: %s", env)
-		return ""
+	if !constantsHardCoded {
+		v, exists := os.LookupEnv(env)
+		if !exists {
+			log.Printf("Environment variable not set for: %s", env)
+			return ""
+		}
+
+		return v
 	}
 
-	return v
+	return env
 }
