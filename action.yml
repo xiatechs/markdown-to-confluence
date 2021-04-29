@@ -16,5 +16,5 @@ runs:
   using: docker
   image: Dockerfile
   env:
-    PROJECT_PATH: "/github/workspace/" + ${{ inputs.key }}
+    PROJECT_PATH: "/github/workspace/" + ${{ inputs.repo_path }}
   
