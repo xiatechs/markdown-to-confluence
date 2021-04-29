@@ -9,6 +9,9 @@ inputs:
   confluence_username: 
     description: 'Username for communicating with Confluence REST API'
     required: true
+  repo_path: 
+    description: 'Repo path for action to work on'
+    required: true
 runs:
   using: docker
   image: Dockerfile
