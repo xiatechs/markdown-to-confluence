@@ -1,20 +1,18 @@
 name: Markdown to Confluence
 inputs:
-  confluence_api_key:
+  INPUT_CONFLUENCE_API_KEY:
     description: 'API key for communicating with Confluence REST API'
     required : true
-  confluence_space: 
+  INPUT_CONFLUENCE_SPACE: 
     description: 'Space in confluence to push docs to'
     required: true
-  confluence_username: 
+  INPUT_CONFLUENCE_USERNAME: 
     description: 'Username for communicating with Confluence REST API'
     required: true
-  repo_path: 
+  PROJECT_PATH: 
     description: 'Repo path for action to work on'
     required: true
 runs:
   using: docker
   image: Dockerfile
-  env:
-    PROJECT_PATH: "/github/workspace/" + ${{ inputs.repo_path }}
   
