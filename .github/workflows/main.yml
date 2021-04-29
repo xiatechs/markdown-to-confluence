@@ -80,7 +80,7 @@ jobs:
       - name: submit markdown to confluence
         uses: ./mainrepo # Uses an action in the root directory
         with:
-          confluence_username: "REPLACE_WITH_SECRET"
-          confluence_api_key: "REPLACE_WITH_SECRET"
-          confluence_space: "REPLACE_WITH_SECRET"
-          repo_path: "./mainrepo"
+          INPUT_CONFLUENCE_USERNAME: "REPLACE_WITH_SECRET"
+          INPUT_CONFLUENCE_API_KEY: "REPLACE_WITH_SECRET"
+          INPUT_CONFLUENCE_SPACE: "REPLACE_WITH_SECRET"
+          PROJECT_PATH: "./mainrepo"
