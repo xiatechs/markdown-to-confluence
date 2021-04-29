@@ -25,4 +25,6 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Copy our static executable
 COPY --from=builder /bin/app /bin/app
 
+ENV PROJECT_PATH="/github/workspace/"
+
 ENTRYPOINT ["/bin/app"]
