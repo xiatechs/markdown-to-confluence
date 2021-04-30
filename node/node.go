@@ -96,8 +96,8 @@ func (node *Node) checkreadme(name string) {
 
 // check to see if the file is a puml or png image
 func (node *Node) checkpuml(fpath, name string) {
-	if node.alive && strings.Contains(name, ".puml") || strings.Contains(name, ".png") {
-		if err := uploadFile(fpath, node.rootID); err != nil {
+	if node.alive && strings.Contains(name, ".puml") || strings.Contains(name, ".jpg") {
+		if err := uploadFile(name, node.rootFolder.rootID); err != nil {
 			log.Println(err)
 		}
 	}
