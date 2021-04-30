@@ -16,7 +16,7 @@ func main() {
 	if !exists {
 		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
 
-		projectPath = "../testfold"
+		projectPath = "../testfolder"
 	}
 
 	if root.Instantiate(projectPath) {

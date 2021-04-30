@@ -31,17 +31,17 @@ func TestPrintOverview(t *testing.T) {
 	PrintOverview()
 }
 
-func TestCheckreadme(t *testing.T) {
+func TestCheckMarkDown(t *testing.T) {
 	// run function on it's own
 	node := Node{}
-	node.checkreadme("fakefolder")
+	node.checkMarkDown("fakefolder")
 }
 
-func TestCheckpuml(t *testing.T) {
+func TestCheckOtherFiles(t *testing.T) {
 	// run function on it's own
 	node := Node{}
 	node.alive = true
-	node.checkpuml("fake", "hello.png")
+	node.checkOtherFiles("fake.png")
 }
 
 func TestCheckAll(t *testing.T) {

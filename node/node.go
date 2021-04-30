@@ -3,6 +3,7 @@ package node
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,16 +14,6 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/confluence"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
-
-// Node struct enables creation of a page tree
-// Each node is either a folder or a page.
-type Node struct {
-	index      int
-	path       string
-	rootFolder *Node
-	rootID     int
-	alive      bool
-}
 
 type details struct {
 	index int
@@ -48,19 +39,6 @@ func PrintOverview() {
 	}
 }
 
-// Instantiate begins the generation of a tree of the repo for confluence
-func (node *Node) Instantiate(projectPath string) bool {
-	if isFolder(projectPath) {
-		node.index = 1
-		node.path = projectPath
-		node.generateMaster()
-
-		return true
-	}
-
-	return false
-}
-
 func (node *Node) addToOverView() {
 	var d = details{}
 
@@ -77,13 +55,36 @@ func (node *Node) addToOverView() {
 	}
 }
 
-func newFolder() *Node {
-	folder := Node{}
-	return &folder
+// Node struct enables creation of a page tree
+// Each node is either a folder or a page.
+type Node struct {
+	index      int
+	path       string
+	rootFolder *Node
+	rootID     int
+	alive      bool
+}
+
+// Instantiate begins the generation of a tree of the repo for confluence
+func (node *Node) Instantiate(projectPath string) bool {
+	if isFolder(projectPath) {
+		node.index = 1
+		node.path = projectPath
+		node.generateMaster()
+
+		return true
+	}
+
+	return false
+}
+
+func newNode() *Node {
+	node := Node{}
+	return &node
 }
 
 // check to see if the name of the file ends with .md i.e it's a markdown file
-func (node *Node) checkreadme(name string) {
+func (node *Node) checkMarkDown(name string) {
 	if strings.HasSuffix(name, ".md") {
 		node.alive = true
 
@@ -95,10 +96,12 @@ func (node *Node) checkreadme(name string) {
 }
 
 // check to see if the file is a puml or png image
-func (node *Node) checkpuml(fpath, name string) {
-	if node.alive && strings.Contains(name, ".puml") || strings.Contains(name, ".jpg") {
-		if err := uploadFile(name, node.rootFolder.rootID); err != nil {
-			log.Println(err)
+func (node *Node) checkOtherFiles(name string) {
+	if node.rootFolder != nil {
+		if node.alive && strings.Contains(name, ".puml") || strings.Contains(name, ".png") {
+			if err := uploadFile(name, node.rootFolder.rootID); err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }
@@ -107,13 +110,12 @@ func (node *Node) checkpuml(fpath, name string) {
 func (node *Node) processFile(path string) error {
 	log.Println("Processing:", filepath.Clean(path))
 
-	f, err := os.Open(filepath.Clean(path))
+	content, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
-		log.Printf("error opening file (%s): %v", path, err)
 		return err
 	}
 
-	contents, err := markdown.ParseMarkdown(f)
+	contents, err := markdown.ParseMarkdown(node.rootFolder.rootID, content)
 	if err != nil {
 		return err
 	}
@@ -233,8 +235,8 @@ func isFolder(name string) bool {
 
 // checkAll is where we will create or update the page, and upload or update attachments
 func (node *Node) checkAll(path string) {
-	node.checkreadme(node.path)
-	node.checkpuml(node.path, path)
+	node.checkMarkDown(path)
+	node.checkOtherFiles(path)
 }
 
 // checks to see if the file is within a subdirectory of the base path
@@ -242,15 +244,25 @@ func sub(base, path string) bool {
 	return strings.Count(path, "/")-strings.Count(base, "/") == 1
 }
 
+func removefirstbyte(s string) string {
+	var two = 2
+	if len(s) >= two {
+		return s[1:]
+	}
+
+	return ""
+}
+
 // generateMaster function is to generate a master Node struct where we can append files
 // to the folder node as well as subfolders.
 func (node *Node) generateMaster() {
 	root := strings.ReplaceAll(node.path, ".", "")
+	root = removefirstbyte(root)
 	masterpagecontents := markdown.FileContents{
 		MetaData: map[string]interface{}{
 			"title": root,
 		},
-		Body: []byte("This is a placeholder page for the " + root + " folder in this repo"),
+		Body: []byte("This is a placeholder page for the '" + root + "' folder in this repo"),
 	}
 
 	err := node.checkConfluencePages(&masterpagecontents)
@@ -258,7 +270,7 @@ func (node *Node) generateMaster() {
 		fmt.Println(err)
 	}
 
-	subNode := newFolder()
+	subNode := newNode()
 	subNode.index = node.index + 1
 	subNode.path = node.path
 	subNode.rootFolder = node
@@ -268,7 +280,9 @@ func (node *Node) generateMaster() {
 // iteratefiles function is to iterate through the files in a folder.
 // if it finds a file it will begin processing that file
 func (node *Node) iteratefiles() {
-	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	// Go 1.15 -- err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.16 -- err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if isVendorOrGit(fpath) {
 			return filepath.SkipDir
 		}
@@ -289,7 +303,7 @@ func (node *Node) iteratefiles() {
 
 func (node *Node) verifyCreateNode(fpath string) {
 	if node.path != fpath && sub(node.path, fpath) {
-		subNode := newFolder()
+		subNode := newNode()
 		subNode.path = fpath
 
 		if node.alive {
@@ -307,7 +321,7 @@ func (node *Node) verifyCreateNode(fpath string) {
 // if it finds a folder, it will create a new Node
 // and begin repeating the same process from that node
 func (node *Node) iteratefolders() {
-	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if isVendorOrGit(fpath) {
 			return filepath.SkipDir
 		}
