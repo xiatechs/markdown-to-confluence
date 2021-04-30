@@ -1,15 +1,6 @@
-+++
-title = "Markdown Action"
-categories = ["Development", "Github Actions"]
-date = "2021-03-10"
-description = "A guide on how to use the markdown to confluence action"
-slug = "markdown-to-confluence-guide"
-+++
-
-
 # Markdown to Confluence Action
 
-This Action will find markdown files in a repository and read them, if they have an approriate [Front Matter](https://gohugo.io/content-management/front-matter/), it will create or update relevant pages in confluence.
+This Action will find markdown files in a repository and read them, it will create or update relevant pages in confluence.
 
 This Action will also generate a plaintext uml & diagram of the codebase & upload them to the page.
 
