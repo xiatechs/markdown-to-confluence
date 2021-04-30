@@ -7,13 +7,19 @@ type PageResults struct {
 
 // Page holds returned confluence data
 type Page struct {
-	ID      string     `json:"id,omitempty"`
-	Type    string     `json:"type"`
-	Status  string     `json:"status"`
-	Title   string     `json:"title"`
-	Space   SpaceObj   `json:"space,omitempty"`
-	Version VersionObj `json:"version,omitempty"`
-	Body    BodyObj    `json:"body,omitempty"`
+	ID        string        `json:"id,omitempty"`
+	Type      string        `json:"type"`
+	Status    string        `json:"status"`
+	Title     string        `json:"title"`
+	Space     SpaceObj      `json:"space,omitempty"`
+	Version   VersionObj    `json:"version,omitempty"`
+	Ancestors []AncestorObj `json:"ancestors,omitempty"`
+	Body      BodyObj       `json:"body,omitempty"`
+}
+
+// AncestorObj contains the page ID of a parent page
+type AncestorObj struct {
+	ID int `json:"id"`
 }
 
 // SpaceObj contains the confluence space value

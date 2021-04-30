@@ -10,7 +10,7 @@ import (
 )
 
 //go:generate mockgen --source=api.go -package confluencemocks -destination=test/confluencemocks/api.go
-var constantsHardCoded bool
+var constantsHardCoded = false
 
 const (
 	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"

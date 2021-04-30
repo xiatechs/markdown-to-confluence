@@ -61,7 +61,7 @@ func TestAPIClient_UpdatePage(t *testing.T) {
 
 			apiClient := APIClientWithAuths(mock)
 
-			err := apiClient.UpdatePage(test.pageID, test.pageVersion, test.pageContent)
+			err := apiClient.UpdatePage(test.pageID, test.pageVersion, test.pageContent, 0)
 
 			asserts.Equal(err, test.expectedError)
 		})
@@ -204,7 +204,7 @@ func TestAPIClient_CreatePage(t *testing.T) {
 			defer setEnvs(envs, false)
 
 			client := APIClientWithAuths(mock)
-			_, err := client.CreatePage(test.pageContent)
+			_, err := client.CreatePage(0, test.pageContent)
 			asserts.Equal(err, test.expectedError)
 		})
 	}

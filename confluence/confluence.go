@@ -40,11 +40,12 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 }
 
 // grab the page contents and return as a []byte to be used
-func (a *APIClient) grabPageContents(contents *markdown.FileContents) ([]byte, error) {
+func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int) ([]byte, error) {
 	newPageContent := Page{
-		Type:  "page",
-		Title: contents.MetaData["title"].(string),
-		Space: SpaceObj{Key: a.Space},
+		Type:      "page",
+		Title:     contents.MetaData["title"].(string),
+		Space:     SpaceObj{Key: a.Space},
+		Ancestors: []AncestorObj{{ID: root}},
 		Body: BodyObj{Storage: StorageObj{
 			Value:          string(contents.Body),
 			Representation: "storage",
@@ -59,35 +60,10 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents) ([]byte, e
 	return newPageContentsJSON, nil
 }
 
-// update the page contents and return as a []byte to be used
-func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.FileContents) ([]byte, error) {
-	newPageContent := Page{
-		Type:  "page",
-		Title: contents.MetaData["title"].(string),
-		Version: VersionObj{
-			Number: int(pageVersion) + 1,
-		},
-		Space: SpaceObj{Key: a.Space},
-		Body: BodyObj{
-			Storage: StorageObj{
-				Value:          string(contents.Body),
-				Representation: "storage",
-			},
-		},
-	}
-
-	newPageContentsJSON, err := json.Marshal(newPageContent)
-	if err != nil {
-		return nil, err
-	}
-
-	return newPageContentsJSON, nil
-}
-
 // CreatePage in confluence
 // todo: function not tested live on confluence yet! test written on expected results
-func (a *APIClient) CreatePage(contents *markdown.FileContents) (int, error) {
-	newPageContentsJSON, err := a.grabPageContents(contents)
+func (a *APIClient) CreatePage(root int, contents *markdown.FileContents) (int, error) {
+	newPageContentsJSON, err := a.grabPageContents(contents, root)
 	if err != nil {
 		return 0, err
 	}
@@ -138,10 +114,36 @@ func (a *APIClient) CreatePage(contents *markdown.FileContents) (int, error) {
 	return 0, fmt.Errorf("failed to decode page ID")
 }
 
+// update the page contents and return as a []byte to be used
+func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.FileContents, root int) ([]byte, error) {
+	newPageContent := Page{
+		Type:  "page",
+		Title: contents.MetaData["title"].(string),
+		Version: VersionObj{
+			Number: int(pageVersion) + 1,
+		},
+		Space:     SpaceObj{Key: a.Space},
+		Ancestors: []AncestorObj{{ID: root}},
+		Body: BodyObj{
+			Storage: StorageObj{
+				Value:          string(contents.Body),
+				Representation: "storage",
+			},
+		},
+	}
+
+	newPageContentsJSON, err := json.Marshal(newPageContent)
+	if err != nil {
+		return nil, err
+	}
+
+	return newPageContentsJSON, nil
+}
+
 // UpdatePage updates a confluence page with our newly created data and increases the
 // version by 1 each time.
-func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error {
-	newPageContentsJSON, err := a.updatePageContents(pageVersion, pageContents)
+func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, root int) error {
+	newPageContentsJSON, err := a.updatePageContents(pageVersion, pageContents, root)
 	if err != nil {
 		return err
 	}
