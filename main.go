@@ -7,7 +7,7 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/node"
 )
 
-const projectPathEnv = "PROJECT_PATH"
+const projectPathEnv = "PROJECT_PATH" // need to change this
 
 func main() {
 	root := node.Node{}
