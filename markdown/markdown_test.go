@@ -17,7 +17,7 @@ This is some content.
 
 	expected := &markdown.FileContents{
 		MetaData: map[string]interface{}{
-			"title": " Title",
+			"title": "Title",
 		},
 		Body: []byte(`<h1>Title</h1>
 <p>This is some content.</p>

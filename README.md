@@ -1,17 +1,19 @@
-+++
-title = "Markdown Action"
-categories = ["Development", "Github Actions"]
-date = "2021-03-10"
-description = "A guide on how to use the markdown to confluence action"
-slug = "markdown-to-confluence-guide"
-+++
-
-
 # Markdown to Confluence Action
 
-This Action will find markdown files in a repository and read them, if they have an approriate [Front Matter](https://gohugo.io/content-management/front-matter/), it will create or update relevant pages in confluence.
+This Action will trawl through a repository on github & create a tree of pages for all markdown / images in a pattern like below:
 
-This Action will also generate a plaintext uml & diagram of the codebase & upload them to the page.
+```
+Repo folder (attachments)
+- markdown1
+- markdown2
+
+-- subfolder (attachments)
+-- markdown1
+-- markdown2
+
+```
+
+Any pages that are edited, and pushed, will be picked up by the action & automatically updated on confluence.
 
 This uses the [Confluence REST API](https://developer.atlassian.com/cloud/confluence/rest/intro/)
 

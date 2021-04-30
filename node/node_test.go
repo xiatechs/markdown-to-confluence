@@ -4,6 +4,8 @@ import (
 	"testing"
 )
 
+// TODO add more test coverage
+
 func TestInstantiate(t *testing.T) {
 	node := Node{}
 	want := false

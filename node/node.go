@@ -152,9 +152,9 @@ func (node *Node) generatePage(newPageContents *markdown.FileContents, client *c
 
 	if client != nil {
 		if node.rootFolder == nil {
-			node.rootID, err = client.CreatePage(0, newPageContents)
+			node.rootID, err = client.CreatePage(0, newPageContents, true)
 		} else {
-			node.rootID, err = client.CreatePage(node.rootFolder.rootID, newPageContents)
+			node.rootID, err = client.CreatePage(node.rootFolder.rootID, newPageContents, false)
 		}
 	}
 
@@ -188,7 +188,7 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 			return err
 		}
 
-		err = Client.UpdatePage(node.rootID, int64(pageResult.Results[0].Version.Number), newPageContents, node.rootID)
+		err = Client.UpdatePage(node.rootID, int64(pageResult.Results[0].Version.Number), newPageContents)
 		if err != nil {
 			return err
 		}
@@ -262,7 +262,9 @@ func (node *Node) generateMaster() {
 		MetaData: map[string]interface{}{
 			"title": root,
 		},
-		Body: []byte("This is a placeholder page for the '" + root + "' folder in this repo"),
+		Body: []byte(`<p>Welcome to the '<b>` + root + `</b>' folder of this Xiatech code repo.</p>
+<p>You will find attachments for this folder via the ellipsis at the top right.</p>
+<p>Also, any markdown or subfolders is available in children pages under this page.</p>`),
 	}
 
 	err := node.checkConfluencePages(&masterpagecontents)

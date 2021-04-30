@@ -19,7 +19,7 @@ type Page struct {
 
 // AncestorObj contains the page ID of a parent page
 type AncestorObj struct {
-	ID int `json:"id"`
+	ID int `json:"id,omitempty"`
 }
 
 // SpaceObj contains the confluence space value

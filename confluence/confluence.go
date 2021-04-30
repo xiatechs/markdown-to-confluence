@@ -40,7 +40,26 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 }
 
 // grab the page contents and return as a []byte to be used
-func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int) ([]byte, error) {
+func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, isroot bool) ([]byte, error) {
+	if isroot {
+		newPageContent := Page{
+			Type:  "page",
+			Title: contents.MetaData["title"].(string),
+			Space: SpaceObj{Key: a.Space},
+			Body: BodyObj{Storage: StorageObj{
+				Value:          string(contents.Body),
+				Representation: "storage",
+			}},
+		}
+
+		newPageContentsJSON, err := json.Marshal(newPageContent)
+		if err != nil {
+			return nil, err
+		}
+
+		return newPageContentsJSON, nil
+	}
+
 	newPageContent := Page{
 		Type:      "page",
 		Title:     contents.MetaData["title"].(string),
@@ -62,8 +81,8 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int) 
 
 // CreatePage in confluence
 // todo: function not tested live on confluence yet! test written on expected results
-func (a *APIClient) CreatePage(root int, contents *markdown.FileContents) (int, error) {
-	newPageContentsJSON, err := a.grabPageContents(contents, root)
+func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
+	newPageContentsJSON, err := a.grabPageContents(contents, root, isroot)
 	if err != nil {
 		return 0, err
 	}
@@ -115,15 +134,14 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents) (int, 
 }
 
 // update the page contents and return as a []byte to be used
-func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.FileContents, root int) ([]byte, error) {
+func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.FileContents) ([]byte, error) {
 	newPageContent := Page{
 		Type:  "page",
 		Title: contents.MetaData["title"].(string),
 		Version: VersionObj{
 			Number: int(pageVersion) + 1,
 		},
-		Space:     SpaceObj{Key: a.Space},
-		Ancestors: []AncestorObj{{ID: root}},
+		Space: SpaceObj{Key: a.Space},
 		Body: BodyObj{
 			Storage: StorageObj{
 				Value:          string(contents.Body),
@@ -142,8 +160,8 @@ func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.Fil
 
 // UpdatePage updates a confluence page with our newly created data and increases the
 // version by 1 each time.
-func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, root int) error {
-	newPageContentsJSON, err := a.updatePageContents(pageVersion, pageContents, root)
+func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error {
+	newPageContentsJSON, err := a.updatePageContents(pageVersion, pageContents)
 	if err != nil {
 		return err
 	}

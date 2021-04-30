@@ -15,12 +15,21 @@ type FileContents struct {
 	Body     []byte
 }
 
+func removefirstbyte(s string) string {
+	var two = 2
+	if len(s) >= two {
+		return s[1:]
+	}
+
+	return ""
+}
+
 func grabtitle(content string) string {
 	lines := strings.Split(content, "\n")
 	for index := range lines {
 		if len(lines[index]) != 0 {
 			if lines[index][0] == '#' && len(lines[index]) > 1 {
-				return strings.ReplaceAll(lines[index], "#", "")
+				return removefirstbyte(strings.ReplaceAll(lines[index], "#", ""))
 			}
 		}
 	}
