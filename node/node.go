@@ -268,7 +268,7 @@ func (node *Node) generateMaster() {
 // iteratefiles function is to iterate through the files in a folder.
 // if it finds a file it will begin processing that file
 func (node *Node) iteratefiles() {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 		if isVendorOrGit(fpath) {
 			return filepath.SkipDir
 		}
@@ -307,7 +307,7 @@ func (node *Node) verifyCreateNode(fpath string) {
 // if it finds a folder, it will create a new Node
 // and begin repeating the same process from that node
 func (node *Node) iteratefolders() {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 		if isVendorOrGit(fpath) {
 			return filepath.SkipDir
 		}
