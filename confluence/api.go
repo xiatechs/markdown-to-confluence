@@ -13,9 +13,9 @@ import (
 var constantsHardCoded = true
 
 const (
-	confluenceUsernameEnv = "tom@xiatech.co.uk"        // "INPUT_CONFLUENCE_USERNAME"
-	confluenceAPIKeyEnv   = "x3DNWoBpT7coKKdUIalNFF8D" // "INPUT_CONFLUENCE_API_KEY"
-	confluenceSpaceEnv    = "~802150356"               // "INPUT_CONFLUENCE_SPACE"
+	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
+	confluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
+	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
 	envsNotSetError       = "environment variable not set, please assign values for: "
 )
 
