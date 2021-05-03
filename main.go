@@ -20,7 +20,6 @@ func main() {
 	}
 
 	if root.Instantiate(projectPath) { // if project path is a folder
-
 		root.Scrub() // delete pages on confluence that shouldn't exist anymore
 	}
 }
