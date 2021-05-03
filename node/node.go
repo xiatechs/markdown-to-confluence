@@ -162,7 +162,6 @@ func (node *Node) iteratefiles(checking bool) bool {
 
 		return nil
 	})
-
 	if err != nil {
 		log.Println(err)
 	}
