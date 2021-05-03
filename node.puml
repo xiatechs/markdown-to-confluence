@@ -1,0 +1,49 @@
+@startuml
+
+title Markdown Node Methodology
+
+
+start
+note right: node.Instantiate(folderpath)
+:Create node 
+for root folder;
+
+repeat
+
+if (Valid files
+exist in folder?) then (yes)
+  :Set as alive;
+  :For node create/update 
+  a folder page;
+  :Create/update attachments
+  for each valid image;
+  :Create/update pages
+  for each markdown file
+  & set folder page as 
+  parent page;
+
+else (no)
+  :Set as dead;
+endif
+if (Folders exist?) then (yes)
+if (node is alive?) then (yes)
+  :Create node 
+  for each Folder;
+  :Root for new node(s) 
+  is previous node;
+else (no)
+  :Create node
+  for each Folder;
+   :Root for new node(s) 
+  is previous previous node;
+endif
+else (no)
+endif
+repeat while (Were new 
+nodes created?)
+:Delete any pages
+remotely where file
+no longer exists;
+stop
+
+@enduml

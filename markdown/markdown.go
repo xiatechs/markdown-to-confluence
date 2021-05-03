@@ -2,6 +2,7 @@
 package markdown
 
 import (
+	"strconv"
 	"strings"
 
 	m "gitlab.com/golang-commonmark/markdown"
@@ -15,68 +16,81 @@ type FileContents struct {
 	Body     []byte
 }
 
-func removefirstbyte(s string) string {
-	var two = 2
-	if len(s) >= two {
-		return s[1:]
+// grabtitle collects the title of a markdown file
+func grabtitle(content string) string {
+	content = strings.ReplaceAll(content, "\r\n", "\n")
+	content = strings.ReplaceAll(content, "\r", "\n")
+	lines := strings.Split(content, "\n")
+
+	for index := range lines {
+		if len(lines[index]) > 1 {
+			if lines[index][0] == '#' {
+				return strings.TrimSpace(strings.ReplaceAll(lines[index], "#", ""))
+			}
+		}
 	}
 
 	return ""
 }
 
-func grabtitle(content string) string {
-	lines := strings.Split(content, "\n")
-	for index := range lines {
-		if len(lines[index]) != 0 {
-			if lines[index][0] == '#' && len(lines[index]) > 1 {
-				return removefirstbyte(strings.ReplaceAll(lines[index], "#", ""))
-			}
-		}
-	}
-
-	return "no title found"
-}
-
 // ParseMarkdown is a function that uses external parsing library to grab markdown contents
+// and return a filecontents object
 func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 	f := FileContents{
 		MetaData: map[string]interface{}{
 			"title": "",
 		},
 	}
-	md := m.New(m.XHTMLOutput(true))
+	md := m.New(
+		m.HTML(true),
+		m.Tables(true),
+		m.Linkify(true),
+		m.Typographer(false),
+		m.XHTMLOutput(true),
+	)
+
 	f.MetaData["title"] = grabtitle(string(content))
 	preformatted := md.RenderToString(content)
-	f.Body = []byte(preformatted)
+	f.Body = replaceImageURLwithConfluenceURL(rootID, preformatted)
 
 	return &f, nil
 }
 
-// TODO - Figure out how to embed images into a conference page.
-
-/*
-func convertImageURLtoRootLink(rootID int, content string) []byte {
+func replaceImageURLwithConfluenceURL(rootID int, content string) []byte {
 	var pre string
+
 	lines := strings.Split(content, "\n")
+
 	for index := range lines {
 		if strings.Contains(lines[index], "<img src=") {
-			lines[index] = switcheroo(rootID, lines[index])
+			lines[index] = urlConverter(rootID, lines[index])
 		}
+
 		pre += lines[index] + "\n"
 	}
+
 	return []byte(pre)
 }
 
-func switcheroo(rootID int, item string) string {
-	item1 := strings.Split(item, `<p><img src="`)
-	if len(item1) > 1 {
-		item2 := strings.Split(item1[1], `"`)[0]
-		number := strconv.Itoa(rootID)
-		return `<p><span class="confluence-embedded-file-wrapped">
-		<img src="/download/attachments/` + number + `/` + item2 + `></img></span></p>`
-	}
-	return "<p>img could not be parsed</p>"
+// for images to be loaded in to confluence page, they must be in same directory as markdown to work
+// this function replaces local url paths in html img links with a confluence path for folder page attachments
+func urlConverter(rootID int, item string) string {
+	sliceOne := strings.Split(item, `<p><img src="`)
 
-	// https://xiatech-markup.atlassian.net/wiki/spaces/~802150356
+	if len(sliceOne) > 1 {
+		sliceTwo := strings.Split(sliceOne[1], `"`)
+
+		if len(sliceTwo) > 1 {
+			attachmentFileName := sliceTwo[0]
+			rootPageID := strconv.Itoa(rootID)
+			a := `<p><span class="confluence-embedded-file-wrapped">`
+			b := `<img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/`
+			c := rootPageID + `/` + attachmentFileName + `"></img>`
+			d := `</span></p>`
+
+			return a + b + c + d
+		}
+	}
+
+	return "<p>img could not be parsed</p>"
 }
-*/

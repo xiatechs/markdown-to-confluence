@@ -141,7 +141,7 @@ func TestAPIClient_FindPage(t *testing.T) {
 			defer setEnvs(envs, false)
 
 			client := APIClientWithAuths(mock)
-			_, err := client.FindPage(test.PageTitle)
+			_, err := client.FindPage(test.PageTitle, false)
 
 			asserts.Equal(test.ExpectedErr, err)
 		})

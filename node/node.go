@@ -1,13 +1,11 @@
-// Package node is to read through a repo and create a tree of content
+// Package node is to enable reading through a repo and create a tree of content on confluence
 package node
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -15,57 +13,74 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
-type details struct {
-	index int
-	info  string
-}
-
-var treeOverView = []details{}
-
-// PrintOverview prints out the overview of the roots of tree
-// so you can see what has content
-func PrintOverview() {
-	if len(treeOverView) == 0 {
-		fmt.Println("Overview is empty")
-		return
-	}
-
-	sort.SliceStable(treeOverView, func(i, j int) bool {
-		return treeOverView[i].index < treeOverView[j].index
-	})
-
-	for index := range treeOverView {
-		log.Println(treeOverView[index].info)
-	}
-}
-
-func (node *Node) addToOverView() {
-	var d = details{}
-
-	if node.rootFolder != nil {
-		toadd := fmt.Sprintf("Path: %s, ID: %d, Has content: %t", node.path, node.rootID, node.alive)
-		d.info = toadd
-		d.index = node.index
-		treeOverView = append(treeOverView, d)
-	} else {
-		toadd := fmt.Sprintf("Path: %s, ID: %d, Has content: %t", node.path, node.rootID, node.alive)
-		d.info = toadd
-		d.index = 0
-		treeOverView = append(treeOverView, d)
-	}
-}
+var (
+	// this will contain all the titles of all the pages for the repository on confluence
+	// used to verify whether pages need to be deleted or not
+	masterTitles []string
+	visual       = false // set to true if you want to test if this package functions correctly
+)
 
 // Node struct enables creation of a page tree
-// Each node is either a folder or a page.
 type Node struct {
-	index      int
-	path       string
-	rootFolder *Node
-	rootID     int
-	alive      bool
+	index    int                     // each node will have index (for visual only - can be removed)
+	isFolder bool                    // true if folder node, false if file/attachment node
+	id       int                     // when page is created, page ID will be stored here.
+	path     string                  // file / folderpath will be stored here
+	alive    bool                    // for tracking if the folder has any valid content within it asides more folders
+	root     *Node                   // the parent page node will be linked here
+	branches []*Node                 // any children page nodes will be stored here (used to delete pages)
+	children *confluence.PageResults // to store a snapshot of folder page & children pages (used to delete pages)
+
+}
+
+// visual method just to print the journey of the nodes being created (and for testing purposes)
+func (node *Node) visual() {
+	if visual {
+		if node.root == nil || node.alive {
+			node.printLive()
+		} else {
+			node.printDead()
+		}
+	}
+}
+
+func (node *Node) printLive() {
+	var folderOrFile string
+
+	if node.isFolder {
+		folderOrFile = "folder"
+	} else {
+		folderOrFile = "file"
+	}
+
+	log.Printf("This is an alive %s node, page ID is %d", folderOrFile, node.id)
+
+	if node.root != nil {
+		log.Printf("Path: %s, Root path: %s", node.path, node.root.path)
+	} else {
+		log.Printf("Path: %s", node.path)
+	}
+}
+
+func (node *Node) printDead() {
+	log.Printf("This is a dead node")
+	log.Printf("Path: %s", node.path)
+}
+
+// newNode - create a new node object
+func newNode() *Node {
+	node := Node{}
+	return &node
+}
+
+// newPageResults - create a new confluence.PageResults object
+func newPageResults() *confluence.PageResults {
+	results := confluence.PageResults{}
+	return &results
 }
 
 // Instantiate begins the generation of a tree of the repo for confluence
+// and starts the whole process from the top/root node
 func (node *Node) Instantiate(projectPath string) bool {
 	if isFolder(projectPath) {
 		node.index = 1
@@ -78,49 +93,160 @@ func (node *Node) Instantiate(projectPath string) bool {
 	return false
 }
 
-func newNode() *Node {
-	node := Node{}
-	return &node
-}
+// generateFolderPage method
+// if called, this node is a master node for a folder which has content in it.
+// if there are valid files within the folder, then this node will create a page
+// for the folder & store any files in that folder on that page as attachments.
+func (node *Node) generateFolderPage() {
+	node.isFolder = true
+	fullDir := strings.ReplaceAll(node.path, ".", "")
+	fullDir = removefirstbyte(fullDir)
+	dirList := strings.Split(fullDir, "/")
+	dir := dirList[len(dirList)-1]
+	masterTitles = append(masterTitles, dir)
+	masterpagecontents := markdown.FileContents{
+		MetaData: map[string]interface{}{
+			"title": dir,
+		},
+		Body: []byte(`<p>Welcome to the '<b>` + dir + `</b>' folder of this Xiatech code repo.</p>
+		<p>This folder full path in the repo is: ` + fullDir + `</p>
+<p>You will find attachments/images for this folder via the ellipsis at the top right.</p>
+<p>Any markdown or subfolders is available in children pages under this page.</p>`),
+	}
 
-// check to see if the name of the file ends with .md i.e it's a markdown file
-func (node *Node) checkMarkDown(name string) {
-	if strings.HasSuffix(name, ".md") {
-		node.alive = true
-
-		err := node.processFile(name)
-		if err != nil {
-			log.Println(err)
-		}
+	err := node.checkConfluencePages(&masterpagecontents)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
-// check to see if the file is a puml or png image
-func (node *Node) checkOtherFiles(name string) {
-	if node.rootFolder != nil {
-		if node.alive && strings.Contains(name, ".puml") || strings.Contains(name, ".png") {
-			if err := uploadFile(name, node.rootFolder.rootID); err != nil {
+// generateMaster method is to convert Node to a folder node / master node where we can append
+// files and subfolders to the folder node as child pages.
+// a subnode is created and that node is used to crawl through files in folder
+func (node *Node) generateMaster() {
+	node.visual()
+
+	subNode := newNode()
+	subNode.index = node.index + 1
+	subNode.path = node.path
+	subNode.root = node
+	subNode.children = newPageResults()
+	node.branches = append(node.branches, subNode)
+
+	ok := subNode.iteratefiles(true)
+	if ok {
+		node.alive = true
+		node.generateFolderPage()
+		subNode.iteratefiles(false)
+		subNode.iteratefolders()
+		subNode.visual()
+	}
+
+	subNode.iteratefolders()
+}
+
+// iteratefiles method is to iterate through the files in a folder.
+// if it finds a file it will begin processing that file via checkAll function
+func (node *Node) iteratefiles(checking bool) bool {
+	var yes bool
+	// Go 1.15 -- err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.16 -- err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+		if !isFolder(fpath) {
+			if sub(node.path, fpath) {
+				if ok := node.checkAll(checking, fpath); ok {
+					yes = true
+				}
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	return yes
+}
+
+// iteratefolders method is to iterate through the subfolders of a folder
+// if it finds a folder, it will create a new Node
+// and repeat the process (create master node) from that node
+func (node *Node) iteratefolders() {
+	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+		if isFolder(fpath) && !isVendorOrGit(fpath) {
+			node.verifyCreateNode(fpath)
+		}
+		return nil
+	})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+// verifyCreateNode method is to create a new sub master node if there is a folder in the current dir
+// but if the node is dead - the node will connect to the node above this node instead - skipping that empty folder
+func (node *Node) verifyCreateNode(fpath string) {
+	if node.path != fpath && sub(node.path, fpath) {
+		subNode := newNode()
+		subNode.path = fpath
+
+		if node.alive {
+			subNode.root = node.root
+		} else {
+			subNode.root = node.root.root
+		}
+
+		subNode.index = node.index + 1
+		node.branches = append(node.branches, subNode)
+		subNode.generateMaster()
+	}
+}
+
+// checkAll method is where we will create or update the page, or upload or update attachments
+// this method is also used to check whether the node is alive or not
+func (node *Node) checkAll(checkingOnly bool, path string) bool {
+	markDownFilesExist := node.checkMarkDown(checkingOnly, path)
+	otherValidFilesExist := node.checkOtherFiles(checkingOnly, path)
+
+	if markDownFilesExist || otherValidFilesExist {
+		node.alive = true
+		return true
+	}
+
+	return false
+}
+
+// checkMarkDown method - check to see if the name of the file ends with .md i.e it's a markdown file
+func (node *Node) checkMarkDown(checking bool, name string) bool {
+	if strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".MD") {
+		if !checking {
+			err := node.processFile(name)
+			if err != nil {
 				log.Println(err)
 			}
 		}
+
+		return true
 	}
+
+	return false
 }
 
-// processFile is the function called on eligible files to handle uploads.
+// processFile is the method called on any eligible files (markdown / images etc) to handle uploads.
 func (node *Node) processFile(path string) error {
-	log.Println("Processing:", filepath.Clean(path))
-
-	content, err := ioutil.ReadFile(filepath.Clean(path))
+	contents, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return err
 	}
 
-	contents, err := markdown.ParseMarkdown(node.rootFolder.rootID, content)
+	parsedContents, err := markdown.ParseMarkdown(node.root.id, contents)
 	if err != nil {
 		return err
 	}
 
-	err = node.checkConfluencePages(contents)
+	err = node.checkConfluencePages(parsedContents)
 	if err != nil {
 		log.Printf("error completing confluence operations: %s", err)
 	}
@@ -128,37 +254,94 @@ func (node *Node) processFile(path string) error {
 	return nil
 }
 
-// uploadFile is for uploading files to a specific page by page ID
-func uploadFile(path string, pageID int) error {
-	log.Println("Processing:", filepath.Clean(path))
+// Scrub method clears away any pages on confluence that shouldn't exist
+// this method should be called from the top node as it works top down
+func (node *Node) Scrub() {
+	if node.id != 0 {
+		id := strconv.Itoa(node.id)
+		node.findPagesToDelete(id)
+	}
 
+	for index := range node.branches {
+		node.branches[index].Scrub()
+	}
+}
+
+// findPagesToDelete method grabs results of page to begin deleting
+func (node *Node) findPagesToDelete(id string) {
+	Client, err := confluence.CreateAPIClient()
+	if err != nil {
+		log.Printf("error creating APIClient: %s", err)
+	}
+
+	children, err := Client.FindPage(id, true)
+	if err != nil {
+		log.Printf("error finding page: %s", err)
+	}
+
+	if children != nil {
+		node.deletePages(children)
+	}
+}
+
+// deletePages method is to find a page to delete
+// and any children pages that might need to be deleted
+func (node *Node) deletePages(children *confluence.PageResults) {
+	for index := range children.Results {
+		var noDelete bool
+
+		for index2 := range masterTitles {
+			if children.Results[index].Title == masterTitles[index2] {
+				noDelete = true
+				break
+			}
+		}
+
+		if !noDelete {
+			node.findPagesToDelete(children.Results[index].ID)
+			node.deletePage(children.Results[index].ID)
+		}
+	}
+}
+
+// checkOtherFiles - check to see if the file is a puml or png image
+func (node *Node) checkOtherFiles(checking bool, name string) bool {
+	validFiles := []string{".puml", ".png", ".jpg", ".jpeg"}
+
+	for index := range validFiles {
+		if strings.Contains(name, validFiles[index]) {
+			node.preUpload(checking, name)
+			return true
+		}
+	}
+
+	return false
+}
+
+// preUpload method to do some checks on file before upload
+func (node *Node) preUpload(checking bool, name string) {
+	if !checking && node.root != nil {
+		if err := node.uploadFile(name); err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+// uploadFile is for uploading files to a specific page by root node page id
+func (node *Node) uploadFile(path string) error {
 	Client, err := confluence.CreateAPIClient()
 	if err != nil {
 		log.Printf("error creating APIClient: %s", err)
 		return err
 	}
 
-	err = Client.UploadAttachment(filepath.Clean(path), pageID)
+	err = Client.UploadAttachment(filepath.Clean(path), node.root.id)
 	if err != nil {
 		log.Printf("error uploading attachment: %s", err)
 		return err
 	}
 
 	return nil
-}
-
-func (node *Node) generatePage(newPageContents *markdown.FileContents, client *confluence.APIClient) error {
-	var err error
-
-	if client != nil {
-		if node.rootFolder == nil {
-			node.rootID, err = client.CreatePage(0, newPageContents, true)
-		} else {
-			node.rootID, err = client.CreatePage(node.rootFolder.rootID, newPageContents, false)
-		}
-	}
-
-	return err
 }
 
 // checkConfluencePages runs through the CRUD operations for confluence
@@ -171,7 +354,7 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 
 	pageTitle := strings.Join(strings.Split(newPageContents.MetaData["title"].(string), " "), "+")
 
-	pageResult, err := Client.FindPage(pageTitle)
+	pageResult, err := Client.FindPage(pageTitle, false)
 	if err != nil {
 		return err
 	}
@@ -182,23 +365,50 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 			return err
 		}
 	} else {
-		var err error
-		node.rootID, err = strconv.Atoi(pageResult.Results[0].ID)
+		err = node.grabpagedata(*pageResult)
 		if err != nil {
 			return err
 		}
-
-		err = Client.UpdatePage(node.rootID, int64(pageResult.Results[0].Version.Number), newPageContents)
+		err = Client.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number), newPageContents)
 		if err != nil {
 			return err
 		}
 	}
 
+	masterTitles = append(masterTitles, newPageContents.MetaData["title"].(string))
+
 	return nil
 }
 
+// grabpagedata method is to grab page ID and pass it to node
+func (node *Node) grabpagedata(pageResult confluence.PageResults) error {
+	var err error
+
+	node.id, err = strconv.Atoi(pageResult.Results[0].ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// generatePage method is for validation to make sure client is not nil and node.root is not nil
+func (node *Node) generatePage(newPageContents *markdown.FileContents, client *confluence.APIClient) error {
+	var err error
+
+	if client != nil {
+		if node.root == nil {
+			node.id, err = client.CreatePage(0, newPageContents, true)
+		} else {
+			node.id, err = client.CreatePage(node.root.id, newPageContents, false)
+		}
+	}
+
+	return err
+}
+
 func isVendorOrGit(name string) bool {
-	if strings.Contains(name, "vendor") || strings.Contains(name, ".github") {
+	if strings.Contains(name, "vendor") || strings.Contains(name, ".github") || strings.Contains(name, ".git") {
 		return true
 	}
 
@@ -209,20 +419,20 @@ func isVendorOrGit(name string) bool {
 func isFolder(name string) bool {
 	file, err := os.Open(filepath.Clean(name))
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return false
 	}
 
 	defer func() {
 		err := file.Close()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}()
 
 	fileInfo, err := file.Stat()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return false
 	}
 
@@ -233,17 +443,12 @@ func isFolder(name string) bool {
 	return false
 }
 
-// checkAll is where we will create or update the page, and upload or update attachments
-func (node *Node) checkAll(path string) {
-	node.checkMarkDown(path)
-	node.checkOtherFiles(path)
-}
-
-// checks to see if the file is within a subdirectory of the base path
+// checks to see if the file is within 1 level subdirectory of the base path
 func sub(base, path string) bool {
 	return strings.Count(path, "/")-strings.Count(base, "/") == 1
 }
 
+// remove first byte of a string
 func removefirstbyte(s string) string {
 	var two = 2
 	if len(s) >= two {
@@ -253,88 +458,19 @@ func removefirstbyte(s string) string {
 	return ""
 }
 
-// generateMaster function is to generate a master Node struct where we can append files
-// to the folder node as well as subfolders.
-func (node *Node) generateMaster() {
-	root := strings.ReplaceAll(node.path, ".", "")
-	root = removefirstbyte(root)
-	masterpagecontents := markdown.FileContents{
-		MetaData: map[string]interface{}{
-			"title": root,
-		},
-		Body: []byte(`<p>Welcome to the '<b>` + root + `</b>' folder of this Xiatech code repo.</p>
-<p>You will find attachments for this folder via the ellipsis at the top right.</p>
-<p>Also, any markdown or subfolders is available in children pages under this page.</p>`),
-	}
-
-	err := node.checkConfluencePages(&masterpagecontents)
+func (node *Node) deletePage(id string) {
+	client, err := confluence.CreateAPIClient()
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("error creating APIClient: %s", err)
 	}
 
-	subNode := newNode()
-	subNode.index = node.index + 1
-	subNode.path = node.path
-	subNode.rootFolder = node
-	subNode.iteratefiles()
-}
-
-// iteratefiles function is to iterate through the files in a folder.
-// if it finds a file it will begin processing that file
-func (node *Node) iteratefiles() {
-	// Go 1.15 -- err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
-	// Go 1.16 -- err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-		if isVendorOrGit(fpath) {
-			return filepath.SkipDir
-		}
-		if !isFolder(fpath) {
-			if sub(node.path, fpath) {
-				node.checkAll(fpath)
-			}
-		}
-		return nil
-	})
-
+	convert, err := strconv.Atoi(id)
 	if err != nil {
-		log.Println(err)
+		log.Printf("error getting page ID: %s", err)
 	}
 
-	node.iteratefolders()
-}
-
-func (node *Node) verifyCreateNode(fpath string) {
-	if node.path != fpath && sub(node.path, fpath) {
-		subNode := newNode()
-		subNode.path = fpath
-
-		if node.alive {
-			subNode.rootFolder = node.rootFolder
-		} else {
-			subNode.rootFolder = node.rootFolder.rootFolder
-		}
-
-		subNode.index = node.index + 1
-		subNode.generateMaster()
-	}
-}
-
-// iteratefolders function is to iterate through the subfolders of a folder
-// if it finds a folder, it will create a new Node
-// and begin repeating the same process from that node
-func (node *Node) iteratefolders() {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-		if isVendorOrGit(fpath) {
-			return filepath.SkipDir
-		}
-		if isFolder(fpath) {
-			node.verifyCreateNode(fpath)
-		}
-		return nil
-	})
+	err = client.DeletePage(convert)
 	if err != nil {
-		log.Println(err)
+		log.Printf("error deleting page: %s", err)
 	}
-
-	node.addToOverView()
 }

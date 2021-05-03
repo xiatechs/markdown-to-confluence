@@ -18,7 +18,7 @@ func TestInstantiate(t *testing.T) {
 	nodeOne := Node{}
 
 	nodeTest := Node{
-		rootFolder: &nodeOne,
+		root: &nodeOne,
 	}
 	want = false
 
@@ -28,27 +28,27 @@ func TestInstantiate(t *testing.T) {
 	}
 }
 
-func TestPrintOverview(t *testing.T) {
-	// run function on it's own
-	PrintOverview()
-}
-
 func TestCheckMarkDown(t *testing.T) {
-	// run function on it's own
 	node := Node{}
-	node.checkMarkDown("fakefolder")
+	node.checkMarkDown(false, "fakefolder")
+	node.checkMarkDown(true, "fakefolder")
 }
 
 func TestCheckOtherFiles(t *testing.T) {
-	// run function on it's own
 	node := Node{}
-	node.alive = true
-	node.checkOtherFiles("fake.png")
+	node.checkOtherFiles(true, "fake.png")
+	node.checkOtherFiles(false, "fake.png")
+}
+
+func TestScrub(t *testing.T) {
+	node := Node{}
+	node.Scrub()
 }
 
 func TestCheckAll(t *testing.T) {
 	node := Node{}
-	node.checkAll("fake")
+	node.checkAll(false, "fake")
+	node.checkAll(true, "fake")
 }
 
 func TestGenerateMaster(t *testing.T) {
@@ -58,5 +58,47 @@ func TestGenerateMaster(t *testing.T) {
 
 func TestVerifyCreateNode(t *testing.T) {
 	node := Node{}
+	node.alive = false
 	node.verifyCreateNode("fake")
+
+	node = Node{}
+	node.alive = true
+	node.root = nil
+	node.verifyCreateNode("fake")
+
+	node = Node{}
+	node.alive = true
+	node.root = &node
+	node.verifyCreateNode("fake")
+
+	node = Node{}
+	node.alive = false
+	node.root = &node
+	node.verifyCreateNode("fake")
+}
+
+func TestRemoveFirstByte(t *testing.T) {
+	output := removefirstbyte("")
+	if output != "" {
+		t.Errorf("got %s want %s", output, "")
+	}
+
+	output = removefirstbyte("1")
+	if output != "" {
+		t.Errorf("got %s want %s", output, "")
+	}
+
+	output = removefirstbyte("12")
+	if output != "2" {
+		t.Errorf("got %s want %s", output, "2")
+	}
+
+	output = removefirstbyte("123")
+	if output != "23" {
+		t.Errorf("got %s want %s", output, "23")
+	}
+}
+
+func TestIsFolder(t *testing.T) {
+	isFolder("hello")
 }

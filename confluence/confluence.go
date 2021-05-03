@@ -80,7 +80,7 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 }
 
 // CreatePage in confluence
-// todo: function not tested live on confluence yet! test written on expected results
+// tested - works on confluence
 func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
 	newPageContentsJSON, err := a.grabPageContents(contents, root, isroot)
 	if err != nil {
@@ -158,6 +158,41 @@ func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.Fil
 	return newPageContentsJSON, nil
 }
 
+// DeletePage deletes a confluence page with our newly created data and increases the
+// version by 1 each time.
+func (a *APIClient) DeletePage(pageID int) error {
+	URL := fmt.Sprintf("%s/wiki/rest/api/content/%d", a.BaseURL, pageID)
+
+	req, err := retryablehttp.NewRequest(http.MethodDelete, URL, nil)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	req.SetBasicAuth(a.Username, a.Password)
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := a.Client.Do(req)
+	if err != nil {
+		log.Println("error was: ", resp.Status, err)
+		return fmt.Errorf("failed to do the request: %w", err)
+	}
+
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
+
+	if err != nil {
+		log.Println("error ioutil", err)
+	}
+
+	return nil
+}
+
 // UpdatePage updates a confluence page with our newly created data and increases the
 // version by 1 each time.
 func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error {
@@ -192,7 +227,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 	}()
 
 	if err != nil {
-		fmt.Println("error ioutil", err)
+		log.Println("error ioutil", err)
 	}
 
 	return nil
@@ -212,11 +247,44 @@ func (a *APIClient) createFindPageRequest(title string) (*retryablehttp.Request,
 	return req, nil
 }
 
+func (a *APIClient) createFindPagesRequest(id string) (*retryablehttp.Request, error) {
+	targetURL := fmt.Sprintf("https://xiatech-markup.atlassian.net/wiki/rest/api/content/" + id + "/child/page")
+
+	req, err := retryablehttp.NewRequest(http.MethodGet, targetURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.SetBasicAuth(a.Username, a.Password)
+
+	return req, nil
+}
+
+func (a *APIClient) findPageRequest(title string, many bool) (*retryablehttp.Request, error) {
+	var req *retryablehttp.Request
+
+	var err error
+
+	if many {
+		req, err = a.createFindPagesRequest(title)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		req, err = a.createFindPageRequest(title)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return req, err
+}
+
 // FindPage in confluence
 // Docs for this API endpoint are here
 // https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-api-content-get
-func (a *APIClient) FindPage(title string) (*PageResults, error) {
-	req, err := a.createFindPageRequest(title)
+func (a *APIClient) FindPage(title string, many bool) (*PageResults, error) {
+	req, err := a.findPageRequest(title, many)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +318,7 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 	defer func() {
 		err := file.Close()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}()
 
