@@ -14,9 +14,9 @@ func main() {
 
 	projectPath, exists := os.LookupEnv(projectPathEnv)
 	if !exists {
-		log.Printf("Environment variable not set for %s, defaulting to `./`", projectPathEnv)
+		log.Printf("Environment variable not set for %s", projectPathEnv)
 
-		projectPath = "/mnt/c/Users/conotox/Desktop/Go/markdown-to-confluence"
+		projectPath = "./mainrepo"
 	}
 
 	if root.Instantiate(projectPath) { // if project path is a folder
