@@ -151,7 +151,7 @@ func (node *Node) iteratefiles(checking bool) bool {
 	var yes bool
 	// Go 1.15 -- err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
 	// Go 1.16 -- err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 		if !isFolder(fpath) {
 			if sub(node.path, fpath) {
 				if ok := node.checkAll(checking, fpath); ok {
@@ -174,7 +174,9 @@ func (node *Node) iteratefiles(checking bool) bool {
 // if it finds a folder, it will create a new Node
 // and repeat the process (create master node) from that node
 func (node *Node) iteratefolders() {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.15 -- err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.16 -- err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 		if isFolder(fpath) && !isVendorOrGit(fpath) {
 			node.verifyCreateNode(fpath)
 		}
