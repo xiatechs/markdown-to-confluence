@@ -2,9 +2,12 @@
 package markdown
 
 import (
+	"bytes"
+	"log"
 	"strconv"
 	"strings"
 
+	"github.com/gohugoio/hugo/parser/pageparser"
 	m "gitlab.com/golang-commonmark/markdown"
 )
 
@@ -33,14 +36,32 @@ func grabtitle(content string) string {
 	return ""
 }
 
+func newFileContents() *FileContents {
+	f := FileContents{}
+	f.MetaData = make(map[string]interface{})
+
+	return &f
+}
+
 // ParseMarkdown is a function that uses external parsing library to grab markdown contents
 // and return a filecontents object
 func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
-	f := FileContents{
-		MetaData: map[string]interface{}{
-			"title": "",
-		},
+	r := bytes.NewReader(content)
+	f := newFileContents()
+
+	fmc, err := pageparser.ParseFrontMatterAndContent(r)
+	if err != nil {
+		log.Println("error parsing front matter (using # title instead): %w", err)
+
+		f.MetaData["title"] = grabtitle(string(content))
+	} else {
+		if len(fmc.FrontMatter) != 0 {
+			f.MetaData = fmc.FrontMatter
+		} else {
+			f.MetaData["title"] = grabtitle(string(content))
+		}
 	}
+
 	md := m.New(
 		m.HTML(true),
 		m.Tables(true),
@@ -49,27 +70,39 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 		m.XHTMLOutput(true),
 	)
 
-	f.MetaData["title"] = grabtitle(string(content))
 	preformatted := md.RenderToString(content)
-	f.Body = replaceImageURLwithConfluenceURL(rootID, preformatted)
+	f.Body = stripFrontmatterReplaceURL(rootID, preformatted)
 
-	return &f, nil
+	return f, nil
 }
 
-func replaceImageURLwithConfluenceURL(rootID int, content string) []byte {
+func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 	var pre string
+
+	var frontmatter bool
 
 	lines := strings.Split(content, "\n")
 
 	for index := range lines {
+		if strings.Contains(lines[index], "+++") {
+			frontmatter = flip(frontmatter)
+			continue
+		}
+
 		if strings.Contains(lines[index], "<img src=") {
 			lines[index] = urlConverter(rootID, lines[index])
 		}
 
-		pre += lines[index] + "\n"
+		if !frontmatter {
+			pre += lines[index] + "\n"
+		}
 	}
 
 	return []byte(pre)
+}
+
+func flip(b bool) bool {
+	return !b
 }
 
 // for images to be loaded in to confluence page, they must be in same directory as markdown to work
@@ -92,5 +125,5 @@ func urlConverter(rootID int, item string) string {
 		}
 	}
 
-	return "<p>img could not be parsed</p>"
+	return item
 }
