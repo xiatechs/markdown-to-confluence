@@ -84,18 +84,13 @@ func TestRemoveFirstByte(t *testing.T) {
 	}
 
 	output = removefirstbyte("1")
-	if output != "" {
-		t.Errorf("got %s want %s", output, "")
+	if output != "1" {
+		t.Errorf("got %s want %s", output, "1")
 	}
-
-	output = removefirstbyte("12")
-	if output != "2" {
-		t.Errorf("got %s want %s", output, "2")
-	}
-
-	output = removefirstbyte("123")
-	if output != "23" {
-		t.Errorf("got %s want %s", output, "23")
+	
+	output = removefirstbyte("/1")
+	if output != "1" {
+		t.Errorf("got %s want %s", output, "1")
 	}
 }
 
