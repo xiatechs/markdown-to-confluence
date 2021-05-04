@@ -1,7 +1,6 @@
 # Markdown to Confluence Action
 
-## This Action will crawl through a repository on github and create a tree
-## of pages on confluence for all markdown / images:
+- This Action will crawl through a repository on github and create a tree of pages on confluence for all markdown / images:
 
 ![Diagram of action methodology](node.png)
 
