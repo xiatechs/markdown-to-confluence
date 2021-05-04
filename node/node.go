@@ -452,15 +452,14 @@ func sub(base, path string) bool {
 // remove first byte of a string (if that char is a '/')
 func removefirstbyte(s string) string {
 	var two = 2
+
 	if len(s) >= two {
 		if s[0] == '/' {
 			return s[1:]
 		}
-
-		return s
 	}
 
-	return ""
+	return s
 }
 
 func (node *Node) deletePage(id string) {
