@@ -449,11 +449,15 @@ func sub(base, path string) bool {
 	return strings.Count(path, "/")-strings.Count(base, "/") == 1
 }
 
-// remove first byte of a string
+// remove first byte of a string (if that char is a '/')
 func removefirstbyte(s string) string {
 	var two = 2
 	if len(s) >= two {
-		return s[1:]
+		if s[0] == '/' {
+			return s[1:]
+		}
+
+		return s
 	}
 
 	return ""
