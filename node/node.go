@@ -18,6 +18,7 @@ var (
 	// used to verify whether pages need to be deleted or not
 	masterTitles []string
 	visual       = false // set to true if you want to test if this package functions correctly
+	rootDir      string  // will contain the root folderpath of the repo
 )
 
 // Node struct enables creation of a page tree
@@ -85,6 +86,8 @@ func (node *Node) Instantiate(projectPath string) bool {
 	if isFolder(projectPath) {
 		node.index = 1
 		node.path = projectPath
+		rootDir = strings.ReplaceAll(strings.ReplaceAll(projectPath, ".", ""), "/", "")
+
 		node.generateMaster()
 
 		return true
@@ -98,11 +101,25 @@ func (node *Node) Instantiate(projectPath string) bool {
 // if there are valid files within the folder, then this node will create a page
 // for the folder & store any files in that folder on that page as attachments.
 func (node *Node) generateFolderPage() {
+	var two = 2
+
 	node.isFolder = true
+
 	fullDir := strings.ReplaceAll(node.path, ".", "")
 	fullDir = removefirstbyte(fullDir)
 	dirList := strings.Split(fullDir, "/")
 	dir := dirList[len(dirList)-1]
+
+	if len(dirList) > two {
+		dir += "-"
+		dir += dirList[len(dirList)-2]
+	}
+
+	if node.root != nil {
+		dir += "-"
+		dir += rootDir
+	}
+
 	masterTitles = append(masterTitles, dir)
 	masterpagecontents := markdown.FileContents{
 		MetaData: map[string]interface{}{
@@ -149,9 +166,9 @@ func (node *Node) generateMaster() {
 // if it finds a file it will begin processing that file via checkAll function
 func (node *Node) iteratefiles(checking bool) bool {
 	var yes bool
-	// Go 1.15 -- err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
-	// Go 1.16 -- err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	// Go 1.15 -- err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.16 -- err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if !isFolder(fpath) {
 			if sub(node.path, fpath) {
 				if ok := node.checkAll(checking, fpath); ok {
@@ -173,9 +190,9 @@ func (node *Node) iteratefiles(checking bool) bool {
 // if it finds a folder, it will create a new Node
 // and repeat the process (create master node) from that node
 func (node *Node) iteratefolders() {
-	// Go 1.15 -- err := filepath.Walk(localpath, func(fpath string, info os.FileInfo, err error) error {
-	// Go 1.16 -- err := filepath.WalkDir(localpath, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	// Go 1.15 -- err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.16 -- err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if isFolder(fpath) && !isVendorOrGit(fpath) {
 			node.verifyCreateNode(fpath)
 		}

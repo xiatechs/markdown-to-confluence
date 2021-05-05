@@ -3,6 +3,7 @@ package markdown
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -72,6 +73,10 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 
 	preformatted := md.RenderToString(content)
 	f.Body = stripFrontmatterReplaceURL(rootID, preformatted)
+
+	if f.MetaData["title"] == "" {
+		return nil, fmt.Errorf("page title is empty")
+	}
 
 	return f, nil
 }
