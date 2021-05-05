@@ -106,7 +106,7 @@ func (node *Node) generateFolderPage() {
 	node.isFolder = true
 
 	fullDir := strings.ReplaceAll(node.path, ".", "")
-	fullDir = removefirstbyte(fullDir)
+	fullDir = removeFirstSlash(fullDir)
 	dirList := strings.Split(fullDir, "/")
 	dir := dirList[len(dirList)-1]
 
@@ -402,9 +402,11 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 func (node *Node) grabpagedata(pageResult confluence.PageResults) error {
 	var err error
 
-	node.id, err = strconv.Atoi(pageResult.Results[0].ID)
-	if err != nil {
-		return err
+	if len(pageResult.Results) > 0 {
+		node.id, err = strconv.Atoi(pageResult.Results[0].ID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -467,7 +469,7 @@ func sub(base, path string) bool {
 }
 
 // remove first byte of a string (if that char is a '/')
-func removefirstbyte(s string) string {
+func removeFirstSlash(s string) string {
 	var two = 2
 
 	if len(s) >= two {
@@ -483,11 +485,13 @@ func (node *Node) deletePage(id string) {
 	client, err := confluence.CreateAPIClient()
 	if err != nil {
 		log.Printf("error creating APIClient: %s", err)
+		return
 	}
 
 	convert, err := strconv.Atoi(id)
 	if err != nil {
 		log.Printf("error getting page ID: %s", err)
+		return
 	}
 
 	err = client.DeletePage(convert)
