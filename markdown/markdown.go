@@ -103,6 +103,8 @@ func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 		}
 	}
 
+	pre = strings.TrimSpace(pre)
+
 	return []byte(pre)
 }
 

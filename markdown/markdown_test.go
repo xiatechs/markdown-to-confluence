@@ -8,21 +8,45 @@ import (
 )
 
 func TestParseMarkDown(t *testing.T) {
-	input := []byte(`# Markdown to Confluence Action
+	link := `https://xiatech-markup.atlassian.net/wiki/download/attachments/0/node.png`
+	testInputs := []struct {
+		Name     string
+		input    []byte
+		expected *markdown.FileContents
+	}{
+		{
+			Name: "title & no URL",
+			input: []byte(`# Markdown to Confluence Action
 
-	This Action will trawl through a repository`)
-
-	expected := &markdown.FileContents{
-		MetaData: map[string]interface{}{
-			"title": "Markdown to Confluence Action",
+This Action will trawl through a repository.`),
+			expected: &markdown.FileContents{
+				MetaData: map[string]interface{}{
+					"title": "Markdown to Confluence Action",
+				},
+				Body: []byte(`<h1>Markdown to Confluence Action</h1>
+<p>This Action will trawl through a repository.</p>`),
+			},
 		},
-		Body: []byte(`<h1>Markdown to Confluence Action</h1>
-<pre><code>This Action will trawl through a repository</code></pre>
+		{
+			Name: "title & URL",
+			input: []byte(`# Markdown to Confluence Action
 
-`),
+![Diagram of action methodology](node.png)`),
+			expected: &markdown.FileContents{
+				MetaData: map[string]interface{}{
+					"title": "Markdown to Confluence Action",
+				},
+				Body: []byte(`<h1>Markdown to Confluence Action</h1>
+<p><span class="confluence-embedded-file-wrapped"><img src="">` + link + `</img></span></p>`),
+			},
+		},
 	}
 
-	result, _ := markdown.ParseMarkdown(0, input)
-
-	assert.Equal(t, expected, result)
+	for _, test := range testInputs {
+		test := test
+		t.Run(test.Name, func(t *testing.T) {
+			result, _ := markdown.ParseMarkdown(0, test.input)
+			assert.Equal(t, test.expected, result)
+		})
+	}
 }
