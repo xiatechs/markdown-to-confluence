@@ -37,7 +37,7 @@ This Action will trawl through a repository.`),
 					"title": "Markdown to Confluence Action",
 				},
 				Body: []byte(`<h1>Markdown to Confluence Action</h1>
-<p><span class="confluence-embedded-file-wrapped"><img src="">` + link + `</img></span></p>`),
+<p><span class="confluence-embedded-file-wrapped"><img src="` + link + `"></img></span></p>`),
 			},
 		},
 	}
