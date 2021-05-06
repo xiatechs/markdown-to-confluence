@@ -16,6 +16,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/xiatechs/markdown-to-confluence/common"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
@@ -248,7 +249,7 @@ func (a *APIClient) createFindPageRequest(title string) (*retryablehttp.Request,
 }
 
 func (a *APIClient) createFindPagesRequest(id string) (*retryablehttp.Request, error) {
-	targetURL := fmt.Sprintf("https://xiatech-markup.atlassian.net/wiki/rest/api/content/" + id + "/child/page")
+	targetURL := fmt.Sprintf(common.ConfluenceBaseURL + "/wiki/rest/api/content/" + id + "/child/page")
 
 	req, err := retryablehttp.NewRequest(http.MethodGet, targetURL, nil)
 	if err != nil {
@@ -358,7 +359,7 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 // UploadAttachment to a page identify by page ID
 // you need the page ID to upload the attachment(file path)
 func (a *APIClient) UploadAttachment(filename string, id int) error {
-	targetURL := fmt.Sprintf("https://xiatech-markup.atlassian.net/wiki/rest/api/content/%d/child/attachment", id)
+	targetURL := fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", id)
 
 	req, err := newfileUploadRequest(targetURL, "file", filename)
 	if err != nil {

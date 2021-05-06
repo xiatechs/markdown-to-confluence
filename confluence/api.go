@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/xiatechs/markdown-to-confluence/common"
 )
 
 //go:generate mockgen --source=api.go -package confluencemocks -destination=test/confluencemocks/api.go
@@ -54,7 +55,7 @@ func CreateAPIClient() (*APIClient, error) {
 // APIClientWithAuths returns an APIClient with dependencies defaulted to sane values
 func APIClientWithAuths(httpClient HTTPClient) *APIClient {
 	return &APIClient{
-		BaseURL:  "https://xiatech-markup.atlassian.net",
+		BaseURL:  common.ConfluenceBaseURL,
 		Space:    lookupEnv(confluenceSpaceEnv),
 		Username: lookupEnv(confluenceUsernameEnv),
 		Password: lookupEnv(confluenceAPIKeyEnv),

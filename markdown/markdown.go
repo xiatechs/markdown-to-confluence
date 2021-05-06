@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gohugoio/hugo/parser/pageparser"
+	"github.com/xiatechs/markdown-to-confluence/common"
 	m "gitlab.com/golang-commonmark/markdown"
 )
 
@@ -124,7 +125,7 @@ func urlConverter(rootID int, item string) string {
 			attachmentFileName := sliceTwo[0]
 			rootPageID := strconv.Itoa(rootID)
 			a := `<p><span class="confluence-embedded-file-wrapped">`
-			b := `<img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/`
+			b := `<img src="` + common.ConfluenceBaseURL + `/wiki/download/attachments/`
 			c := rootPageID + `/` + attachmentFileName + `"></img>`
 			d := `</span></p>`
 
