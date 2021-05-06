@@ -16,9 +16,10 @@ import (
 var (
 	// this will contain all the titles of all the pages for the repository on confluence
 	// used to verify whether pages need to be deleted or not
-	masterTitles []string
-	visual       = false // set to true if you want to test if this package functions correctly
-	rootDir      string  // will contain the root folderpath of the repo
+	masterTitles  []string
+	visual        = false // set to true if you want to test if this package functions correctly
+	rootDir       string  // will contain the root folderpath of the repo
+	nodeAPIClient *confluence.APIClient
 )
 
 // Node struct enables creation of a page tree
@@ -82,11 +83,13 @@ func newPageResults() *confluence.PageResults {
 
 // Instantiate begins the generation of a tree of the repo for confluence
 // and starts the whole process from the top/root node
-func (node *Node) Instantiate(projectPath string) bool {
+func (node *Node) Instantiate(projectPath string, client *confluence.APIClient) bool {
 	if isFolder(projectPath) {
 		node.index = 1
 		node.path = projectPath
 		rootDir = strings.ReplaceAll(strings.ReplaceAll(projectPath, ".", ""), "/", "")
+
+		nodeAPIClient = client
 
 		node.generateMaster()
 
@@ -96,14 +99,8 @@ func (node *Node) Instantiate(projectPath string) bool {
 	return false
 }
 
-// generateFolderPage method
-// if called, this node is a master node for a folder which has content in it.
-// if there are valid files within the folder, then this node will create a page
-// for the folder & store any files in that folder on that page as attachments.
-func (node *Node) generateFolderPage() {
+func (node *Node) generateTitles() (string, string) {
 	var two = 2
-
-	node.isFolder = true
 
 	fullDir := strings.ReplaceAll(node.path, ".", "")
 	fullDir = removeFirstSlash(fullDir)
@@ -111,7 +108,6 @@ func (node *Node) generateFolderPage() {
 	dir := dirList[len(dirList)-1]
 
 	if len(dirList) > two {
-		dir += "-"
 		dir += dirList[len(dirList)-2]
 	}
 
@@ -119,6 +115,18 @@ func (node *Node) generateFolderPage() {
 		dir += "-"
 		dir += rootDir
 	}
+
+	return dir, fullDir
+}
+
+// generateFolderPage method
+// if called, this node is a master node for a folder which has content in it.
+// if there are valid files within the folder, then this node will create a page
+// for the folder & store any files in that folder on that page as attachments.
+func (node *Node) generateFolderPage() {
+	dir, fullDir := node.generateTitles()
+
+	node.isFolder = true
 
 	masterTitles = append(masterTitles, dir)
 	masterpagecontents := markdown.FileContents{
@@ -240,7 +248,7 @@ func (node *Node) checkAll(checkingOnly bool, path string) bool {
 func (node *Node) checkMarkDown(checking bool, name string) bool {
 	if strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".MD") {
 		if !checking {
-			err := node.processFile(name)
+			err := node.processMarkDown(name)
 			if err != nil {
 				log.Println(err)
 			}
@@ -253,7 +261,7 @@ func (node *Node) checkMarkDown(checking bool, name string) bool {
 }
 
 // processFile is the method called on any eligible files (markdown / images etc) to handle uploads.
-func (node *Node) processFile(path string) error {
+func (node *Node) processMarkDown(path string) error {
 	contents, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return err
@@ -287,12 +295,7 @@ func (node *Node) Scrub() {
 
 // findPagesToDelete method grabs results of page to begin deleting
 func (node *Node) findPagesToDelete(id string) {
-	Client, err := confluence.CreateAPIClient()
-	if err != nil {
-		log.Printf("error creating APIClient: %s", err)
-	}
-
-	children, err := Client.FindPage(id, true)
+	children, err := nodeAPIClient.FindPage(id, true)
 	if err != nil {
 		log.Printf("error finding page: %s", err)
 	}
@@ -347,16 +350,12 @@ func (node *Node) preUpload(checking bool, name string) {
 
 // uploadFile is for uploading files to a specific page by root node page id
 func (node *Node) uploadFile(path string) error {
-	Client, err := confluence.CreateAPIClient()
-	if err != nil {
-		log.Printf("error creating APIClient: %s", err)
-		return err
-	}
-
-	err = Client.UploadAttachment(filepath.Clean(path), node.root.id)
-	if err != nil {
-		log.Printf("error uploading attachment: %s", err)
-		return err
+	if nodeAPIClient != nil {
+		err := nodeAPIClient.UploadAttachment(filepath.Clean(path), node.root.id)
+		if err != nil {
+			log.Printf("error uploading attachment: %s", err)
+			return err
+		}
 	}
 
 	return nil
@@ -364,21 +363,19 @@ func (node *Node) uploadFile(path string) error {
 
 // checkConfluencePages runs through the CRUD operations for confluence
 func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) error {
-	Client, err := confluence.CreateAPIClient()
-	if err != nil {
-		log.Printf("error creating APIClient: %s", err)
-		return err
+	if nodeAPIClient == nil {
+		return nil
 	}
 
 	pageTitle := strings.Join(strings.Split(newPageContents.MetaData["title"].(string), " "), "+")
 
-	pageResult, err := Client.FindPage(pageTitle, false)
+	pageResult, err := nodeAPIClient.FindPage(pageTitle, false)
 	if err != nil {
 		return err
 	}
 
 	if pageResult == nil {
-		err := node.generatePage(newPageContents, Client)
+		err := node.generatePage(newPageContents)
 		if err != nil {
 			return err
 		}
@@ -387,7 +384,7 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 		if err != nil {
 			return err
 		}
-		err = Client.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number), newPageContents)
+		err = nodeAPIClient.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number), newPageContents)
 		if err != nil {
 			return err
 		}
@@ -413,14 +410,14 @@ func (node *Node) grabpagedata(pageResult confluence.PageResults) error {
 }
 
 // generatePage method is for validation to make sure client is not nil and node.root is not nil
-func (node *Node) generatePage(newPageContents *markdown.FileContents, client *confluence.APIClient) error {
+func (node *Node) generatePage(newPageContents *markdown.FileContents) error {
 	var err error
 
-	if client != nil {
+	if nodeAPIClient != nil {
 		if node.root == nil {
-			node.id, err = client.CreatePage(0, newPageContents, true)
+			node.id, err = nodeAPIClient.CreatePage(0, newPageContents, true)
 		} else {
-			node.id, err = client.CreatePage(node.root.id, newPageContents, false)
+			node.id, err = nodeAPIClient.CreatePage(node.root.id, newPageContents, false)
 		}
 	}
 
@@ -482,19 +479,13 @@ func removeFirstSlash(s string) string {
 }
 
 func (node *Node) deletePage(id string) {
-	client, err := confluence.CreateAPIClient()
-	if err != nil {
-		log.Printf("error creating APIClient: %s", err)
-		return
-	}
-
 	convert, err := strconv.Atoi(id)
 	if err != nil {
 		log.Printf("error getting page ID: %s", err)
 		return
 	}
 
-	err = client.DeletePage(convert)
+	err = nodeAPIClient.DeletePage(convert)
 	if err != nil {
 		log.Printf("error deleting page: %s", err)
 	}

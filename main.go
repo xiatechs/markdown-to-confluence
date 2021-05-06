@@ -14,7 +14,7 @@ const defaultProjectPath = "./"
 func main() {
 	root := node.Node{}
 
-	if _, err := confluence.CreateAPIClient(); err != nil {
+	if client, err := confluence.CreateAPIClient(); err != nil {
 		log.Println(err)
 	} else {
 		projectPath, exists := os.LookupEnv(projectPathEnv)
@@ -24,7 +24,7 @@ func main() {
 			projectPath = defaultProjectPath
 		}
 
-		if root.Instantiate(projectPath) { // if project path is a folder
+		if root.Instantiate(projectPath, client) { // if project path is a folder
 			root.Scrub() // delete pages on confluence that shouldn't exist anymore
 		}
 	}

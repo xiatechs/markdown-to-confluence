@@ -14,7 +14,7 @@ func TestInstantiate(t *testing.T) {
 	node := Node{}
 	want := false
 
-	got := node.Instantiate("./fakedirectory")
+	got := node.Instantiate("./fakedirectory", nil)
 	if got != want {
 		t.Errorf("got %t want %t", got, want)
 	}
@@ -26,7 +26,7 @@ func TestInstantiate(t *testing.T) {
 	}
 	want = false
 
-	got = nodeTest.Instantiate("./fakedirectory")
+	got = nodeTest.Instantiate("./fakedirectory", nil)
 	if got != want {
 		t.Errorf("got %t want %t", got, want)
 	}
@@ -149,7 +149,7 @@ func TestGeneratePage(t *testing.T) {
 	node := Node{}
 	newPageContents := markdown.FileContents{}
 
-	node.generatePage(&newPageContents, nil)
+	node.generatePage(&newPageContents)
 }
 
 func TestUploadFile(t *testing.T) {
