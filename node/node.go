@@ -2,6 +2,7 @@
 package node
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
