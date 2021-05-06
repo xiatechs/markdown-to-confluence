@@ -13,12 +13,13 @@ import (
 
 	"github.com/xiatechs/markdown-to-confluence/confluence"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
+	"github.com/xiatechs/markdown-to-confluence/todo"
 )
 
 var (
-	masterTitles  []string // used to verify whether pages need to be deleted or not
-	visual        = false // set to true if you want to want more verbose cmd line output
-	rootDir       string  // will contain the root folderpath of the repo
+	masterTitles  []string              // used to verify whether pages need to be deleted or not
+	visual        = false               // set to true if you want to want more verbose cmd line output
+	rootDir       string                // will contain the root folderpath of the repo
 	nodeAPIClient *confluence.APIClient // api client will be stored here
 )
 
@@ -93,10 +94,24 @@ func (node *Node) Instantiate(projectPath string, client *confluence.APIClient) 
 
 		node.generateMaster()
 
+		node.generateTODOPage()
+
 		return true
 	}
 
 	return false
+}
+
+func (node *Node) generateTODOPage() {
+	todonode := Node{}
+	todonode.root = node
+
+	page := todo.GenerateTODO(rootDir)
+
+	err := todonode.checkConfluencePages(page)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (node *Node) generateTitles() (string, string) {
@@ -175,9 +190,9 @@ func (node *Node) generateMaster() {
 		subNode.iterate(processing, Files)
 		subNode.iterate(processing, Folders)
 		subNode.visual()
+	} else {
+		subNode.iterate(processing, Folders)
 	}
-
-	subNode.iterate(processing, Folders)
 }
 
 // iteratefiles method is to iterate through the files in a folder.
@@ -194,6 +209,7 @@ func (node *Node) iterate(checking, folders bool) bool {
 				return io.EOF
 			}
 		} else {
+			node.checkGo(fpath)
 			node.folderIter(fpath)
 		}
 		return nil
@@ -223,6 +239,21 @@ func (node *Node) fileIter(fpath string, checking bool) bool {
 	}
 
 	return false
+}
+
+func (node *Node) goIter(fpath string) error {
+	contents, err := ioutil.ReadFile(filepath.Clean(fpath))
+	if err != nil {
+		return err
+	}
+
+	fullpath := strings.Replace(fpath, ".", "", 2)
+
+	fullpath = removeFirstSlash(fullpath)
+
+	todo.ParseGo(contents, fullpath)
+
+	return nil
 }
 
 // verifyCreateNode method is to create a new sub master node if there is a folder in the current dir
@@ -256,6 +287,16 @@ func (node *Node) checkAll(checkingOnly bool, path string) bool {
 	}
 
 	return false
+}
+
+// checkMarkDown method - check to see if the name of the file ends with .md i.e it's a markdown file
+func (node *Node) checkGo(name string) {
+	if strings.HasSuffix(name, ".go") && sub(node.path, name) {
+		err := node.goIter(name)
+		if err != nil {
+			log.Println(err)
+		}
+	}
 }
 
 // checkMarkDown method - check to see if the name of the file ends with .md i.e it's a markdown file
