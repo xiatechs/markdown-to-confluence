@@ -2,6 +2,7 @@
 package node
 
 import (
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -151,13 +152,13 @@ func (node *Node) generateFolderPage() {
 // a subnode is created and that node is used to crawl through files in folder
 func (node *Node) generateMaster() {
 	// these constants are created to aid navigation of iterate method lower down
-	const checkingFiles = true
+	const checking = true
 
-	const processingFiles = false
+	const processing = false
 
-	const iterateFoldersOnly = true
+	const Folders = true
 
-	const iterateFilesOnly = false
+	const Files = false
 
 	node.visual()
 
@@ -168,16 +169,16 @@ func (node *Node) generateMaster() {
 	subNode.children = newPageResults()
 	node.branches = append(node.branches, subNode)
 
-	ok := subNode.iterate(checkingFiles, iterateFilesOnly)
+	ok := subNode.iterate(checking, Files)
 	if ok {
 		node.alive = true
 		node.generateFolderPage()
-		subNode.iterate(processingFiles, iterateFilesOnly)
-		subNode.iterate(processingFiles, iterateFoldersOnly)
+		subNode.iterate(processing, Files)
+		subNode.iterate(processing, Folders)
 		subNode.visual()
 	}
 
-	subNode.iterate(processingFiles, iterateFoldersOnly)
+	subNode.iterate(processing, Folders)
 }
 
 // iteratefiles method is to iterate through the files in a folder.
@@ -188,14 +189,20 @@ func (node *Node) iterate(checking, folders bool) bool {
 	// Go 1.16 -- err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if !folders {
-			validFile = node.fileIter(fpath, checking)
+			valid := node.fileIter(fpath, checking)
+			if valid && checking {
+				validFile = true
+				return io.EOF
+			}
 		} else {
 			node.folderIter(fpath)
 		}
 		return nil
 	})
 	if err != nil {
-		log.Println(err)
+		if err != io.EOF {
+			log.Println(err)
+		}
 	}
 
 	return validFile
