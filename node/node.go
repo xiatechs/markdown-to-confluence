@@ -19,9 +19,9 @@ var (
 	// this will contain all the titles of all the pages for the repository on confluence
 	// used to verify whether pages need to be deleted or not
 	masterTitles  []string
-	visual        = false // set to true if you want to test if this package functions correctly
+	visual        = false // set to true if you want to want more verbose cmd line output
 	rootDir       string  // will contain the root folderpath of the repo
-	nodeAPIClient *confluence.APIClient
+	nodeAPIClient *confluence.APIClient // api client will be stored here
 )
 
 // Node struct enables creation of a page tree
@@ -170,8 +170,8 @@ func (node *Node) generateMaster() {
 	subNode.children = newPageResults()
 	node.branches = append(node.branches, subNode)
 
-	ok := subNode.iterate(checking, Files)
-	if ok {
+	thereAreValidFiles := subNode.iterate(checking, Files)
+	if thereAreValidFiles {
 		node.alive = true
 		node.generateFolderPage()
 		subNode.iterate(processing, Files)
