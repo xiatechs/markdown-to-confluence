@@ -2,6 +2,7 @@
 package node
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -200,7 +201,7 @@ func (node *Node) iterate(checking, folders bool) bool {
 		return nil
 	})
 	if err != nil {
-		if err != io.EOF {
+		if errors.Is(err, io.EOF) {
 			log.Println(err)
 		}
 	}
