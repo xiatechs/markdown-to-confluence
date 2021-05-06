@@ -32,7 +32,7 @@ func grabTODO(content, filename string) string {
 	lines := strings.Split(content, "\n")
 
 	for index := range lines {
-		if strings.Contains(lines[index], `// TODO:`) {
+		if strings.Contains(lines[index], `TODO`) {
 			output += "## Filename: " + filename + "\n"
 			output += "\n"
 			containsTODO = true
