@@ -150,6 +150,15 @@ func (node *Node) generateFolderPage() {
 // files and subfolders to the folder node as child pages.
 // a subnode is created and that node is used to crawl through files in folder
 func (node *Node) generateMaster() {
+	// these constants are created to aid navigation of iterate method lower down
+	const checkingFiles = true
+
+	const processingFiles = false
+
+	const iterateFoldersOnly = true
+
+	const iterateFilesOnly = false
+
 	node.visual()
 
 	subNode := newNode()
@@ -159,33 +168,30 @@ func (node *Node) generateMaster() {
 	subNode.children = newPageResults()
 	node.branches = append(node.branches, subNode)
 
-	ok := subNode.iteratefiles(true)
+	ok := subNode.iterate(checkingFiles, iterateFilesOnly)
 	if ok {
 		node.alive = true
 		node.generateFolderPage()
-		subNode.iteratefiles(false)
-		subNode.iteratefolders()
+		subNode.iterate(processingFiles, iterateFilesOnly)
+		subNode.iterate(processingFiles, iterateFoldersOnly)
 		subNode.visual()
 	}
 
-	subNode.iteratefolders()
+	subNode.iterate(processingFiles, iterateFoldersOnly)
 }
 
 // iteratefiles method is to iterate through the files in a folder.
 // if it finds a file it will begin processing that file via checkAll function
-func (node *Node) iteratefiles(checking bool) bool {
+func (node *Node) iterate(checking, folders bool) bool {
 	var validFile bool
 	// Go 1.15 -- err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 	// Go 1.16 -- err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-		if !isFolder(fpath) {
-			if sub(node.path, fpath) {
-				if ok := node.checkAll(checking, fpath); ok {
-					validFile = true
-				}
-			}
+		if !folders {
+			validFile = node.fileIter(fpath, checking)
+		} else {
+			node.folderIter(fpath)
 		}
-
 		return nil
 	})
 	if err != nil {
@@ -195,21 +201,22 @@ func (node *Node) iteratefiles(checking bool) bool {
 	return validFile
 }
 
-// iteratefolders method is to iterate through the subfolders of a folder
-// if it finds a folder, it will create a new Node
-// and repeat the process (create master node) from that node
-func (node *Node) iteratefolders() {
-	// Go 1.15 -- err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-	// Go 1.16 -- err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-		if isFolder(fpath) && !isVendorOrGit(fpath) {
-			node.verifyCreateNode(fpath)
-		}
-		return nil
-	})
-	if err != nil {
-		log.Println(err)
+func (node *Node) folderIter(fpath string) {
+	if isFolder(fpath) && !isVendorOrGit(fpath) {
+		node.verifyCreateNode(fpath)
 	}
+}
+
+func (node *Node) fileIter(fpath string, checking bool) bool {
+	if !isFolder(fpath) {
+		if sub(node.path, fpath) {
+			if ok := node.checkAll(checking, fpath); ok {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // verifyCreateNode method is to create a new sub master node if there is a folder in the current dir
