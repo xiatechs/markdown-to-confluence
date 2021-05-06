@@ -108,6 +108,7 @@ func (node *Node) generateTitles() (string, string) {
 	dir := dirList[len(dirList)-1]
 
 	if len(dirList) > two {
+		dir += "-"
 		dir += dirList[len(dirList)-2]
 	}
 
