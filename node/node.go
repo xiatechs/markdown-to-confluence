@@ -100,14 +100,14 @@ func (node *Node) Instantiate(projectPath string, client *confluence.APIClient) 
 }
 
 func (node *Node) generateTitles() (string, string) {
-	var two = 2
+	const nestedDepth = 2
 
 	fullDir := strings.ReplaceAll(node.path, ".", "")
 	fullDir = removeFirstSlash(fullDir)
 	dirList := strings.Split(fullDir, "/")
 	dir := dirList[len(dirList)-1]
 
-	if len(dirList) > two {
+	if len(dirList) > nestedDepth {
 		dir += "-"
 		dir += dirList[len(dirList)-2]
 	}
@@ -468,9 +468,9 @@ func sub(base, path string) bool {
 
 // remove first byte of a string (if that char is a '/')
 func removeFirstSlash(s string) string {
-	var two = 2
+	const minStringLength = 2
 
-	if len(s) >= two {
+	if len(s) >= minStringLength {
 		if s[0] == '/' {
 			return s[1:]
 		}
