@@ -16,9 +16,7 @@ import (
 )
 
 var (
-	// this will contain all the titles of all the pages for the repository on confluence
-	// used to verify whether pages need to be deleted or not
-	masterTitles  []string
+	masterTitles  []string // used to verify whether pages need to be deleted or not
 	visual        = false // set to true if you want to want more verbose cmd line output
 	rootDir       string  // will contain the root folderpath of the repo
 	nodeAPIClient *confluence.APIClient // api client will be stored here
