@@ -174,14 +174,14 @@ func (node *Node) generateMaster() {
 // iteratefiles method is to iterate through the files in a folder.
 // if it finds a file it will begin processing that file via checkAll function
 func (node *Node) iteratefiles(checking bool) bool {
-	var yes bool
+	var validFile bool
 	// Go 1.15 -- err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 	// Go 1.16 -- err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if !isFolder(fpath) {
 			if sub(node.path, fpath) {
 				if ok := node.checkAll(checking, fpath); ok {
-					yes = true
+					validFile = true
 				}
 			}
 		}
@@ -192,7 +192,7 @@ func (node *Node) iteratefiles(checking bool) bool {
 		log.Println(err)
 	}
 
-	return yes
+	return validFile
 }
 
 // iteratefolders method is to iterate through the subfolders of a folder
