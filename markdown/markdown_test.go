@@ -2,7 +2,6 @@ package markdown_test
 
 import (
 	"testing"
-	"strings"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
@@ -52,9 +51,8 @@ This Action will trawl through a repository.`),
 	}
 }
 
-
 func TestParseMarkdown_HappyPath(t *testing.T) {
-	testContent := strings.NewReader(`
+	testContent := []byte(`
 +++
 categories = ["Development", "Github Actions"]
 date = "2021-03-10"
@@ -75,17 +73,16 @@ test description`)
 			"title":       "Markdown to Confluence Action Guide",
 		},
 		Body: []byte(`<h1>Test Content</h1>
-<p>test description</p>
-`),
+<p>test description</p>`),
 	}
 
-	out, err := markdown.ParseMarkdown(testContent)
+	out, err := markdown.ParseMarkdown(0, testContent)
 	assert.Nil(t, err)
 	assert.Equal(t, out, expectOutput)
 }
 
 func TestParseMarkdown_MalformedFrontMatter(t *testing.T) {
-	testContent := strings.NewReader(`
+	testContent := []byte(`
 	+++
 	badFrontMatter = 253svsasrg
 	categories = ["Development", "Github Actions"]
@@ -98,7 +95,6 @@ func TestParseMarkdown_MalformedFrontMatter(t *testing.T) {
 	# Test Content 
 	test description`)
 
-	_, err := markdown.ParseMarkdown(testContent)
+	_, err := markdown.ParseMarkdown(0, testContent)
 	assert.NotNil(t, err)
 }
-
