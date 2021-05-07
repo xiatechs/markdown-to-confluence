@@ -11,7 +11,7 @@ const (
 	// ConfluenceUsernameEnv is to collect external env var INPUT_CONFLUENCE_USERNAME
 	ConfluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
 	
-	// ConfluenceUsernameEnv is to collect external env var INPUT_CONFLUENCE_API_KEY
+	// ConfluenceAPIKeyEnv is to collect external env var INPUT_CONFLUENCE_API_KEY
 	ConfluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
 	
 	// ConfluenceSpaceEnv is to collect external env var INPUT_CONFLUENCE_SPACE
