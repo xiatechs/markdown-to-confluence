@@ -11,14 +11,6 @@ import (
 )
 
 //go:generate mockgen --source=api.go -package confluencemocks -destination=test/confluencemocks/api.go
-var constantsHardCoded = false
-
-const (
-	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
-	confluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
-	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
-	envsNotSetError       = "environment variable not set, please assign values for: "
-)
 
 // APIClient struct for interacting with confluence
 type APIClient struct {
@@ -44,9 +36,9 @@ func CreateAPIClient() (*APIClient, error) {
 		apiClient.Space == "" {
 		return nil, fmt.Errorf("%s %s, %s, %s",
 			envsNotSetError,
-			confluenceAPIKeyEnv,
-			confluenceSpaceEnv,
-			confluenceUsernameEnv)
+			common.ConfluenceAPIKeyEnv,
+			common.ConfluenceSpaceEnv,
+			common.ConfluenceUsernameEnv)
 	}
 
 	return apiClient, nil
@@ -56,16 +48,16 @@ func CreateAPIClient() (*APIClient, error) {
 func APIClientWithAuths(httpClient HTTPClient) *APIClient {
 	return &APIClient{
 		BaseURL:  common.ConfluenceBaseURL,
-		Space:    lookupEnv(confluenceSpaceEnv),
-		Username: lookupEnv(confluenceUsernameEnv),
-		Password: lookupEnv(confluenceAPIKeyEnv),
+		Space:    lookupEnv(common.ConfluenceSpaceEnv),
+		Username: lookupEnv(common.ConfluenceUsernameEnv),
+		Password: lookupEnv(common.ConfluenceAPIKeyEnv),
 		Client:   httpClient,
 	}
 }
 
 // lookupEnv checks the environment variables required for creating the client have been set
 func lookupEnv(env string) string {
-	if !constantsHardCoded {
+	if !common.ConstantsHardCoded {
 		v, exists := os.LookupEnv(env)
 		if !exists {
 			log.Printf("Environment variable not set for: %s", env)
