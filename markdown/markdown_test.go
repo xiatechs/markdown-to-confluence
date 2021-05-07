@@ -2,6 +2,7 @@ package markdown_test
 
 import (
 	"testing"
+	"strings"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
