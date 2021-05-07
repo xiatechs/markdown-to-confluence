@@ -1,4 +1,4 @@
-# todo/todo.go readme
+# markdown-to-confluence/todo readme
 
 ## the todo package provides the logic necessary to gather TODO's in a repository codebase and store them
 
