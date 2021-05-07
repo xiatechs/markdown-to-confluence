@@ -17,7 +17,7 @@ import (
 
 var (
 	masterTitles  []string              // used to verify whether pages need to be deleted or not
-	visual        = false               // set to true if you want to want more verbose cmd line output
+	visual        = false               // set to true if you want a more verbose cmd line output
 	rootDir       string                // will contain the root folderpath of the repo
 	nodeAPIClient *confluence.APIClient // api client will be stored here
 )
@@ -143,7 +143,6 @@ func (node *Node) generateFolderPage() {
 
 	node.isFolder = true
 
-	masterTitles = append(masterTitles, dir)
 	masterpagecontents := markdown.FileContents{
 		MetaData: map[string]interface{}{
 			"title": dir,
@@ -195,11 +194,11 @@ func (node *Node) generateMaster() {
 }
 
 // iteratefiles method is to iterate through the files in a folder.
-// if it finds a file it will begin processing that file via checkAll function
+// if it finds a file it will begin processing that file via fileInDirectoryCheck method
 func (node *Node) iterate(checking, folders bool) bool {
 	var validFile bool
-	// Go 1.15 -- err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-	// Go 1.16 -- err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	// Go 1.15 method: err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.16 method: err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 		if sub(node.path, fpath) {
 			validFile = node.fileInDirectoryCheck(fpath, checking, folders)
@@ -231,7 +230,7 @@ func (node *Node) fileInDirectoryCheck(fpath string, checking, folders bool) boo
 
 func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 	if !isFolder(fpath) {
-		if ok := node.checkAll(checking, fpath); ok {
+		if ok := node.markDownChecker(checking, fpath); ok {
 			return true
 		}
 	}
@@ -240,14 +239,19 @@ func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 }
 
 func (node *Node) checkOtherFileTypes(fpath string) {
-	node.checkIfGoFile(fpath)
-	node.checkIfFolder(fpath)
+	if !node.checkIfFolder(fpath) {
+		node.checkIfGoFile(fpath)
+		node.checkForImageOrPuml(fpath)
+	}
 }
 
-func (node *Node) checkIfFolder(fpath string) {
+func (node *Node) checkIfFolder(fpath string) bool {
 	if isFolder(fpath) && !isVendorOrGit(fpath) {
 		node.verifyCreateNode(fpath)
+		return true
 	}
+
+	return false
 }
 
 func (node *Node) processGoFile(fpath string) error {
@@ -288,13 +292,13 @@ func (node *Node) verifyCreateNode(fpath string) {
 	}
 }
 
-// checkAll method is where we will create or update the page, or upload or update attachments
+// markDownChecker method is where we will create or update the page, or upload or update attachments
 // this method is also used to check whether the node is alive or not
-func (node *Node) checkAll(checkingOnly bool, path string) bool {
-	markDownFilesExist := node.checkMarkDown(checkingOnly, path)
-	imageOrPumlFilesExist := node.checkForImageOrPuml(checkingOnly, path)
+// a node is only considered alive if it has markdown files.
+func (node *Node) markDownChecker(checkingOnly bool, path string) bool {
+	markDownFilesExist := node.checkIfMarkDownFile(checkingOnly, path)
 
-	if markDownFilesExist || imageOrPumlFilesExist {
+	if markDownFilesExist {
 		node.alive = true
 		return true
 	}
@@ -313,7 +317,7 @@ func (node *Node) checkIfGoFile(name string) {
 }
 
 // checkMarkDown method - check to see if the name of the file ends with .md i.e it's a markdown file
-func (node *Node) checkMarkDown(checking bool, name string) bool {
+func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
 	if strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".MD") {
 		if !checking {
 			err := node.processMarkDown(name)
@@ -394,39 +398,33 @@ func (node *Node) deletePages(children *confluence.PageResults) {
 }
 
 // checkOtherFiles - check to see if the file is a puml or png image
-func (node *Node) checkForImageOrPuml(checking bool, name string) bool {
-	validFiles := []string{".puml", ".png", ".jpg", ".jpeg"}
+func (node *Node) checkForImageOrPuml(name string) {
+	if node.alive { // we only want to upload images that contained in same folder as markdown
+		validFiles := []string{".puml", ".png", ".jpg", ".jpeg"}
 
-	for index := range validFiles {
-		if strings.Contains(name, validFiles[index]) {
-			node.preUpload(checking, name)
-			return true
+		for index := range validFiles {
+			if strings.Contains(name, validFiles[index]) {
+				node.isNodeRootNil(name)
+			}
 		}
 	}
-
-	return false
 }
 
-// preUpload method to do some checks on file before upload
-func (node *Node) preUpload(checking bool, name string) {
-	if !checking && node.root != nil {
-		if err := node.uploadFile(name); err != nil {
-			log.Println(err)
-		}
+// preUpload method to do some check(s) on a file before uploading them
+func (node *Node) isNodeRootNil(name string) {
+	if node.root != nil {
+		node.uploadFile(name)
 	}
 }
 
 // uploadFile is for uploading files to a specific page by root node page id
-func (node *Node) uploadFile(path string) error {
+func (node *Node) uploadFile(path string) {
 	if nodeAPIClient != nil {
 		err := nodeAPIClient.UploadAttachment(filepath.Clean(path), node.root.id)
 		if err != nil {
 			log.Printf("error uploading attachment: %s", err)
-			return err
 		}
 	}
-
-	return nil
 }
 
 // checkConfluencePages runs through the CRUD operations for confluence

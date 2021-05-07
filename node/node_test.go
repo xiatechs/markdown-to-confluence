@@ -32,15 +32,15 @@ func TestInstantiate(t *testing.T) {
 	}
 }
 
-func TestCheckMarkDown(t *testing.T) {
+func TestCheckIfMarkDown(t *testing.T) {
 	node := Node{}
 
-	b := node.checkMarkDown(false, "fakefolder")
+	b := node.checkIfMarkDown("fakefolder", false)
 	if b != false {
 		t.Errorf("got %t want %t", b, false)
 	}
 
-	b = node.checkMarkDown(true, "fakefolder")
+	b = node.checkIfMarkDown("fakefolder", true)
 	if b != false {
 		t.Errorf("got %t want %t", b, false)
 	}
@@ -64,10 +64,12 @@ func TestScrub(t *testing.T) {
 	node.Scrub()
 }
 
-func TestCheckAll(t *testing.T) {
+func TestFileInDirectoryCheck(t *testing.T) {
 	node := Node{}
-	node.checkAll(false, "fake")
-	node.checkAll(true, "fake")
+	node.fileInDirectoryCheck("fake", true, true)
+	node.fileInDirectoryCheck("fake", true, false)
+	node.fileInDirectoryCheck("fake", false, true)
+	node.fileInDirectoryCheck("fake", false, false)
 }
 
 func TestGenerateMaster(t *testing.T) {
