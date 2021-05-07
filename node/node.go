@@ -2,7 +2,6 @@
 package node
 
 import (
-	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -118,7 +117,7 @@ func (node *Node) generateTitles() (string, string) {
 	const nestedDepth = 2
 
 	fullDir := strings.ReplaceAll(node.path, ".", "")
-	fullDir = removeFirstSlash(fullDir)
+	fullDir = strings.TrimPrefix(fullDir, "/")
 	dirList := strings.Split(fullDir, "/")
 	dir := dirList[len(dirList)-1]
 
@@ -201,47 +200,57 @@ func (node *Node) iterate(checking, folders bool) bool {
 	var validFile bool
 	// Go 1.15 -- err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 	// Go 1.16 -- err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-		if !folders {
-			valid := node.fileIter(fpath, checking)
-			if valid && checking {
-				validFile = true
+	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+		if sub(node.path, fpath) {
+			validFile = node.fileInDirectoryCheck(fpath, checking, folders)
+			if validFile {
 				return io.EOF
 			}
-		} else {
-			node.checkGo(fpath)
-			node.folderIter(fpath)
 		}
 		return nil
 	})
 	if err != nil {
-		if errors.Is(err, io.EOF) {
-			log.Println(err)
-		}
+		log.Println(err)
 	}
 
 	return validFile
 }
 
-func (node *Node) folderIter(fpath string) {
-	if isFolder(fpath) && !isVendorOrGit(fpath) {
-		node.verifyCreateNode(fpath)
+func (node *Node) fileInDirectoryCheck(fpath string, checking, folders bool) bool {
+	if !folders {
+		valid := node.checkIfMarkDown(fpath, checking) // for checking & processing markdown files / images etc
+		if valid && checking {
+			return true
+		}
+	} else {
+		node.checkOtherFileTypes(fpath) // you can process other file types inside this method
 	}
+
+	return false
 }
 
-func (node *Node) fileIter(fpath string, checking bool) bool {
+func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 	if !isFolder(fpath) {
-		if sub(node.path, fpath) {
-			if ok := node.checkAll(checking, fpath); ok {
-				return true
-			}
+		if ok := node.checkAll(checking, fpath); ok {
+			return true
 		}
 	}
 
 	return false
 }
 
-func (node *Node) goIter(fpath string) error {
+func (node *Node) checkOtherFileTypes(fpath string) {
+	node.checkIfGoFile(fpath)
+	node.checkIfFolder(fpath)
+}
+
+func (node *Node) checkIfFolder(fpath string) {
+	if isFolder(fpath) && !isVendorOrGit(fpath) {
+		node.verifyCreateNode(fpath)
+	}
+}
+
+func (node *Node) processGoFile(fpath string) error {
 	contents, err := ioutil.ReadFile(filepath.Clean(fpath))
 	if err != nil {
 		return err
@@ -249,7 +258,7 @@ func (node *Node) goIter(fpath string) error {
 
 	fullpath := strings.Replace(fpath, ".", "", 2)
 
-	fullpath = removeFirstSlash(fullpath)
+	fullpath = strings.TrimPrefix(fullpath, "/")
 
 	todo.ParseGo(contents, fullpath)
 
@@ -259,14 +268,18 @@ func (node *Node) goIter(fpath string) error {
 // verifyCreateNode method is to create a new sub master node if there is a folder in the current dir
 // but if the node is dead - the node will connect to the node above this node instead - skipping that empty folder
 func (node *Node) verifyCreateNode(fpath string) {
-	if node.path != fpath && sub(node.path, fpath) {
+	if node.path != fpath {
 		subNode := newNode()
 		subNode.path = fpath
 
 		if node.alive {
 			subNode.root = node.root
 		} else {
-			subNode.root = node.root.root
+			if node.root != nil {
+				subNode.root = node.root.root
+			} else {
+				subNode.root = node.root
+			}
 		}
 
 		subNode.index = node.index + 1
@@ -279,9 +292,9 @@ func (node *Node) verifyCreateNode(fpath string) {
 // this method is also used to check whether the node is alive or not
 func (node *Node) checkAll(checkingOnly bool, path string) bool {
 	markDownFilesExist := node.checkMarkDown(checkingOnly, path)
-	otherValidFilesExist := node.checkOtherFiles(checkingOnly, path)
+	imageOrPumlFilesExist := node.checkForImageOrPuml(checkingOnly, path)
 
-	if markDownFilesExist || otherValidFilesExist {
+	if markDownFilesExist || imageOrPumlFilesExist {
 		node.alive = true
 		return true
 	}
@@ -290,9 +303,9 @@ func (node *Node) checkAll(checkingOnly bool, path string) bool {
 }
 
 // checkMarkDown method - check to see if the name of the file ends with .md i.e it's a markdown file
-func (node *Node) checkGo(name string) {
-	if strings.HasSuffix(name, ".go") && sub(node.path, name) {
-		err := node.goIter(name)
+func (node *Node) checkIfGoFile(name string) {
+	if strings.HasSuffix(name, ".go") {
+		err := node.processGoFile(name)
 		if err != nil {
 			log.Println(err)
 		}
@@ -381,7 +394,7 @@ func (node *Node) deletePages(children *confluence.PageResults) {
 }
 
 // checkOtherFiles - check to see if the file is a puml or png image
-func (node *Node) checkOtherFiles(checking bool, name string) bool {
+func (node *Node) checkForImageOrPuml(checking bool, name string) bool {
 	validFiles := []string{".puml", ".png", ".jpg", ".jpeg"}
 
 	for index := range validFiles {
@@ -515,24 +528,6 @@ func isFolder(name string) bool {
 	return false
 }
 
-// checks to see if the file is within 1 level subdirectory of the base path
-func sub(base, path string) bool {
-	return strings.Count(path, "/")-strings.Count(base, "/") == 1
-}
-
-// remove first byte of a string (if that char is a '/')
-func removeFirstSlash(s string) string {
-	const minStringLength = 2
-
-	if len(s) >= minStringLength {
-		if s[0] == '/' {
-			return s[1:]
-		}
-	}
-
-	return s
-}
-
 func (node *Node) deletePage(id string) {
 	convert, err := strconv.Atoi(id)
 	if err != nil {
@@ -544,4 +539,9 @@ func (node *Node) deletePage(id string) {
 	if err != nil {
 		log.Printf("error deleting page: %s", err)
 	}
+}
+
+// checks to see if the file is within 1 level subdirectory of the base path
+func sub(base, path string) bool {
+	return strings.Count(path, "/")-strings.Count(base, "/") == 1
 }

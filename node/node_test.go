@@ -46,20 +46,6 @@ func TestCheckMarkDown(t *testing.T) {
 	}
 }
 
-func TestCheckOtherFiles(t *testing.T) {
-	node := Node{}
-
-	b := node.checkOtherFiles(true, "shouldWork.png")
-	if b != true {
-		t.Errorf("got %t want %t", b, true)
-	}
-
-	b = node.checkOtherFiles(false, "shouldFail.fakefile")
-	if b != false {
-		t.Errorf("got %t want %t", b, false)
-	}
-}
-
 func TestGrabPageData(t *testing.T) {
 	node := Node{}
 
@@ -92,11 +78,7 @@ func TestGenerateMaster(t *testing.T) {
 func TestVerifyCreateNode(t *testing.T) {
 	node := Node{}
 	node.alive = false
-	node.verifyCreateNode("fake")
-
-	node = Node{}
-	node.alive = true
-	node.root = nil
+	node.root = &node
 	node.verifyCreateNode("fake")
 
 	node = Node{}
@@ -106,25 +88,13 @@ func TestVerifyCreateNode(t *testing.T) {
 
 	node = Node{}
 	node.alive = false
-	node.root = &node
+	node.root = nil
 	node.verifyCreateNode("fake")
-}
 
-func TestRemoveFirstSlash(t *testing.T) {
-	output := removeFirstSlash("")
-	if output != "" {
-		t.Errorf("got %s want %s", output, "")
-	}
-
-	output = removeFirstSlash("1")
-	if output != "1" {
-		t.Errorf("got %s want %s", output, "1")
-	}
-
-	output = removeFirstSlash("/1")
-	if output != "1" {
-		t.Errorf("got %s want %s", output, "1")
-	}
+	node = Node{}
+	node.alive = true
+	node.root = nil
+	node.verifyCreateNode("fake")
 }
 
 func TestIsFolder(t *testing.T) {
