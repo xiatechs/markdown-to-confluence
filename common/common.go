@@ -5,9 +5,9 @@ var ConstantsHardCoded = false
 
 const (
   // ConfluenceBaseURL is the base URL for the confluence page you want to work with
-  ConfluenceBaseURL = "https://xiatech-markup.atlassian.net"
-	confluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
-	confluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
-	confluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
-	CnvsNotSetError       = "environment variable not set, please assign values for: "
+  	ConfluenceBaseURL     = "https://xiatech-markup.atlassian.net"
+	ConfluenceUsernameEnv = "INPUT_CONFLUENCE_USERNAME"
+	ConfluenceAPIKeyEnv   = "INPUT_CONFLUENCE_API_KEY"
+	ConfluenceSpaceEnv    = "INPUT_CONFLUENCE_SPACE"
+	EnvsNotSetError       = "environment variable not set, please assign values for: "
 )
