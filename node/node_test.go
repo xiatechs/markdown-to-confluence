@@ -1,20 +1,16 @@
 package node
 
 import (
-	"log"
 	"testing"
-
-	"github.com/xiatechs/markdown-to-confluence/confluence"
-	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
 // TODO add more test coverage
 
-func TestInstantiate(t *testing.T) {
+func TestStart(t *testing.T) {
 	node := Node{}
 	want := false
 
-	got := node.Instantiate("./fakedirectory", nil)
+	got := node.Start("./fakedirectory", nil)
 	if got != want {
 		t.Errorf("got %t want %t", got, want)
 	}
@@ -26,114 +22,18 @@ func TestInstantiate(t *testing.T) {
 	}
 	want = false
 
-	got = nodeTest.Instantiate("./fakedirectory", nil)
+	got = nodeTest.Start("./fakedirectory", nil)
 	if got != want {
 		t.Errorf("got %t want %t", got, want)
 	}
-}
-
-func TestCheckIfMarkDown(t *testing.T) {
-	node := Node{}
-
-	b := node.checkIfMarkDown("fakefolder", false)
-	if b != false {
-		t.Errorf("got %t want %t", b, false)
-	}
-
-	b = node.checkIfMarkDown("fakefolder", true)
-	if b != false {
-		t.Errorf("got %t want %t", b, false)
-	}
-}
-
-func TestGrabPageData(t *testing.T) {
-	node := Node{}
-
-	data := confluence.PageResults{}
-
-	err := node.grabpagedata(data)
-	if err != nil {
-		log.Println(err)
-		t.Fail()
-	}
-}
-
-func TestScrub(t *testing.T) {
-	node := Node{}
-
-	node.Scrub()
-}
-
-func TestFileInDirectoryCheck(t *testing.T) {
-	node := Node{}
-	node.fileInDirectoryCheck("fake", true, true)
-	node.fileInDirectoryCheck("fake", true, false)
-	node.fileInDirectoryCheck("fake", false, true)
-	node.fileInDirectoryCheck("fake", false, false)
-}
-
-func TestGenerateMaster(t *testing.T) {
-	node := Node{}
-	node.generateMaster()
-}
-
-func TestVerifyCreateNode(t *testing.T) {
-	node := Node{}
-	node.alive = false
-	node.root = &node
-	node.verifyCreateNode("fake")
-
-	node = Node{}
-	node.alive = true
-	node.root = &node
-	node.verifyCreateNode("fake")
-
-	node = Node{}
-	node.alive = false
-	node.root = nil
-	node.verifyCreateNode("fake")
-
-	node = Node{}
-	node.alive = true
-	node.root = nil
-	node.verifyCreateNode("fake")
 }
 
 func TestIsFolder(t *testing.T) {
 	isFolder("hello")
 }
 
-func TestCheckConfluencePages(t *testing.T) {
-	node := Node{}
-
-	newPageContents := markdown.FileContents{}
-
-	node.checkConfluencePages(&newPageContents)
-}
-
-func TestDeletePage(t *testing.T) {
-	node := Node{}
-
-	node.deletePage("")
-}
-
-func TestGeneratePage(t *testing.T) {
-	node := Node{}
-	newPageContents := markdown.FileContents{}
-
-	node.generatePage(&newPageContents)
-}
-
 func TestUploadFile(t *testing.T) {
 	node := Node{}
 
 	node.uploadFile("")
-}
-
-func TestDeletePages(t *testing.T) {
-	node := Node{}
-
-	c := confluence.PageResults{}
-
-	node.deletePages(&c)
 }

@@ -1,7 +1,9 @@
 // Package common is for storing common constants/vars used in app
+//nolint:all // text in here could be long but on purpose i.e a long URL
 package common
 
-// ConstantsHardCoded - set to true if you are testing this locally & want to edit constants to actual parameters
+// ConstantsHardCoded - set to true if you are testing this in
+// UAT environment & want to edit constants to be actual API parameters
 var ConstantsHardCoded = false
 
 const (

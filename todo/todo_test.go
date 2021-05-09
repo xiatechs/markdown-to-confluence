@@ -1,5 +1,6 @@
 package todo
 
+//nolint:all // exclude test from lint due to long lines
 import (
 	"testing"
 
@@ -16,6 +17,14 @@ func TestGenerateTODO(t *testing.T) {
 	}
 
 	filecontents := GenerateTODO("the-name-of-the-repo")
+
+	assert.Equal(t, expect, filecontents)
+}
+
+func TestGrabTODO(t *testing.T) {
+	expect := "## Filename: name-of-file\n\nRow: <1> TODO: this is some todo text\n\n\n"
+
+	filecontents := grabTODO("TODO: this is some todo text", "name-of-file")
 
 	assert.Equal(t, expect, filecontents)
 }

@@ -14,9 +14,9 @@ Node{}
 
 // this method begins the generation of a page tree in confluence for a repo project path.
 // it ruturns a boolean confirming 'is projectPath a valid folder path'.
-Instantiate(projectPath string, client *confluence.APIClient) bool
+Start(projectPath string, client *confluence.APIClient) bool
 
 // this method begins the deletion of pages in confluence that do not exist in
 // local repository project path - it can be called after Instantiate method is called and returns true.
-Scrub()
+Delete()
 ```

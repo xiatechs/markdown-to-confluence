@@ -24,8 +24,8 @@ func main() {
 			projectPath = defaultProjectPath
 		}
 
-		if root.Instantiate(projectPath, client) { // if project path is a folder
-			root.Scrub() // delete pages on confluence that shouldn't exist anymore
+		if root.Start(projectPath, client) {
+			root.Delete()
 		}
 	}
 }

@@ -7,6 +7,24 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
+func TestParagraphify(t *testing.T) {
+	input := `code line a
+code line b
+code line c`
+
+	expected := `<h3>To view this try copy&amp;paste to this site: <a href="https://www.planttext.com/">PlainText UML Editor</a></h3>` + //nolint:lll // it's long test string
+		`
+<h3>Alternatively please install a <em>PlantUML Visualizer plugin</em> for Chrome or Firefox</h3>
+<pre><code class="language-+">code line a
+code line b
+code line c
+</code></pre>
+`
+
+	output := markdown.Paragraphify(input)
+	assert.Equal(t, expected, output)
+}
+
 func TestParseMarkDown(t *testing.T) {
 	link := `https://xiatech-markup.atlassian.net/wiki/download/attachments/0/node.png`
 	testInputs := []struct {

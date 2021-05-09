@@ -21,7 +21,6 @@ func newFileContents() *markdown.FileContents {
 	return &f
 }
 
-// TODO: refactor
 func grabTODO(content, filename string) string {
 	var output string
 

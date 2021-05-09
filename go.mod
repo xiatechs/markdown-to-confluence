@@ -7,6 +7,7 @@ require (
 	github.com/gohugoio/hugo v0.81.0
 	github.com/golang/mock v1.4.4
 	github.com/hashicorp/go-retryablehttp v0.6.8
+	github.com/jfeliu007/goplantuml v1.5.2
 	github.com/stretchr/testify v1.6.1
 	github.com/yuin/goldmark v1.3.2
 	gitlab.com/golang-commonmark/linkify v0.0.0-20200225224916-64bca66f6ad3 // indirect

@@ -1,10 +1,12 @@
+title Code Methodology
+
 @startuml
 
-title Markdown Node Methodology
+title Code Methodology
 
 
 start
-note right: node.Instantiate(folderpath)
+note right: node.Start(folderpath)
 :Create node 
 for root folder;
 
@@ -26,14 +28,12 @@ else (no)
   :Set as dead;
 endif
 if (Folders exist?) then (yes)
-if (node is alive?) then (yes)
-  :Create node 
+  :Create node
   for each Folder;
+if (node is alive?) then (yes)
   :Root for new node(s) 
   is previous node;
 else (no)
-  :Create node
-  for each Folder;
    :Root for new node(s) 
   is previous previous node;
 endif
@@ -44,6 +44,7 @@ nodes created?)
 :Delete any pages
 remotely where file
 no longer exists;
+note left: node.Delete()
 stop
 
 @enduml

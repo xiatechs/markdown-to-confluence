@@ -45,6 +45,35 @@ func newFileContents() *FileContents {
 	return &f
 }
 
+// Paragraphify function is designed for exporting .puml files to confluence in a correctly formatted way
+func Paragraphify(content string) string {
+	var pre string
+	pre += "### To view this try copy&paste to this site: [PlainText UML Editor](https://www.planttext.com/) \n"
+	pre += "### Alternatively please install a _PlantUML Visualizer plugin_ for Chrome or Firefox \n"
+	pre += "``` + \n"
+	content = strings.ReplaceAll(content, "\r\n", "\n")
+	content = strings.ReplaceAll(content, "\r", "\n")
+	lines := strings.Split(content, "\n")
+
+	for index := range lines {
+		pre += lines[index] + "\n"
+	}
+
+	pre += "```"
+
+	md := m.New(
+		m.HTML(true),
+		m.Tables(true),
+		m.Linkify(true),
+		m.Typographer(false),
+		m.XHTMLOutput(true),
+	)
+
+	preformatted := md.RenderToString([]byte(pre))
+
+	return preformatted
+}
+
 // ParseMarkdown is a function that uses external parsing library to grab markdown contents
 // and return a filecontents object
 func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
@@ -53,7 +82,7 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 
 	fmc, err := pageparser.ParseFrontMatterAndContent(r)
 	if err != nil {
-		log.Println("error parsing front matter (using # title instead): %w", err)
+		log.Println("issue parsing frontmatter - (using # title instead): %w", err)
 
 		f.MetaData["title"] = grabtitle(string(content))
 	} else {
@@ -76,7 +105,7 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 	f.Body = stripFrontmatterReplaceURL(rootID, preformatted)
 
 	if f.MetaData["title"] == "" {
-		return nil, fmt.Errorf("page title is empty")
+		return nil, fmt.Errorf("markdown parsing error - page title is empty")
 	}
 
 	return f, nil
