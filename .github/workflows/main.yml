@@ -57,7 +57,7 @@ jobs:
           path: './'
           fetch-depth: 0
       - name: submit markdown to confluence
-        uses: ./mainrepo # Uses an action in the root directory
+        uses: ./ # Uses an action in the root directory
         with:
           INPUT_CONFLUENCE_USERNAME: "REPLACE_WITH_SECRET"
           INPUT_CONFLUENCE_API_KEY: "REPLACE_WITH_SECRET"
