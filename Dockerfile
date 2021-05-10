@@ -4,7 +4,10 @@ FROM golang:1.16-alpine AS builder
 # Git is required for fetching the dependencies.
 RUN apk update && apk add --no-cache git ca-certificates
 
-RUN apk add --no-cache plantuml graphviz ttf-droid ttf-droid-nonlatin && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache graphviz ttf-droid ttf-droid-nonlatin curl \
+    && mkdir /app \
+    && curl -L https://sourceforge.net/projects/plantuml/files/plantuml.${PLANTUML_VERSION}.jar/download -o /app/plantuml.jar \
+    && apk del curl
 
 COPY . .
 
