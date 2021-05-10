@@ -4,14 +4,13 @@ FROM golang:1.16-alpine AS builder
 # Git is required for fetching the dependencies.
 RUN apk update && apk add --no-cache git ca-certificates
 
+RUN apk-get -yq install plantuml graphviz git fonts-ipafont fonts-ipaexfont && rm -rf /var/lib/apt/lists/*
+
 COPY . .
 
 # We don't need GOPATH so unset it. 
 # If GOPATH is set go mod download will fail as it thinks there's a go.mod in the GOPATH
 ENV GOPATH=""
-
-RUN apt-get -qy update
-RUN apt-get -yq install plantuml graphviz git fonts-ipafont fonts-ipaexfont && rm -rf /var/lib/apt/lists/*
 
 RUN go mod download
 RUN go mod verify
