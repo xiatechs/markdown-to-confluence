@@ -50,7 +50,7 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 func (node *Node) iterate(justChecking, foldersOnly bool) (validFile bool) {
 	// Go 1.15 method: err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 	// Go 1.16 method: err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 		if withinDirectory(node.path, fpath) {
 			validFile = node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
 			if validFile {
