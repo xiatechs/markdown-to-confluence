@@ -4,7 +4,7 @@ FROM golang:1.16-alpine AS builder
 # Git is required for fetching the dependencies.
 RUN apk update && apk add --no-cache git ca-certificates
 
-RUN apk-get -yq install plantuml graphviz git fonts-ipafont fonts-ipaexfont && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache plantuml graphviz git fonts-ipafont fonts-ipaexfont && rm -rf /var/lib/apt/lists/*
 
 COPY . .
 
