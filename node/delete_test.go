@@ -8,7 +8,12 @@ import (
 
 func TestDelete(t *testing.T) {
 	node := Node{}
+	node.id = 1
+	node.root = &node
+	node.Delete()
 
+	node.id = 0
+	node.root = &node
 	node.Delete()
 }
 

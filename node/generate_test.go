@@ -17,3 +17,17 @@ func TestGeneratePage(t *testing.T) {
 
 	node.generatePage(&newPageContents)
 }
+
+func TestGenerateTitles(t *testing.T) {
+	node := Node{}
+	node.path = "./folder/subfolder"
+	dir, fullDir := node.generateTitles()
+
+	if dir != "subfolder" {
+		t.Errorf("got %s want %s", dir, "subfolder")
+	}
+
+	if fullDir != "folder/subfolder" {
+		t.Errorf("got %s want %s", fullDir, "folder/subfolder")
+	}
+}

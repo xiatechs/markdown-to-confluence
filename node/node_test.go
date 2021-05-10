@@ -37,3 +37,29 @@ func TestUploadFile(t *testing.T) {
 
 	node.uploadFile("")
 }
+
+func TestIterate(t *testing.T) {
+	node := Node{}
+
+	node.path = "./"
+
+	boolean := node.iterate(false, false)
+	if boolean != false {
+		t.Errorf("got %t want %t", boolean, false)
+	}
+
+	boolean = node.iterate(true, true)
+	if boolean != false {
+		t.Errorf("got %t want %t", boolean, false)
+	}
+
+	boolean = node.iterate(true, false)
+	if boolean != false {
+		t.Errorf("got %t want %t", boolean, false)
+	}
+
+	boolean = node.iterate(false, true)
+	if boolean != false {
+		t.Errorf("got %t want %t", boolean, false)
+	}
+}

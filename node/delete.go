@@ -15,14 +15,15 @@ var masterTitles []string
 // findPagesToDelete method grabs results of page to begin deleting
 func (node *Node) findPagesToDelete(id string) {
 	findParentPageAndChildren := true
+	if nodeAPIClient != nil {
+		children, err := nodeAPIClient.FindPage(id, findParentPageAndChildren)
+		if err != nil {
+			log.Printf("error finding page: %s", err)
+		}
 
-	children, err := nodeAPIClient.FindPage(id, findParentPageAndChildren)
-	if err != nil {
-		log.Printf("error finding page: %s", err)
-	}
-
-	if children != nil {
-		node.deletePages(children)
+		if children != nil {
+			node.deletePages(children)
+		}
 	}
 }
 
