@@ -5,7 +5,10 @@ package node
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
+	"os"
+	"os/exec"
 	"strings"
 
 	goplantuml "github.com/jfeliu007/goplantuml/parser"
@@ -117,21 +120,48 @@ func (node *Node) generatePlantuml(fpath string) {
 
 	rendered := result.Render()
 	if len(rendered) > minimumPageSize {
+		var filename = path + "-pumldiagram"
+
 		var buf bytes.Buffer
 
-		fmt.Fprint(&buf, rendered)
+		var headerstring = `<p><img src="` + filename + ".png" + `"/></img></p>`
+
+		headerstring = markdown.URLConverter(node.root.id, headerstring)
+
+		var writer io.Writer
+
+		writer, err = os.Create(node.path + "/" + filename + ".puml")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+		}
+
+		fmt.Fprint(&buf, headerstring)
+
+		fmt.Fprint(writer, rendered)
+
+		node.generatePlantumlImage(node.path + "/" + filename + ".puml")
 
 		masterpagecontents := markdown.FileContents{
 			MetaData: map[string]interface{}{
 				"title": "plantuml-" + path,
 			},
-			Body: []byte(markdown.Paragraphify(buf.String())),
+			Body: buf.Bytes(),
 		}
 
 		err = node.checkConfluencePages(&masterpagecontents)
 		if err != nil {
 			log.Println(err)
 		}
+	}
+}
+
+func (node *Node) generatePlantumlImage(fpath string) {
+	convertPlantuml := exec.Command("plantuml", fpath) // #nosec - calling external app to generate image
+	convertPlantuml.Stdout = os.Stdout
+
+	err := convertPlantuml.Run()
+	if err != nil {
+		log.Println(err)
 	}
 }
 

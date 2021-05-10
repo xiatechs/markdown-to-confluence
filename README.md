@@ -2,7 +2,7 @@
 
 - This Action will crawl through a repository on github and create a tree of pages on confluence for all markdown / images:
 
-![Diagram of action methodology](node.png)
+![Diagram of action methodology](methodology.png)
 
 ## When this action is run:
 

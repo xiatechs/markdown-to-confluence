@@ -125,7 +125,7 @@ func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 		}
 
 		if strings.Contains(lines[index], "<img src=") {
-			lines[index] = urlConverter(rootID, lines[index])
+			lines[index] = URLConverter(rootID, lines[index])
 		}
 
 		if !frontmatter {
@@ -142,9 +142,9 @@ func flip(b bool) bool {
 	return !b
 }
 
-// for images to be loaded in to confluence page, they must be in same directory as markdown to work
+// URLConverter for images to be loaded in to confluence page, they must be in same directory as markdown to work
 // this function replaces local url paths in html img links with a confluence path for folder page attachments
-func urlConverter(rootID int, item string) string {
+func URLConverter(rootID int, item string) string {
 	sliceOne := strings.Split(item, `<p><img src="`)
 
 	if len(sliceOne) > 1 {

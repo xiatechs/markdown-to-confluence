@@ -10,6 +10,8 @@ COPY . .
 # If GOPATH is set go mod download will fail as it thinks there's a go.mod in the GOPATH
 ENV GOPATH=""
 
+RUN apt-get -yq install plantuml graphviz git fonts-ipafont fonts-ipaexfont && rm -rf /var/lib/apt/lists/*
+
 RUN go mod download
 RUN go mod verify
 
