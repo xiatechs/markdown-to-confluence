@@ -54,33 +54,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ env.BRANCH_NAME }}
-          path: './mainrepo'
+          path: './'
           fetch-depth: 0
-      - name: checkout plantuml
-        uses: actions/checkout@v2
-        with: 
-          repository: bykof/go-plantuml
-          path: './plantuml'
-      - name: create puml file
-        run: |
-            cd ./plantuml
-            go mod tidy
-            go run . generate -d ../mainrepo -r
-            if [ -f "../mainrepo/graph.puml" ] ; then
-              rm "../mainrepo/graph.puml"
-            fi
-            if [ -f "../mainrepo/graph.png" ] ; then
-              rm "../mainrepo/graph.png"
-            fi
-            cp graph.puml ../mainrepo
-      - name: generate puml png diagram
-        uses: cloudbees/plantuml-github-action@master
-        with:
-            args: -v -tpng ./mainrepo/graph.puml
       - name: submit markdown to confluence
         uses: ./mainrepo # Uses an action in the root directory
         with:
           INPUT_CONFLUENCE_USERNAME: "REPLACE_WITH_SECRET"
           INPUT_CONFLUENCE_API_KEY: "REPLACE_WITH_SECRET"
           INPUT_CONFLUENCE_SPACE: "REPLACE_WITH_SECRET"
-          PROJECT_PATH: "./mainrepo"
+          PROJECT_PATH: "./"
