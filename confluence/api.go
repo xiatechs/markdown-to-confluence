@@ -2,9 +2,7 @@ package confluence
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xiatechs/markdown-to-confluence/common"
@@ -36,9 +34,9 @@ func CreateAPIClient() (*APIClient, error) {
 		apiClient.Space == "" {
 		return nil, fmt.Errorf("%s %s, %s, %s",
 			common.EnvsNotSetError,
-			common.ConfluenceAPIKeyEnv,
-			common.ConfluenceSpaceEnv,
-			common.ConfluenceUsernameEnv)
+			common.ConfluenceAPIKey,
+			common.ConfluenceSpace,
+			common.ConfluenceUsername)
 	}
 
 	return apiClient, nil
@@ -48,24 +46,9 @@ func CreateAPIClient() (*APIClient, error) {
 func APIClientWithAuths(httpClient HTTPClient) *APIClient {
 	return &APIClient{
 		BaseURL:  common.ConfluenceBaseURL,
-		Space:    lookupEnv(common.ConfluenceSpaceEnv),
-		Username: lookupEnv(common.ConfluenceUsernameEnv),
-		Password: lookupEnv(common.ConfluenceAPIKeyEnv),
+		Space:    common.ConfluenceSpace,
+		Username: common.ConfluenceUsername,
+		Password: common.ConfluenceAPIKey,
 		Client:   httpClient,
 	}
-}
-
-// lookupEnv checks the environment variables required for creating the client have been set
-func lookupEnv(env string) string {
-	if !common.ConstantsHardCoded {
-		v, exists := os.LookupEnv(env)
-		if !exists {
-			log.Printf("Environment variable not set for: %s", env)
-			return ""
-		}
-
-		return v
-	}
-
-	return env
 }
