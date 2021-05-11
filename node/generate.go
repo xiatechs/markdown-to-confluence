@@ -83,7 +83,8 @@ func (node *Node) generateTODOPage() {
 func (node *Node) generateTitles() (string, string) {
 	const nestedDepth = 2
 
-	fullDir := strings.ReplaceAll(node.path, ".", "")
+	fullDir := strings.ReplaceAll(node.path, "/github/workspace/", "")
+	fullDir = strings.ReplaceAll(fullDir, ".", "")
 	fullDir = strings.TrimPrefix(fullDir, "/")
 	dirList := strings.Split(fullDir, "/")
 	dir := dirList[len(dirList)-1]
