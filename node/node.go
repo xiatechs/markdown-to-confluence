@@ -32,7 +32,12 @@ type Node struct {
 func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 	if isFolder(projectPath) {
 		node.path = projectPath
-		rootDir = strings.ReplaceAll(strings.ReplaceAll(projectPath, ".", ""), "/", "")
+		
+		rootDir = strings.ReplaceAll(projectPath, `/github/workspace/`, "")
+		
+		rootDir = strings.ReplaceAll(rootDir, ".", "")
+		
+		rootDir = strings.ReplaceAll(rootDir, "/", "")
 
 		nodeAPIClient = client
 
