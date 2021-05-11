@@ -56,10 +56,13 @@ jobs:
           ref: ${{ env.BRANCH_NAME }}
           path: './'
           fetch-depth: 0
+      - name: example repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          path: './markdown-to-confluence'
+          fetch-depth: 0
       - name: submit markdown to confluence
         uses: ./ # Uses an action in the root directory
         with:
-          INPUT_CONFLUENCE_USERNAME: "REPLACE_WITH_SECRET"
-          INPUT_CONFLUENCE_API_KEY: "REPLACE_WITH_SECRET"
-          INPUT_CONFLUENCE_SPACE: "REPLACE_WITH_SECRET"
-          PROJECT_PATH: "./"
+          args: "${{ secrets.apikey }}_${{ secrets.space }}_${{ secrets.username }}_/github/workspace/markdown-to-confluence" 
