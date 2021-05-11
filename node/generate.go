@@ -156,7 +156,7 @@ func (node *Node) generatePlantuml(fpath string) {
 }
 
 func (node *Node) generatePlantumlImage(fpath string) {
-	convertPlantuml := exec.Command("plantuml", fpath) // #nosec - calling external app to generate image
+	convertPlantuml := exec.Command("java", "-jar", "/app/plantuml.jar", "-tpng", fpath)
 	convertPlantuml.Stdout = os.Stdout
 
 	err := convertPlantuml.Run()
