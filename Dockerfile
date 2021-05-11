@@ -28,12 +28,4 @@ RUN go mod download
 RUN go mod verify
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /bin/app
 
-#FROM scratch
-# Copy over SSL certificates from the first step - this is required
-# if our code makes any outbound SSL connections because it contains
-# the root CA bundle.
-#COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-# Copy our static executable
-#COPY --from=builder /bin/app /bin/app
-
 ENTRYPOINT ["/bin/app"]
