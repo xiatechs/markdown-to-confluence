@@ -4,7 +4,7 @@ ENV PLANTUML_VERSION 1.2020.14
 ENV LANG en_US.UTF-8
 
 # Install git.
-# Git is required for fetching the dependencies.
+# Git is required for fetching the dependencies. - also, install java!
 RUN apk update && apk add --no-cache git ca-certificates && apk add openjdk11
 
 # Install plantuml dependancies
