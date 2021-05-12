@@ -74,9 +74,11 @@ func (node *Node) generateTODOPage() {
 
 	page := todo.GenerateTODO(rootDir)
 
-	err := todonode.checkConfluencePages(page)
-	if err != nil {
-		log.Println(err)
+	if page != nil {
+		err := todonode.checkConfluencePages(page)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 

@@ -75,7 +75,12 @@ func GenerateTODO(rootDir string) *markdown.FileContents {
 		m.XHTMLOutput(true),
 	)
 
-	preformatted := md.RenderToString([]byte(collator))
+	var preformatted string
+
+	if preformatted = md.RenderToString([]byte(collator)); preformatted == "" {
+		return nil
+	}
+
 	f.Body = []byte(preformatted)
 
 	return f

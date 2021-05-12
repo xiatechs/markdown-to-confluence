@@ -9,12 +9,9 @@ import (
 )
 
 func TestGenerateTODO(t *testing.T) {
-	expect := &markdown.FileContents{
-		MetaData: map[string]interface{}{
-			"title": "TODO list for 'the-name-of-the-repo' repo",
-		},
-		Body: []byte{},
-	}
+	expect := func() *markdown.FileContents {
+		return nil
+	}()
 
 	filecontents := GenerateTODO("the-name-of-the-repo")
 
