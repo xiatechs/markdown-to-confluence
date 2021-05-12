@@ -34,7 +34,6 @@ type Node struct {
 // and starts the whole process from the top/root node
 func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 	if isFolder(projectPath) {
-
 		node.path = projectPath
 
 		rootDir = strings.ReplaceAll(projectPath, `/github/workspace/`, "")
@@ -49,9 +48,11 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 
 		var oneHundredPercent float64 = 100
 
-		percentage := fmt.Sprintf("Folders with markdown percentage: %.2f%s", (foldersWithMarkdown/numberOfFolders)*oneHundredPercent, "%")
+		markDownPercentage := (foldersWithMarkdown / numberOfFolders) * oneHundredPercent
 
-		node.generateTODOPage(percentage)
+		percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
+
+		node.generateTODOPage(percentageString)
 
 		return true
 	}
