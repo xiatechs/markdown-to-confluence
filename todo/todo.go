@@ -63,9 +63,9 @@ func ParseGo(content []byte, filename string) {
 }
 
 // GenerateTODO lint
-func GenerateTODO(rootDir string) *markdown.FileContents {
+func GenerateTODO(rootDir, percentage string) *markdown.FileContents {
 	f := newFileContents()
-	f.MetaData["title"] = "TODO list for '" + rootDir + "' repo"
+	f.MetaData["title"] = "More info on '" + rootDir + "' repo"
 
 	md := m.New(
 		m.HTML(true),
@@ -75,11 +75,8 @@ func GenerateTODO(rootDir string) *markdown.FileContents {
 		m.XHTMLOutput(true),
 	)
 
-	var preformatted string
-
-	if preformatted = md.RenderToString([]byte(collator)); preformatted == "" {
-		return nil
-	}
+	collator = "## " + percentage + "\n" + collator
+	preformatted := md.RenderToString([]byte(collator))
 
 	f.Body = []byte(preformatted)
 

@@ -2,6 +2,7 @@
 package node
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -13,8 +14,10 @@ import (
 )
 
 var (
-	rootDir       string                // will contain the root folderpath of the repo (without '/' and '.' in it)
-	nodeAPIClient *confluence.APIClient // api client will be stored here
+	numberOfFolders     float64
+	foldersWithMarkdown float64
+	rootDir             string                // will contain the root folderpath of the repo (without '/' and '.' in it)
+	nodeAPIClient       *confluence.APIClient // api client will be stored here
 )
 
 // Node struct enables creation of a page tree
@@ -31,19 +34,22 @@ type Node struct {
 // and starts the whole process from the top/root node
 func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 	if isFolder(projectPath) {
+
 		node.path = projectPath
-		
+
 		rootDir = strings.ReplaceAll(projectPath, `/github/workspace/`, "")
-		
+
 		rootDir = strings.ReplaceAll(rootDir, ".", "")
-		
+
 		rootDir = strings.ReplaceAll(rootDir, "/", "")
 
 		nodeAPIClient = client
 
 		node.generateMaster()
 
-		node.generateTODOPage()
+		percentage := fmt.Sprintf("Folders with markdown percentage: %.2f%s", (foldersWithMarkdown/numberOfFolders)*100, "%")
+
+		node.generateTODOPage(percentage)
 
 		return true
 	}
@@ -55,7 +61,7 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 func (node *Node) iterate(justChecking, foldersOnly bool) (validFile bool) {
 	// Go 1.15 method: err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 	// Go 1.16 method: err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if withinDirectory(node.path, fpath) {
 			validFile = node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
 			if validFile {

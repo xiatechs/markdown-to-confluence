@@ -68,11 +68,11 @@ func (node *Node) generateFolderPage() {
 	}
 }
 
-func (node *Node) generateTODOPage() {
+func (node *Node) generateTODOPage(percentage string) {
 	todonode := Node{}
 	todonode.root = node
 
-	page := todo.GenerateTODO(rootDir)
+	page := todo.GenerateTODO(rootDir, percentage)
 
 	if page != nil {
 		err := todonode.checkConfluencePages(page)

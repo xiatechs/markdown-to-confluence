@@ -10,10 +10,15 @@ import (
 
 func TestGenerateTODO(t *testing.T) {
 	expect := func() *markdown.FileContents {
-		return nil
+		return &markdown.FileContents{
+			MetaData: map[string]interface{}{
+				"title": "More info on 'testname' repo",
+			},
+			Body: []byte("<h2></h2>\n"),
+		}
 	}()
 
-	filecontents := GenerateTODO("the-name-of-the-repo")
+	filecontents := GenerateTODO("testname", "")
 
 	assert.Equal(t, expect, filecontents)
 }

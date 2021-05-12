@@ -51,6 +51,7 @@ func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 	if !isFolder(fpath) {
 		if ok := node.checkIfMarkDownFile(checking, fpath); ok {
 			node.alive = true
+			foldersWithMarkdown++
 			return true
 		}
 	}
