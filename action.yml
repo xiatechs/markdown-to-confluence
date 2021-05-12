@@ -3,7 +3,7 @@ inputs:
   args:
     description: 'Arguments for markdown tool'
     required: true
-    default: 'key, space, username, path'
+    default: ''
 runs:
   using: docker
   image: Dockerfile
