@@ -30,8 +30,12 @@ type Node struct {
 	children *confluence.PageResults // to store a snapshot of folder page & children pages (used to delete pages)
 }
 
-// Start begins the generation of a tree of the repo for confluence
-// and starts the whole process from the top/root node
+// Start method begins the generation of a tree of the repo for confluence
+// first it validates whether the project path is a folder
+// if yes then it sets the rootDir as the project path folder name
+// then begins the recursive method generateMaster
+// and returns bool - if true then it means pages have been created/updated/checked on confluence
+// and there is markdown content in the folder
 func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 	if isFolder(projectPath) {
 		node.path = projectPath
@@ -46,7 +50,7 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 
 		node.generateMaster()
 
-		var oneHundredPercent float64 = 100
+		var oneHundredPercent float64 = 100 // for calculating percentage of folders with markdown
 
 		markDownPercentage := (foldersWithMarkdown / numberOfFolders) * oneHundredPercent
 
@@ -61,10 +65,14 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 }
 
 // iterate method is to scan through the files or folders in a folder.
+// and takes in two bools (justChecking, foldersOnly)
+// if justChecking is true then it will only check whether there is a valid file in folder
+// and return true if there is
+// if foldersOnly is true then it will only iterate through folders
 func (node *Node) iterate(justChecking, foldersOnly bool) (validFile bool) {
 	// Go 1.15 method: err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 	// Go 1.16 method: err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if withinDirectory(node.path, fpath) {
 			validFile = node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
 			if validFile {
@@ -80,8 +88,10 @@ func (node *Node) iterate(justChecking, foldersOnly bool) (validFile bool) {
 	return validFile
 }
 
-// Delete method clears away any pages on confluence that shouldn't exist
-// this method should be called from the top node
+// Delete method starts loop through node.branches
+// and calls this method on each subnode of the node
+// if node.id != 0 (i.e not the root node) then
+// it calls method findPagesToDelete
 func (node *Node) Delete() {
 	if node.id != 0 {
 		id := strconv.Itoa(node.id)

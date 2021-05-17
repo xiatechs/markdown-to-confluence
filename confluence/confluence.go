@@ -40,7 +40,9 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 	return &pageResultVar, nil
 }
 
-// grab the page contents and return as a []byte to be used
+// grabPageContents method takes in page contents, the parent page id (root) and boolean
+// confirming whether or not the page is a parent page folder (isroot)
+// and returns byte of page contents
 func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, isroot bool) ([]byte, error) {
 	if isroot {
 		newPageContent := Page{
@@ -80,8 +82,8 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 	return newPageContentsJSON, nil
 }
 
-// CreatePage in confluence
-// tested - works on confluence
+// CreatePage method takes root (root page id) and page contents and bool (is page root?)
+// and generates a page in confluence and returns the generated page ID
 func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
 	newPageContentsJSON, err := a.grabPageContents(contents, root, isroot)
 	if err != nil {
@@ -134,7 +136,7 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 	return 0, fmt.Errorf("failed to decode page ID")
 }
 
-// update the page contents and return as a []byte to be used
+// updatePageContents method updates the page contents and return as a []byte JSON to be used
 func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.FileContents) ([]byte, error) {
 	newPageContent := Page{
 		Type:  "page",
@@ -159,8 +161,7 @@ func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.Fil
 	return newPageContentsJSON, nil
 }
 
-// DeletePage deletes a confluence page with our newly created data and increases the
-// version by 1 each time.
+// DeletePage deletes a confluence page by page ID
 func (a *APIClient) DeletePage(pageID int) error {
 	URL := fmt.Sprintf("%s/wiki/rest/api/content/%d", a.BaseURL, pageID)
 
@@ -234,6 +235,8 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 	return nil
 }
 
+// createFindPageRequest method takes in a title (page title) and searches for page
+// in confluence
 func (a *APIClient) createFindPageRequest(title string) (*retryablehttp.Request, error) {
 	lookUpURL := fmt.Sprintf("%s/wiki/rest/api/content?expand=version&type=page&spaceKey=%s&title=%s",
 		a.BaseURL, a.Space, title)
@@ -248,6 +251,8 @@ func (a *APIClient) createFindPageRequest(title string) (*retryablehttp.Request,
 	return req, nil
 }
 
+// createFindPagesRequest method takes in a page ID and searches for page
+// in confluence as well as children pages
 func (a *APIClient) createFindPagesRequest(id string) (*retryablehttp.Request, error) {
 	targetURL := fmt.Sprintf(common.ConfluenceBaseURL + "/wiki/rest/api/content/" + id + "/child/page")
 
@@ -261,6 +266,8 @@ func (a *APIClient) createFindPagesRequest(id string) (*retryablehttp.Request, e
 	return req, nil
 }
 
+// findPageRequest method takes in page title (and bool for if we are collecting multiple pages i.e
+// parent and child pages
 func (a *APIClient) findPageRequest(title string, many bool) (*retryablehttp.Request, error) {
 	var req *retryablehttp.Request
 

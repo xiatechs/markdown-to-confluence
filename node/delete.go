@@ -9,7 +9,7 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/confluence"
 )
 
-// used to verify whether pages need to be deleted or not
+// masterTitles var is used to store pages that are generated / updated locally
 var masterTitles []string
 
 // findPagesToDelete method grabs results of page to begin deleting
@@ -48,7 +48,7 @@ func (node *Node) deletePages(children *confluence.PageResults) {
 	}
 }
 
-// convert id to integer to pass to the API method DeletePage
+// deletePage method converts id to integer to pass to the API method DeletePage
 func (node *Node) deletePage(id string) {
 	convert, err := strconv.Atoi(id)
 	if err != nil {

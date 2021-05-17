@@ -16,9 +16,9 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/todo"
 )
 
-// method for checking if folder is 'alive' i.e contains markdown files.
-// if it is, create a folder page for that folder
-// then create a subnode, and that node will iterate
+// generateMaster method checks whether the folder is alive (has markdown files in it)
+// and if it is, creates a page for the folder. Also, then checks whether the folder
+// has subfolders in it, and then begins the process of checking those folders (recursively)
 func (node *Node) generateMaster() {
 	// these constants are to aid navigation of iterate method lower down
 	const checking = true
@@ -46,9 +46,7 @@ func (node *Node) generateMaster() {
 	subNode.iterate(processing, folders)
 }
 
-// generateFolderPage method
-// if called, this node is a master node for a folder which has content in it
-// a page for that folder will be created in confluence
+// generateFolderPage method creates a folder page in confluence for a folder
 func (node *Node) generateFolderPage() {
 	dir, fullDir := node.generateTitles()
 
@@ -68,6 +66,8 @@ func (node *Node) generateFolderPage() {
 	}
 }
 
+// generateTODOPage method creates a page in parent folder
+// that contains todo's for a codebase
 func (node *Node) generateTODOPage(percentage string) {
 	todonode := Node{}
 	todonode.root = node
@@ -82,6 +82,9 @@ func (node *Node) generateTODOPage(percentage string) {
 	}
 }
 
+// generateTitles returns two strings
+// string 1 - folder of the node
+// string 2 - the relative filepath to the node from root dir
 func (node *Node) generateTitles() (string, string) {
 	const nestedDepth = 2
 
@@ -104,6 +107,10 @@ func (node *Node) generateTitles() (string, string) {
 	return dir, fullDir
 }
 
+// generatePlantuml takes in a folder path and
+// generates a .puml file of the go code in the folder
+// then calls generatePlantumlImage method to create a picture
+// then creates a page for the image to be uploaded to and displayed
 func (node *Node) generatePlantuml(fpath string) {
 	const minimumPageSize = 20 // plantuml that is generated <= 20 chars long is too small
 
@@ -158,6 +165,8 @@ func (node *Node) generatePlantuml(fpath string) {
 	}
 }
 
+// generatePlantumlImage method calls external application (plantuml.jar)
+// in the docker container to generate the plantuml image (as a .png)
 func (node *Node) generatePlantumlImage(fpath string) {
 	convertPlantuml := exec.Command("java", "-jar", "/app/plantuml.jar", "-tpng", fpath) // #nosec - pumlimage
 	convertPlantuml.Stdout = os.Stdout
@@ -168,6 +177,9 @@ func (node *Node) generatePlantumlImage(fpath string) {
 	}
 }
 
+// generatePage method creates a new page for node.
+// and sets the parent page as the node root id.
+// unless the node.root is nil in which case it is the root page
 func (node *Node) generatePage(newPageContents *markdown.FileContents) error {
 	var isParentPage = true
 

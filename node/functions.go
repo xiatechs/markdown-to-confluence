@@ -11,24 +11,25 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/confluence"
 )
 
-// newNode - create a new node object
+// newNode function creates a new node object
 func newNode() *Node {
 	node := Node{}
 	return &node
 }
 
-// newPageResults - create a new confluence.PageResults object
+// newPageResults function creates a new confluence.PageResults object
 func newPageResults() *confluence.PageResults {
 	results := confluence.PageResults{}
 	return &results
 }
 
-// checks to see if the file is within the folder
+// withinDirectory function checks to see if the file (base) is within the folder (path)
 func withinDirectory(base, path string) bool {
 	return strings.Count(path, "/")-strings.Count(base, "/") == 1
 }
 
-// checking if file is vendor / git folder
+// isVendorOrGit function takes in name of folder and
+// checks if it is a vendor or github folder
 func isVendorOrGit(name string) bool {
 	if strings.Contains(name, "vendor") || strings.Contains(name, ".github") || strings.Contains(name, ".git") {
 		return true
@@ -37,7 +38,7 @@ func isVendorOrGit(name string) bool {
 	return false
 }
 
-// isFolder checks whether a file is a folder
+// isFolder function checks whether a file is a folder or not
 func isFolder(name string) bool {
 	file, err := os.Open(filepath.Clean(name))
 	if err != nil {

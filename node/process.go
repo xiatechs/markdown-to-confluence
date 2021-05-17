@@ -12,6 +12,9 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/todo"
 )
 
+// processGoFile method takes in a go file contents and
+// calls method todo.ParseGo on the file contents with the
+// file path
 func (node *Node) processGoFile(fpath string) error {
 	contents, err := ioutil.ReadFile(filepath.Clean(fpath))
 	if err != nil {
@@ -27,6 +30,9 @@ func (node *Node) processGoFile(fpath string) error {
 	return nil
 }
 
+// processMarkDown method takes in file contents
+// and parses the markdown file before calling
+// checkConfluencePages method
 func (node *Node) processMarkDown(path string) error {
 	contents, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
@@ -46,7 +52,8 @@ func (node *Node) processMarkDown(path string) error {
 	return nil
 }
 
-// uploadFile is for uploading files to a specific page by root node page id
+// uploadFile method takes in file and
+// uploads the file to a page by parent page ID (node.root.id)
 func (node *Node) uploadFile(path string) {
 	if nodeAPIClient != nil {
 		err := nodeAPIClient.UploadAttachment(filepath.Clean(path), node.root.id)

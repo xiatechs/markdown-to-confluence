@@ -14,6 +14,7 @@ var collator string
 // MainTODOPage will be the todo page that will be uploaded to root folder
 var MainTODOPage markdown.FileContents
 
+// newFileContents function creates a new 'filecontents' object
 func newFileContents() *markdown.FileContents {
 	f := markdown.FileContents{}
 	f.MetaData = make(map[string]interface{})
@@ -21,6 +22,8 @@ func newFileContents() *markdown.FileContents {
 	return &f
 }
 
+// grabTODO function takes in go code (content) and a filename
+// and returns a string containing a list of all the TODO's in a piece of code
 func grabTODO(content, filename string) string {
 	var output string
 
@@ -57,12 +60,15 @@ func grabTODO(content, filename string) string {
 	return output
 }
 
-// ParseGo is to parse a .go file for todo rows
+// ParseGo function is to parse a .go file for todo rows
+// and appends output to the collator string variable
 func ParseGo(content []byte, filename string) {
 	collator += grabTODO(string(content), filename)
 }
 
-// GenerateTODO lint
+// GenerateTODO function takes in rootDir foldername and
+// percentage of markdown content in folder as input
+// and returns a page
 func GenerateTODO(rootDir, percentage string) *markdown.FileContents {
 	f := newFileContents()
 	f.MetaData["title"] = "More info on '" + rootDir + "' repo"

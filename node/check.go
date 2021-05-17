@@ -11,8 +11,11 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
-// checkIfRootAlive method - if root is alive, root is the parent node.
-// else the root root is the parent node
+// checkIfRootAlive method checks if root node is alive,
+// and creates a subnode
+// if root is alive then root is the parent node for subnode
+// else the root root node is the parent node for subnode
+// then it calls generateMaster method on subnode
 func (node *Node) checkIfRootAlive(fpath string) {
 	if node.path != fpath {
 		subNode := newNode()
@@ -34,6 +37,10 @@ func (node *Node) checkIfRootAlive(fpath string) {
 	}
 }
 
+// fileInDirectoryCheck method takes file path and two bools (checking / folders)
+// if folders is false & checking is true then it returns true if it finds a markdown file in a folder
+// if folders is false & checking is false then it processes markdown files via checkIfMarkDown method
+// if folders is true then it processes other file types via checkOtherFileTypes method
 func (node *Node) fileInDirectoryCheck(fpath string, checking, folders bool) bool {
 	if !folders {
 		validFile := node.checkIfMarkDown(fpath, checking) // for checking & processing markdown files / images etc
@@ -47,6 +54,8 @@ func (node *Node) fileInDirectoryCheck(fpath string, checking, folders bool) boo
 	return false
 }
 
+// checkIfMarkDown method checks is a folder or not, and if not
+// passes file to checkIfMarkDownFile method
 func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 	if !isFolder(fpath) {
 		if ok := node.checkIfMarkDownFile(checking, fpath); ok {
@@ -60,6 +69,9 @@ func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 	return false
 }
 
+// checkIfMarkDownFile method checks whether file is a markdown file or not
+// checking bool is for whether we are just checking returning bool, or
+// if we are doing work on file
 func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
 	if strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".MD") {
 		if !checking {
@@ -75,6 +87,8 @@ func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
 	return false
 }
 
+// checkIfFolder method checks filepath is a folder or not
+// and returns bool
 func (node *Node) checkIfFolder(fpath string) bool {
 	if isFolder(fpath) && !isVendorOrGit(fpath) {
 		node.checkIfRootAlive(fpath)
@@ -84,6 +98,8 @@ func (node *Node) checkIfFolder(fpath string) bool {
 	return false
 }
 
+// checkOtherFileTypes method checks if file is a folder
+// and if not, checks for if it is a go or image file
 func (node *Node) checkOtherFileTypes(fpath string) {
 	if !node.checkIfFolder(fpath) {
 		node.checkIfGoFile(fpath)
@@ -91,6 +107,8 @@ func (node *Node) checkOtherFileTypes(fpath string) {
 	}
 }
 
+// checkIfGoFile method checks to see if the file is
+// a golang file
 func (node *Node) checkIfGoFile(name string) {
 	if strings.HasSuffix(name, ".go") {
 		err := node.processGoFile(name)
@@ -100,6 +118,8 @@ func (node *Node) checkIfGoFile(name string) {
 	}
 }
 
+// checkForImages method checks to see if the file is
+// an image file
 func (node *Node) checkForImages(name string) {
 	if node.alive {
 		validFiles := []string{".png", ".jpg", ".jpeg", ".gif"}
@@ -113,13 +133,15 @@ func (node *Node) checkForImages(name string) {
 	}
 }
 
+// checkNodeRootIsNil method checks whether the
+// node root is nil before calling uploadFile method
 func (node *Node) checkNodeRootIsNil(name string) {
 	if node.root != nil {
 		node.uploadFile(name)
 	}
 }
 
-// checkConfluencePages runs through the CRUD operations for confluence
+// checkConfluencePages method runs through the CRUD operations for confluence
 func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) error {
 	if nodeAPIClient == nil {
 		return nil
@@ -153,7 +175,8 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 	return nil
 }
 
-// checkPageID
+// checkPageID method checks the pageID of the page contents and
+// sets the node id to the page id
 func (node *Node) checkPageID(pageResult confluence.PageResults) error {
 	var err error
 

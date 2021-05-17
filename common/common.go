@@ -1,5 +1,4 @@
 // Package common is for storing common constants/vars used in app
-//nolint:all // text in here could be long but on purpose i.e a long URL
 package common
 
 var (

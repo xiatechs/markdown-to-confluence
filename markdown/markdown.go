@@ -21,7 +21,8 @@ type FileContents struct {
 	Body     []byte
 }
 
-// grabtitle collects the title of a markdown file
+// grabtitle function collects the title of a markdown file
+// and returns it as a string
 func grabtitle(content string) string {
 	content = strings.ReplaceAll(content, "\r\n", "\n")
 	content = strings.ReplaceAll(content, "\r", "\n")
@@ -38,6 +39,7 @@ func grabtitle(content string) string {
 	return ""
 }
 
+// newFileContents function creates a new filecontents object
 func newFileContents() *FileContents {
 	f := FileContents{}
 	f.MetaData = make(map[string]interface{})
@@ -45,7 +47,8 @@ func newFileContents() *FileContents {
 	return &f
 }
 
-// Paragraphify function is designed for exporting .puml files to confluence in a correctly formatted way
+// Paragraphify takes in a .puml file contents and returns
+// a formatted HTML page as a string
 func Paragraphify(content string) string {
 	var pre string
 	pre += "### To view this try copy&paste to this site: [PlainText UML Editor](https://www.planttext.com/) \n"
@@ -74,7 +77,7 @@ func Paragraphify(content string) string {
 	return preformatted
 }
 
-// ParseMarkdown is a function that uses external parsing library to grab markdown contents
+// ParseMarkdown function uses external parsing library to grab markdown contents
 // and return a filecontents object
 func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 	r := bytes.NewReader(content)
@@ -111,6 +114,9 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 	return f, nil
 }
 
+// stripFrontmatterReplaceURL function takes in parent page ID and
+// markdown file contents and removes TOML frontmatter, and replaces
+// local URL with relative confluence URL
 func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 	var pre string
 
@@ -138,12 +144,15 @@ func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 	return []byte(pre)
 }
 
+// flip function returns the opposite of bool
 func flip(b bool) bool {
 	return !b
 }
 
-// URLConverter for images to be loaded in to confluence page, they must be in same directory as markdown to work
-// this function replaces local url paths in html img links with a confluence path for folder page attachments
+// URLConverter function for images to be loaded in to confluence page
+// (they must be in same directory as markdown to work)
+// this function replaces local url paths in html img links
+// with a confluence path for folder page attachments on parent page
 func URLConverter(rootID int, item string) string {
 	sliceOne := strings.Split(item, `<p><img src="`)
 

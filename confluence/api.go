@@ -19,7 +19,7 @@ type APIClient struct {
 	Client   HTTPClient
 }
 
-// HTTPClient is required to mock the http requests
+// HTTPClient interface will allow mock Do request
 type HTTPClient interface {
 	Do(
 		req *retryablehttp.Request,
