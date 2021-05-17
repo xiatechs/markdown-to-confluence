@@ -12,7 +12,7 @@ import (
 )
 
 // checkIfRootAlive method checks if root node is alive,
-// and creates a subnode
+// and creates a subnode (alive = markdown files exist in folder)
 // if root is alive then root is the parent node for subnode
 // else the root root node is the parent node for subnode
 // then it calls generateMaster method on subnode
