@@ -50,13 +50,13 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 
 		node.generateMaster()
 
-		var oneHundredPercent float64 = 100 // for calculating percentage of folders with markdown
+		// var oneHundredPercent float64 = 100 // for calculating percentage of folders with markdown
 
-		markDownPercentage := (foldersWithMarkdown / numberOfFolders) * oneHundredPercent
+		// markDownPercentage := (foldersWithMarkdown / numberOfFolders) * oneHundredPercent
 
-		percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
+		// percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
 
-		node.generateTODOPage(percentageString)
+		// node.generateTODOPage(percentageString) doesn't work (yet)
 
 		return true
 	}
