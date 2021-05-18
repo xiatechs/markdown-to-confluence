@@ -60,7 +60,6 @@ func isFolder(name string) bool {
 	}
 
 	if fileInfo.IsDir() {
-		numberOfFolders++
 		return true
 	}
 
