@@ -13,7 +13,7 @@ import (
 
 	goplantuml "github.com/jfeliu007/goplantuml/parser"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
-	// "github.com/xiatechs/markdown-to-confluence/todo"
+	"github.com/xiatechs/markdown-to-confluence/todo"
 )
 
 // generateMaster method checks whether the folder is alive (has markdown files in it)
