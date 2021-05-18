@@ -93,6 +93,7 @@ func (node *Node) checkIfFolder(fpath string) bool {
 	if isFolder(fpath) && !isVendorOrGit(fpath) {
 		numberOfFolders++
 		node.checkIfRootAlive(fpath)
+		
 		return true
 	}
 
