@@ -56,7 +56,7 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 
 		percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
 
-		node.generateTODOPage(percentageString) doesn't work (yet)
+		node.generateTODOPage(percentageString)
 
 		return true
 	}
