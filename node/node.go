@@ -38,6 +38,8 @@ type Node struct {
 // and there is markdown content in the folder
 func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 	if isFolder(projectPath) {
+		numberOfFolders++
+		
 		node.path = projectPath
 
 		rootDir = strings.ReplaceAll(projectPath, `/github/workspace/`, "")
