@@ -84,7 +84,7 @@ func (node *Node) generateTODOPage(percentage string) {
 
 // generateTitles returns two strings
 // string 1 - folder of the node
-// string 2 - the relative filepath to the node from root dir
+// string 2 - the absolute filepath to the node dir from root dir
 func (node *Node) generateTitles() (string, string) {
 	const nestedDepth = 2
 
