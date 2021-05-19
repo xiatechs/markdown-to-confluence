@@ -52,7 +52,7 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 
 		var oneHundredPercent float64 = 100 // for calculating percentage of folders with markdown
 
-		markDownPercentage := (foldersWithMarkdown / (numberOfFolders + foldersWithMarkdown)) * oneHundredPercent
+		markDownPercentage := (foldersWithMarkdown / numberOfFolders)  * oneHundredPercent
 
 		percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
 
