@@ -119,9 +119,10 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 	}
 
 	decoder := json.NewDecoder(resp.Body)
+
 	var output struct {
-        	id int `json:"id"`
-    	}
+		ID int `json:"id"`
+	}
 
 	err = decoder.Decode(&output)
 	if err != nil {
@@ -129,7 +130,7 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 		return 0, nil
 	}
 
-	return output.id, nil
+	return output.ID, nil
 }
 
 // updatePageContents method updates the page contents and return as a []byte JSON to be used
