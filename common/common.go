@@ -20,5 +20,5 @@ var (
 	ConfluenceSpace string
 
 	// ProjectPathEnv is to collect external arg for project path
-	ProjectPathEnv = string
+	ProjectPathEnv string
 )
