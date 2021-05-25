@@ -21,7 +21,7 @@ type APIClient struct {
 
 // HTTPClient interface will allow mock Do request
 type HTTPClient interface {
-	Do(
+	Do(req *retryablehttp.Request) (*http.Response, error)
 		req *retryablehttp.Request,
 	) (*http.Response, error)
 }
