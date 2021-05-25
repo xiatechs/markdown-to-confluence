@@ -43,25 +43,6 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 // confirming whether or not the page is a parent page folder (isroot)
 // and returns byte of page contents
 func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, isroot bool) ([]byte, error) {
-	if isroot {
-		newPageContent := Page{
-			Type:  "page",
-			Title: contents.MetaData["title"].(string),
-			Space: SpaceObj{Key: a.Space},
-			Body: BodyObj{Storage: StorageObj{
-				Value:          string(contents.Body),
-				Representation: "storage",
-			}},
-		}
-
-		newPageContentsJSON, err := json.Marshal(newPageContent)
-		if err != nil {
-			return nil, err
-		}
-
-		return newPageContentsJSON, nil
-	}
-
 	newPageContent := Page{
 		Type:      "page",
 		Title:     contents.MetaData["title"].(string),
@@ -71,6 +52,10 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 			Value:          string(contents.Body),
 			Representation: "storage",
 		}},
+	}
+
+	if !isroot {
+		newPageContent.Ancestors = []AncestorObj{{ID: root}}
 	}
 
 	newPageContentsJSON, err := json.Marshal(newPageContent)
