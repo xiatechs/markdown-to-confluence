@@ -315,6 +315,13 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
+	defer func() {
+		err := writer.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
+
 	part, err := writer.CreateFormFile(paramName, filepath.Base(path))
 	if err != nil {
 		return nil, err
