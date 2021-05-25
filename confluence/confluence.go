@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xiatechs/markdown-to-confluence/common"
