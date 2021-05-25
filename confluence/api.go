@@ -21,9 +21,7 @@ type APIClient struct {
 
 // HTTPClient interface will allow mock Do request
 type HTTPClient interface {
-	Do(req *retryablehttp.Request) (*http.Response, error)
-		req *retryablehttp.Request,
-	) (*http.Response, error)
+	Do(req *retryablehttp.Request,) (*http.Response, error)
 }
 
 // CreateAPIClient creates the API client with relevant login details for confluence's API
