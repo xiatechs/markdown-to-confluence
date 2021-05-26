@@ -30,10 +30,10 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 			return nil, nil
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("newPageResults decode error: %w", err)
 	}
 
-	if len(pageResultVar.Results) == 0 {
+	if len(pageResultVar.Results) == 0 { // we want to return nil to skip this result
 		return nil, nil
 	}
 
@@ -71,14 +71,14 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
 	newPageContentsJSON, err := a.grabPageContents(contents, root, isroot)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("createpage error: %w", err)
 	}
 
 	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL)
 
 	req, err := retryablehttp.NewRequest(http.MethodPost, URL, newPageContentsJSON)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("createpage error: %w", err)
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
@@ -95,7 +95,7 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			log.Println(err)
+			log.Println(fmt.Errorf("body close error: %w", err))
 		}
 	}()
 
@@ -143,7 +143,7 @@ func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.Fil
 
 	newPageContentsJSON, err := json.Marshal(newPageContent)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json marshal error: %w", err)
 	}
 
 	return newPageContentsJSON, nil
@@ -155,8 +155,7 @@ func (a *APIClient) DeletePage(pageID int) error {
 
 	req, err := retryablehttp.NewRequest(http.MethodDelete, URL, nil)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("deletepage error: %w", err)
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
@@ -165,13 +164,13 @@ func (a *APIClient) DeletePage(pageID int) error {
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		return fmt.Errorf("deletepage error was: %w", err)
+		return fmt.Errorf("deletepage error: %w", err)
 	}
 
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			log.Println(err)
+			log.Println(fmt.Errorf("body close error: %w", err))
 		}
 	}()
 
@@ -187,14 +186,14 @@ func (a *APIClient) DeletePage(pageID int) error {
 func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error {
 	newPageContentsJSON, err := a.updatePageContents(pageVersion, pageContents)
 	if err != nil {
-		return err
+		return fmt.Errorf("updatePageContents error: %w", err)
 	}
 
 	URL := fmt.Sprintf("%s/wiki/rest/api/content/%d", a.BaseURL, pageID)
 
 	req, err := retryablehttp.NewRequest(http.MethodPut, URL, bytes.NewBuffer(newPageContentsJSON))
 	if err != nil {
-		return err
+		return fmt.Errorf("updatePageContents error: %w", err)
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
@@ -209,7 +208,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			log.Println(err)
+			log.Println(fmt.Errorf("body close error: %w", err))
 		}
 	}()
 
@@ -228,7 +227,7 @@ func (a *APIClient) createFindPageRequest(title string) (*retryablehttp.Request,
 
 	req, err := retryablehttp.NewRequest(http.MethodGet, lookUpURL, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("createFindPageRequest error: %w", err)
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
@@ -243,7 +242,7 @@ func (a *APIClient) createFindPagesRequest(id string) (*retryablehttp.Request, e
 
 	req, err := retryablehttp.NewRequest(http.MethodGet, targetURL, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("createFindPagesRequest error: %w", err)
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
@@ -290,13 +289,13 @@ func (a *APIClient) FindPage(title string, many bool) (*PageResults, error) {
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			log.Println(err)
+			log.Println(fmt.Errorf("body close error: %w", err))
 		}
 	}()
 
 	results, err := newPageResults(resp)
 	if err != nil {
-		log.Println(err)
+		log.Println(fmt.Errorf("page results error: %w", err))
 	}
 
 	return results, nil
@@ -311,7 +310,7 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 	defer func() {
 		err := file.Close()
 		if err != nil {
-			log.Println(err)
+			log.Println(fmt.Errorf("file close error: %w", err))
 		}
 	}()
 
@@ -320,12 +319,12 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 
 	part, err := writer.CreateFormFile(paramName, filepath.Base(path))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create form file error: %w", err)
 	}
 
 	_, err = io.Copy(part, file)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("io copy error: %w", err)
 	}
 
 	params := map[string]string{
@@ -339,7 +338,7 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 
 	err = writer.Close()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("writer close error: %w", err)
 	}
 
 	req, err := retryablehttp.NewRequest("PUT", uri, body)
@@ -373,7 +372,7 @@ func (a *APIClient) UploadAttachment(filename string, id int) error {
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			log.Println(err)
+			log.Println(fmt.Errorf("body close error: %w", err))
 		}
 	}()
 

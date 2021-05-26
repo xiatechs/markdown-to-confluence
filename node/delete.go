@@ -40,12 +40,15 @@ func (node *Node) deletePages(children *confluence.PageResults) {
 
 		if !noDelete {
 			node.findPagesToDelete(children.Results[index].ID)
-			node.deletePage(children.Results[index].ID)
+
+			go node.deletePage(children.Results[index].ID)
 		}
 	}
 }
 
 // deletePage method converts id to integer to pass to the API method DeletePage
+// this method can be run concurrently with no wait needed as the pages are deleted by ID
+// and don't need parent page reference
 func (node *Node) deletePage(id string) {
 	convert, err := strconv.Atoi(id)
 	if err != nil {

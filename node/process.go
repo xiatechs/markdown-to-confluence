@@ -3,6 +3,7 @@ package node
 // methods for processing/reading/uploading files & iterating through folders
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -18,7 +19,7 @@ import (
 func (node *Node) processGoFile(fpath string) error {
 	contents, err := ioutil.ReadFile(filepath.Clean(fpath))
 	if err != nil {
-		return err
+		return fmt.Errorf("read file error: %w", err)
 	}
 
 	fullpath := strings.Replace(fpath, ".", "", 2)
@@ -36,12 +37,12 @@ func (node *Node) processGoFile(fpath string) error {
 func (node *Node) processMarkDown(path string) error {
 	contents, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
-		return err
+		return fmt.Errorf("read file error: %w", err)
 	}
 
 	parsedContents, err := markdown.ParseMarkdown(node.root.id, contents)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse markdown error: %w", err)
 	}
 
 	err = node.checkConfluencePages(parsedContents)

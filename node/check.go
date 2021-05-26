@@ -172,19 +172,20 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 		}
 	}
 
-	node.addTitle(newPageContents.MetaData["title"].(string))
+	node.addContents(newPageContents)
 
 	return nil
 }
 
-func (node *Node) addTitle(title string) {
+// addContents adds the page title to either the parent page titles slice, or the node slice
+func (node *Node) addContents(newPageContents *markdown.FileContents) {
 	if node.root != nil {
-		node.root.titles = append(node.root.titles, title)
+		node.root.titles = append(node.root.titles, newPageContents.MetaData["title"].(string))
 
 		return
 	}
 
-	node.titles = append(node.titles, title)
+	node.titles = append(node.titles, newPageContents.MetaData["title"].(string))
 }
 
 // checkPageID method checks the pageID of the page contents and

@@ -36,13 +36,32 @@ func (node *Node) generateMaster() {
 
 	thereAreValidFiles := subNode.iterate(checking, files)
 	if thereAreValidFiles {
+		wg.Add()
+
 		node.alive = true
 		node.generateFolderPage()
-		subNode.generatePlantuml(node.path) // generate plantuml in folders with markdown in it only
-		subNode.iterate(processing, files)
 	}
 
 	subNode.iterate(processing, folders)
+
+	subNode.generateChildPages(thereAreValidFiles)
+}
+
+// generateChildPages method generates all children pages for all parent pages
+// can be run concurrently as they all have a parent page to attach to
+// so there's no need to order their generation
+func (node *Node) generateChildPages(thereAreValidFiles bool) {
+	const processing = false
+
+	const files = false
+
+	if thereAreValidFiles {
+		go func() {
+			defer wg.Done()
+			node.generatePlantuml(node.path) // generate plantuml in folders with markdown in it only
+			node.iterate(processing, files)  // generate child pages for any valid files in parent page
+		}()
+	}
 }
 
 // generateFolderPage method creates a folder page in confluence for a folder
@@ -172,7 +191,7 @@ func (node *Node) generatePlantumlImage(fpath string) {
 
 	err := convertPlantuml.Run()
 	if err != nil {
-		log.Println(err)
+		log.Println(fmt.Errorf("generatePlantumlImage error: %w", err))
 	}
 }
 

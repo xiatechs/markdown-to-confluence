@@ -7,17 +7,21 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/xiatechs/markdown-to-confluence/confluence"
+	"github.com/xiatechs/markdown-to-confluence/semaphore"
 )
 
 var (
-	numberOfFolders     float64
-	foldersWithMarkdown float64
-	rootDir             string                // will contain the root folderpath of the repo (without '/' and '.' in it)
-	nodeAPIClient       *confluence.APIClient // api client will be stored here
+	numberOfCPU         = runtime.NumCPU()
+	wg                  = semaphore.NewSemaphore(numberOfCPU) // semaphore / waitgroup for controlling number of goroutines
+	numberOfFolders     float64                               // for counting number of folders in repo
+	foldersWithMarkdown float64                               // for counting number of folders with markdown in repo
+	rootDir             string                                // will contain the root folderpath of the repo
+	nodeAPIClient       *confluence.APIClient                 // api client will be stored here
 )
 
 // Node struct enables creation of a page tree
@@ -26,7 +30,7 @@ type Node struct {
 	alive    bool     // for tracking if the folder has any valid content within it asides more folders
 	path     string   // file / folderpath will be stored here
 	root     *Node    // the parent page node will be linked here
-	branches []*Node  // any children page nodes will be stored here (used to delete pages)
+	branches []*Node  // any children page nodes will be stored here (for deleting)
 	titles   []string // titles of pages created by node (for deleting)
 }
 
@@ -50,15 +54,27 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 
 		nodeAPIClient = client
 
-		node.generateMaster()
+		node.generateMaster() // contains concurrency
 
-		var oneHundredPercent float64 = 100 // for calculating percentage of folders with markdown
+		wg.Add()
 
-		markDownPercentage := (foldersWithMarkdown / numberOfFolders) * oneHundredPercent
+		go func() {
+			defer wg.Done()
 
-		percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
+			var oneHundredPercent float64 = 100 // for calculating percentage of folders with markdown
 
-		node.generateTODOPage(percentageString)
+			markDownPercentage := (foldersWithMarkdown / numberOfFolders) * oneHundredPercent
+
+			percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
+
+			node.generateTODOPage(percentageString)
+		}()
+
+		log.Println("WAITING FOR GOROUTINES")
+
+		wg.Wait()
+
+		log.Println("FINISHED GOROUTINES - NOW CHECKING FOR DELETE")
 
 		return true
 	}
@@ -84,12 +100,11 @@ func (node *Node) iterate(justChecking, foldersOnly bool) (validFile bool) {
 		return nil
 	})
 	if err != nil {
-		log.Println(err)
+		log.Println("iterate: ", err)
 	}
 
 	return validFile
 }
-
 
 // Delete method starts loop through node.branches
 // and calls this method on each subnode of the node
