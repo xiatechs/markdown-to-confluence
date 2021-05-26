@@ -60,7 +60,7 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 
 	newPageContentsJSON, err := json.Marshal(newPageContent)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("grabPageContents failed to marshal new page contents: %w", err)
 	}
 
 	return newPageContentsJSON, nil
@@ -111,13 +111,13 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 
 	err = decoder.Decode(&output)
 	if err != nil {
-		log.Println("error was: ", resp.Status, err)
+		log.Println("createpage error was: ", resp.Status, err)
 		return 0, nil
 	}
 
 	id, err := strconv.Atoi(output.ID)
 	if err != nil {
-		log.Println("error was: ", resp.Status, err)
+		log.Println("createpage error was: ", resp.Status, err)
 		return 0, nil
 	}
 
@@ -165,7 +165,7 @@ func (a *APIClient) DeletePage(pageID int) error {
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		return fmt.Errorf("deletepage error: %w", err)
+		return fmt.Errorf("deletepage error was: %w", err)
 	}
 
 	defer func() {
@@ -176,7 +176,7 @@ func (a *APIClient) DeletePage(pageID int) error {
 	}()
 
 	if err != nil {
-		log.Println("error was: ", resp.Status, err)
+		log.Println("deletepage error", resp.Status, err)
 	}
 
 	return nil
@@ -203,7 +203,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to do the request: %w", err)
+		return fmt.Errorf("updatepage failed to do the request: %w", err)
 	}
 
 	defer func() {
@@ -214,7 +214,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 	}()
 
 	if err != nil {
-		log.Println("error was: ", resp.Status, err)
+		log.Println("updatepage error was: ", resp.Status, err)
 	}
 
 	return nil
@@ -283,7 +283,7 @@ func (a *APIClient) FindPage(title string, many bool) (*PageResults, error) {
 	}
 
 	resp, err := a.Client.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
+	if err != nil {
 		return nil, fmt.Errorf("find page request error: %w", err)
 	}
 
@@ -363,11 +363,11 @@ func (a *APIClient) UploadAttachment(filename string, id int) error {
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		return fmt.Errorf("response error: %w", err)
+		return fmt.Errorf("upload attachment response error: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to upload attachment: %s", resp.Status)
+		return fmt.Errorf("upload attachment response issue: %s", resp.Status)
 	}
 
 	defer func() {
