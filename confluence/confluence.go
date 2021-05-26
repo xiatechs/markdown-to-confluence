@@ -45,10 +45,9 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 // and returns byte of page contents
 func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, isroot bool) ([]byte, error) {
 	newPageContent := Page{
-		Type:      "page",
-		Title:     contents.MetaData["title"].(string),
-		Space:     SpaceObj{Key: a.Space},
-		Ancestors: []AncestorObj{{ID: root}},
+		Type:  "page",
+		Title: contents.MetaData["title"].(string),
+		Space: SpaceObj{Key: a.Space},
 		Body: BodyObj{Storage: StorageObj{
 			Value:          string(contents.Body),
 			Representation: "storage",
@@ -166,8 +165,7 @@ func (a *APIClient) DeletePage(pageID int) error {
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		log.Println("error was: ", resp.Status, err)
-		return fmt.Errorf("failed to do the request: %w", err)
+		return fmt.Errorf("deletepage error: %w", err)
 	}
 
 	defer func() {
@@ -178,7 +176,7 @@ func (a *APIClient) DeletePage(pageID int) error {
 	}()
 
 	if err != nil {
-		log.Println("error ioutil", err)
+		log.Println("error was: ", resp.Status, err)
 	}
 
 	return nil
@@ -196,7 +194,6 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 
 	req, err := retryablehttp.NewRequest(http.MethodPut, URL, bytes.NewBuffer(newPageContentsJSON))
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -206,7 +203,6 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		log.Println("error was: ", resp.Status, err)
 		return fmt.Errorf("failed to do the request: %w", err)
 	}
 
@@ -218,7 +214,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 	}()
 
 	if err != nil {
-		log.Println("error ioutil", err)
+		log.Println("error was: ", resp.Status, err)
 	}
 
 	return nil
@@ -265,12 +261,12 @@ func (a *APIClient) findPageRequest(title string, many bool) (*retryablehttp.Req
 	if many {
 		req, err = a.createFindPagesRequest(title)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("createFindPagesRequest error: %w", err)
 		}
 	} else {
 		req, err = a.createFindPageRequest(title)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("createFindPageRequest error: %w", err)
 		}
 	}
 
@@ -283,12 +279,12 @@ func (a *APIClient) findPageRequest(title string, many bool) (*retryablehttp.Req
 func (a *APIClient) FindPage(title string, many bool) (*PageResults, error) {
 	req, err := a.findPageRequest(title, many)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("find page request error: %w", err)
 	}
 
 	resp, err := a.Client.Do(req)
 	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, err
+		return nil, fmt.Errorf("find page request error: %w", err)
 	}
 
 	defer func() {
@@ -321,13 +317,6 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-
-	defer func() {
-		err := writer.Close()
-		if err != nil {
-			log.Println(err)
-		}
-	}()
 
 	part, err := writer.CreateFormFile(paramName, filepath.Base(path))
 	if err != nil {
@@ -366,7 +355,7 @@ func (a *APIClient) UploadAttachment(filename string, id int) error {
 
 	req, err := newfileUploadRequest(targetURL, "file", filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("file upload error: %w", err)
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
@@ -374,14 +363,19 @@ func (a *APIClient) UploadAttachment(filename string, id int) error {
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("response error: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to upload attachment: %s", resp.Status)
 	}
 
-	func() { _ = resp.Body.Close() }()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
 
 	return nil
 }
