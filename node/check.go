@@ -42,16 +42,15 @@ func (node *Node) checkIfRootAlive(fpath string) {
 // if folders is false & checking is false then it processes markdown files via checkIfMarkDown method
 // if folders is true then it processes other file types via checkOtherFileTypes method
 func (node *Node) fileInDirectoryCheck(fpath string, checking, folders bool) bool {
-	if !folders {
-		validFile := node.checkIfMarkDown(fpath, checking) // for checking & processing markdown files / images etc
-		if validFile && checking {
-			return true
-		}
-	} else {
+	if folders {
 		node.checkOtherFileTypes(fpath) // you can process other file types inside this method
+
+		return false
 	}
 
-	return false
+	validFile := node.checkIfMarkDown(fpath, checking) // for checking & processing markdown files / images etc
+
+	return validFile && checking
 }
 
 // checkIfMarkDown method checks is a folder or not, and if not
@@ -77,7 +76,7 @@ func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
 			if err != nil {
 				log.Println(err)
 			}
-			
+
 			foldersWithMarkdown++
 		}
 

@@ -22,12 +22,11 @@ var (
 
 // Node struct enables creation of a page tree
 type Node struct {
-	id       int                     // when page is created, page ID will be stored here.
-	alive    bool                    // for tracking if the folder has any valid content within it asides more folders
-	path     string                  // file / folderpath will be stored here
-	root     *Node                   // the parent page node will be linked here
-	branches []*Node                 // any children page nodes will be stored here (used to delete pages)
-	children *confluence.PageResults // to store a snapshot of folder page & children pages (used to delete pages)
+	id       int     // when page is created, page ID will be stored here.
+	alive    bool    // for tracking if the folder has any valid content within it asides more folders
+	path     string  // file / folderpath will be stored here
+	root     *Node   // the parent page node will be linked here
+	branches []*Node // any children page nodes will be stored here (used to delete pages)
 }
 
 // Start method begins the generation of a tree of the repo for confluence
@@ -39,7 +38,7 @@ type Node struct {
 func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 	if isFolder(projectPath) {
 		numberOfFolders++
-		
+
 		node.path = projectPath
 
 		rootDir = strings.ReplaceAll(projectPath, `/github/workspace/`, "")
@@ -54,7 +53,7 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 
 		var oneHundredPercent float64 = 100 // for calculating percentage of folders with markdown
 
-		markDownPercentage := (foldersWithMarkdown / numberOfFolders)  * oneHundredPercent
+		markDownPercentage := (foldersWithMarkdown / numberOfFolders) * oneHundredPercent
 
 		percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
 

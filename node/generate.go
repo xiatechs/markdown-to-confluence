@@ -32,7 +32,6 @@ func (node *Node) generateMaster() {
 	subNode := newNode()
 	subNode.path = node.path
 	subNode.root = node
-	subNode.children = newPageResults()
 	node.branches = append(node.branches, subNode)
 
 	thereAreValidFiles := subNode.iterate(checking, files)

@@ -7,20 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/xiatechs/markdown-to-confluence/confluence"
 )
 
 // newNode function creates a new node object
 func newNode() *Node {
 	node := Node{}
 	return &node
-}
-
-// newPageResults function creates a new confluence.PageResults object
-func newPageResults() *confluence.PageResults {
-	results := confluence.PageResults{}
-	return &results
 }
 
 // withinDirectory function checks to see if the file (base) is within the folder (path)

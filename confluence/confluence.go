@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/xiatechs/markdown-to-confluence/common"
@@ -106,7 +107,7 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 	decoder := json.NewDecoder(resp.Body)
 
 	var output struct {
-		ID int `json:"id"`
+		ID string `json:"id"`
 	}
 
 	err = decoder.Decode(&output)
@@ -115,7 +116,13 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 		return 0, nil
 	}
 
-	return output.ID, nil
+	id, err := strconv.Atoi(output.ID)
+	if err != nil {
+		log.Println("error was: ", resp.Status, err)
+		return 0, nil
+	}
+
+	return id, nil
 }
 
 // updatePageContents method updates the page contents and return as a []byte JSON to be used
