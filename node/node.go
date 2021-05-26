@@ -22,11 +22,12 @@ var (
 
 // Node struct enables creation of a page tree
 type Node struct {
-	id       int     // when page is created, page ID will be stored here.
-	alive    bool    // for tracking if the folder has any valid content within it asides more folders
-	path     string  // file / folderpath will be stored here
-	root     *Node   // the parent page node will be linked here
-	branches []*Node // any children page nodes will be stored here (used to delete pages)
+	id       int      // when page is created, page ID will be stored here.
+	alive    bool     // for tracking if the folder has any valid content within it asides more folders
+	path     string   // file / folderpath will be stored here
+	root     *Node    // the parent page node will be linked here
+	branches []*Node  // any children page nodes will be stored here (used to delete pages)
+	titles   []string // titles of pages created by node (for deleting)
 }
 
 // Start method begins the generation of a tree of the repo for confluence
@@ -89,17 +90,27 @@ func (node *Node) iterate(justChecking, foldersOnly bool) (validFile bool) {
 	return validFile
 }
 
-// Delete method starts loop through node.branches
+// Seek method starts loop through node.branches
 // and calls this method on each subnode of the node
 // if node.id != 0 (i.e not the root node) then
 // it calls method findPagesToDelete
+func (node *Node) Seek() {
+	if len(node.branches) == 0 {
+		node.Delete()
+	}
+
+	for index := range node.branches {
+		node.branches[index].Seek()
+	}
+}
+
 func (node *Node) Delete() {
 	if node.id != 0 {
 		id := strconv.Itoa(node.id)
 		node.findPagesToDelete(id)
 	}
 
-	for index := range node.branches {
-		node.branches[index].Delete()
+	if node.root != nil {
+		node.root.Delete()
 	}
 }
