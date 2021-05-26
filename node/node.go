@@ -90,27 +90,18 @@ func (node *Node) iterate(justChecking, foldersOnly bool) (validFile bool) {
 	return validFile
 }
 
-// Seek method starts loop through node.branches
+
+// Delete method starts loop through node.branches
 // and calls this method on each subnode of the node
 // if node.id != 0 (i.e not the root node) then
 // it calls method findPagesToDelete
-func (node *Node) Seek() {
-	if len(node.branches) == 0 {
-		node.Delete()
-	}
-
-	for index := range node.branches {
-		node.branches[index].Seek()
-	}
-}
-
 func (node *Node) Delete() {
 	if node.id != 0 {
 		id := strconv.Itoa(node.id)
 		node.findPagesToDelete(id)
 	}
 
-	if node.root != nil {
-		node.root.Delete()
+	for index := range node.branches {
+		node.branches[index].Delete()
 	}
 }
