@@ -9,9 +9,6 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/confluence"
 )
 
-// masterTitles var is used to store pages that are generated / updated locally
-var masterTitles []string
-
 // findPagesToDelete method grabs results of page to begin deleting
 func (node *Node) findPagesToDelete(id string) {
 	findParentPageAndChildren := true
@@ -34,8 +31,8 @@ func (node *Node) deletePages(children *confluence.PageResults) {
 	for index := range children.Results {
 		var noDelete bool
 
-		for index2 := range masterTitles {
-			if children.Results[index].Title == masterTitles[index2] {
+		for index2 := range node.titles {
+			if children.Results[index].Title == node.titles[index2] {
 				noDelete = true
 				break
 			}
