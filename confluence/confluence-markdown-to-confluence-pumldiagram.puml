@@ -1,0 +1,66 @@
+@startuml
+namespace confluence {
+    class APIClient << (S,Aquamarine) >> {
+        + BaseURL string
+        + Space string
+        + Username string
+        + Password string
+        + Client HTTPClient
+
+        - grabPageContents(contents *markdown.FileContents, root int, isroot bool) ([]byte, error)
+        - updatePageContents(pageVersion int64, contents *markdown.FileContents) ([]byte, error)
+        - createFindPageRequest(title string) (*retryablehttp.Request, error)
+        - createFindPagesRequest(id string) (*retryablehttp.Request, error)
+        - findPageRequest(title string, many bool) (*retryablehttp.Request, error)
+
+        + CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
+        + DeletePage(pageID int) error
+        + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error
+        + FindPage(title string, many bool) (*PageResults, error)
+        + UploadAttachment(filename string, id int) error
+
+    }
+    class AncestorObj << (S,Aquamarine) >> {
+        + ID int
+
+    }
+    class BodyObj << (S,Aquamarine) >> {
+        + Storage StorageObj
+
+    }
+    interface HTTPClient  {
+        + Do(req *retryablehttp.Request) (*http.Response, error)
+
+    }
+    class Page << (S,Aquamarine) >> {
+        + ID string
+        + Type string
+        + Status string
+        + Title string
+        + Space SpaceObj
+        + Version VersionObj
+        + Ancestors []AncestorObj
+        + Body BodyObj
+
+    }
+    class PageResults << (S,Aquamarine) >> {
+        + Results []Page
+
+    }
+    class SpaceObj << (S,Aquamarine) >> {
+        + Key string
+
+    }
+    class StorageObj << (S,Aquamarine) >> {
+        + Value string
+        + Representation string
+
+    }
+    class VersionObj << (S,Aquamarine) >> {
+        + Number int
+
+    }
+}
+
+
+@enduml

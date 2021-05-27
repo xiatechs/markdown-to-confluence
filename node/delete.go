@@ -47,8 +47,8 @@ func (node *Node) deletePages(children *confluence.PageResults) {
 }
 
 // deletePage method converts id to integer to pass to the API method DeletePage
-// this method can be run concurrently with no wait needed as the pages are deleted by ID
-// and don't need parent page reference
+// this method can be run concurrently with no wait needed:
+// the pages are deleted by ID and don't need parent page reference
 func (node *Node) deletePage(id string) {
 	convert, err := strconv.Atoi(id)
 	if err != nil {

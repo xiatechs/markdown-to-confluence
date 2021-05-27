@@ -58,7 +58,10 @@ func (node *Node) fileInDirectoryCheck(fpath string, checking, folders bool) boo
 func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 	if !isFolder(fpath) {
 		if ok := node.checkIfMarkDownFile(checking, fpath); ok {
-			node.alive = true
+			if checking {
+				node.alive = true
+			}
+
 			return true
 		}
 	}
@@ -77,8 +80,10 @@ func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
 				log.Println(err)
 			}
 
-			foldersWithMarkdown++
+			return true
 		}
+
+		foldersWithMarkdown++
 
 		return true
 	}
@@ -145,10 +150,6 @@ func (node *Node) checkNodeRootIsNil(name string) {
 
 // checkConfluencePages method runs through the CRUD operations for confluence
 func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) error {
-	if nodeAPIClient == nil {
-		return nil
-	}
-
 	pageTitle := strings.Join(strings.Split(newPageContents.MetaData["title"].(string), " "), "+")
 
 	pageResult, err := nodeAPIClient.FindPage(pageTitle, false)
@@ -161,15 +162,16 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 		if err != nil {
 			return err
 		}
-	} else {
-		err = node.checkPageID(*pageResult)
-		if err != nil {
-			return err
-		}
-		err = nodeAPIClient.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number), newPageContents)
-		if err != nil {
-			return err
-		}
+	}
+
+	err = node.checkPageID(*pageResult)
+	if err != nil {
+		return err
+	}
+
+	err = nodeAPIClient.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number), newPageContents)
+	if err != nil {
+		return err
 	}
 
 	node.addContents(newPageContents)
@@ -178,19 +180,33 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 }
 
 // addContents adds the page title to either the parent page titles slice, or the node slice
+// multiple goroutines could access same titles (or node.root.titles) slice so locking is required
 func (node *Node) addContents(newPageContents *markdown.FileContents) {
 	if node.root != nil {
+		node.root.mu.RLock()
+
+		defer node.root.mu.RUnlock()
+
 		node.root.titles = append(node.root.titles, newPageContents.MetaData["title"].(string))
 
 		return
 	}
+
+	node.mu.RLock()
+
+	defer node.mu.RUnlock()
 
 	node.titles = append(node.titles, newPageContents.MetaData["title"].(string))
 }
 
 // checkPageID method checks the pageID of the page contents and
 // sets the node id to the page id
+// multiple goroutines could access same id field so locking is required
 func (node *Node) checkPageID(pageResult confluence.PageResults) error {
+	node.mu.Lock()
+
+	defer node.mu.Unlock()
+
 	var err error
 
 	if len(pageResult.Results) > 0 {

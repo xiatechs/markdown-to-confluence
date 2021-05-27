@@ -36,8 +36,6 @@ func (node *Node) generateMaster() {
 
 	thereAreValidFiles := subNode.iterate(checking, files)
 	if thereAreValidFiles {
-		wg.Add()
-
 		node.alive = true
 		node.generateFolderPage()
 	}
@@ -56,6 +54,8 @@ func (node *Node) generateChildPages(thereAreValidFiles bool) {
 	const files = false
 
 	if thereAreValidFiles {
+		wg.Add()
+
 		go func() {
 			defer wg.Done()
 			node.generatePlantuml(node.path) // generate plantuml in folders with markdown in it only

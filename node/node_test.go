@@ -32,12 +32,6 @@ func TestIsFolder(t *testing.T) {
 	isFolder("hello")
 }
 
-func TestUploadFile(t *testing.T) {
-	node := Node{}
-
-	node.uploadFile("")
-}
-
 func TestIterate(t *testing.T) {
 	node := Node{}
 

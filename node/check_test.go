@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/xiatechs/markdown-to-confluence/confluence"
-	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
 func TestCheckIfMarkDown(t *testing.T) {
@@ -111,12 +110,4 @@ func TestCheckIfRootAlive(t *testing.T) {
 	node.alive = true
 	node.root = nil
 	node.checkIfRootAlive("fake")
-}
-
-func TestCheckConfluencePages(t *testing.T) {
-	node := Node{}
-
-	newPageContents := markdown.FileContents{}
-
-	node.checkConfluencePages(&newPageContents)
 }
