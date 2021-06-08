@@ -111,14 +111,14 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 
 	err = decoder.Decode(&output)
 	if err != nil {
-		log.Println("createpage error was: ", resp.Status, err)
-		return 0, nil
+		log.Println("json decoder error was: ", resp.Status, err)
+		return 0, err
 	}
 
 	id, err := strconv.Atoi(output.ID)
 	if err != nil {
-		log.Println("createpage error was: ", resp.Status, err)
-		return 0, nil
+		log.Println("strconv error was: ", resp.Status, err)
+		return 0, err
 	}
 
 	return id, nil
@@ -336,13 +336,17 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 		_ = writer.WriteField(key, val)
 	}
 
-	err = writer.Close()
+	req, err := retryablehttp.NewRequest("PUT", uri, body)
 	if err != nil {
 		return nil, fmt.Errorf("writer close error: %w", err)
 	}
 
-	req, err := retryablehttp.NewRequest("PUT", uri, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	err = writer.Close()
+	if err != nil {
+		return nil, fmt.Errorf("writer close error: %w", err)
+	}
 
 	return req, err
 }

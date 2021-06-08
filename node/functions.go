@@ -51,9 +51,5 @@ func isFolder(name string) bool {
 		return false
 	}
 
-	if fileInfo.IsDir() {
-		return true
-	}
-
-	return false
+	return fileInfo.IsDir()
 }

@@ -183,18 +183,18 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 // multiple goroutines could access same titles (or node.root.titles) slice so locking is required
 func (node *Node) addContents(newPageContents *markdown.FileContents) {
 	if node.root != nil {
-		node.root.mu.RLock()
+		node.root.mu.Lock()
 
-		defer node.root.mu.RUnlock()
+		defer node.root.mu.Unlock()
 
 		node.root.titles = append(node.root.titles, newPageContents.MetaData["title"].(string))
 
 		return
 	}
 
-	node.mu.RLock()
+	node.mu.Lock()
 
-	defer node.mu.RUnlock()
+	defer node.mu.Unlock()
 
 	node.titles = append(node.titles, newPageContents.MetaData["title"].(string))
 }
@@ -203,9 +203,9 @@ func (node *Node) addContents(newPageContents *markdown.FileContents) {
 // sets the node id to the page id
 // multiple goroutines could access same id field so locking is required
 func (node *Node) checkPageID(pageResult confluence.PageResults) error {
-	node.mu.Lock()
+	node.mu.RLock()
 
-	defer node.mu.Unlock()
+	defer node.mu.RUnlock()
 
 	var err error
 

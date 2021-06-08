@@ -17,6 +17,7 @@ func (node *Node) findPagesToDelete(id string) {
 		children, err := nodeAPIClient.FindPage(id, findParentPageAndChildren)
 		if err != nil {
 			log.Printf("error finding page: %s", err)
+			return
 		}
 
 		if children != nil {
