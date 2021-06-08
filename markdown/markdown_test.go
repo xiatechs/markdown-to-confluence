@@ -26,7 +26,7 @@ code line c
 }
 
 func TestParseMarkDown(t *testing.T) {
-	link := `https://xiatech.atlassian.net/wiki/download/attachments/0/node.png`
+	link := `https://xiatech-markup.atlassian.net/wiki/download/attachments/0/node.png`
 	testInputs := []struct {
 		Name     string
 		input    []byte
