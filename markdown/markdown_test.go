@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/xiatechs/markdown-to-confluence/common"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
@@ -26,7 +27,7 @@ code line c
 }
 
 func TestParseMarkDown(t *testing.T) {
-	link := `https://xiatech-markup.atlassian.net/wiki/download/attachments/0/node.png`
+	link := common.ConfluenceBaseURL + `/wiki/download/attachments/0/node.png`
 	testInputs := []struct {
 		Name     string
 		input    []byte

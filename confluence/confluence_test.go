@@ -149,6 +149,22 @@ func TestAPIClient_FindPage(t *testing.T) {
 }
 
 func TestAPIClient_CreatePage(t *testing.T) {
+	returnedPage := Page{
+		ID:      "321",
+		Type:    "page",
+		Title:   "PageTitle",
+		Version: VersionObj{2},
+		Body: BodyObj{Storage: StorageObj{
+			Value: "some text",
+		},
+		},
+	}
+
+	returnedJSON, err := json.Marshal(returnedPage)
+	if err != nil {
+		fmt.Println("error marshaling test data: ", err)
+	}
+
 	inputs := []struct {
 		name          string
 		pageContent   *markdown.FileContents
@@ -165,7 +181,7 @@ func TestAPIClient_CreatePage(t *testing.T) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
 					Status:     "OK, Page Found",
 					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader("some text")),
+					Body:       ioutil.NopCloser(strings.NewReader(string(returnedJSON))),
 				}, nil)
 			},
 			expectedError: nil,
@@ -205,7 +221,7 @@ func TestAPIClient_CreatePage(t *testing.T) {
 
 			client := APIClientWithAuths(mock)
 			_, err := client.CreatePage(0, test.pageContent, true)
-			asserts.Equal(err, test.expectedError)
+			asserts.Equal(test.expectedError, err)
 		})
 	}
 }

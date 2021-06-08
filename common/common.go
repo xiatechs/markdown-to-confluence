@@ -3,8 +3,8 @@ package common
 
 const (
 	// ConfluenceBaseURL is the base URL for the confluence page you want the API to connect to
-	ConfluenceBaseURL = "https://xiatech-markup.atlassian.net"	
-	
+	ConfluenceBaseURL = "https://xiatech-markup.atlassian.net"
+
 	// EnvsNotSetError is template env arg not set error
 	EnvsNotSetError = "args not set, please assign values for: "
 )
