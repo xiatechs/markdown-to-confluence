@@ -29,6 +29,8 @@ func (node *Node) generateMaster() {
 
 	const files = false
 
+	var folderPageGenerated bool
+
 	subNode := newNode()
 	subNode.path = node.path
 	subNode.root = node
@@ -37,12 +39,21 @@ func (node *Node) generateMaster() {
 	thereAreValidFiles := subNode.iterate(checking, files)
 	if thereAreValidFiles {
 		node.alive = true
-		node.generateFolderPage()
+
+		err := node.generateFolderPage()
+		if err != nil {
+			log.Println(fmt.Errorf("generate folder page error: %v", err))
+			return
+		}
+
+		folderPageGenerated = true
 	}
 
 	subNode.iterate(processing, folders)
 
-	subNode.generateChildPages(thereAreValidFiles)
+	if folderPageGenerated {
+		subNode.generateChildPages(thereAreValidFiles)
+	}
 }
 
 // generateChildPages method generates all children pages for all parent pages
@@ -65,7 +76,7 @@ func (node *Node) generateChildPages(thereAreValidFiles bool) {
 }
 
 // generateFolderPage method creates a folder page in confluence for a folder
-func (node *Node) generateFolderPage() {
+func (node *Node) generateFolderPage() error {
 	dir, fullDir := node.generateTitles()
 
 	masterpagecontents := markdown.FileContents{
@@ -80,8 +91,10 @@ func (node *Node) generateFolderPage() {
 
 	err := node.checkConfluencePages(&masterpagecontents)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
+
+	return nil
 }
 
 // generateTODOPage method creates a page in parent folder
