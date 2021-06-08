@@ -30,11 +30,8 @@ func CreateAPIClient() (*APIClient, error) {
 	if apiClient.Password == "" ||
 		apiClient.Username == "" ||
 		apiClient.Space == "" {
-		return nil, fmt.Errorf("%s %s, %s, %s",
-			common.EnvsNotSetError,
-			common.ConfluenceAPIKey,
-			common.ConfluenceSpace,
-			common.ConfluenceUsername)
+		return nil, fmt.Errorf("%s",
+			common.EnvsNotSetError)
 	}
 
 	return apiClient, nil
