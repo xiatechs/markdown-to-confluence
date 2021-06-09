@@ -130,6 +130,11 @@ func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 			continue
 		}
 
+		// temporary solution to local url path issue - remove them
+		if strings.Contains(lines[index], "<a href=") && !strings.Contains(lines[index], "https://") {
+			lines[index] = "<p></p>"
+		}
+
 		if strings.Contains(lines[index], "<img src=") {
 			lines[index] = URLConverter(rootID, lines[index])
 		}

@@ -212,7 +212,7 @@ func (node *Node) generatePage(newPageContents *markdown.FileContents) error {
 
 	var err error
 
-	if nodeAPIClient != nil {
+	if nodeAPIClient == nil {
 		return err
 	}
 
