@@ -162,6 +162,8 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 		if err != nil {
 			return err
 		}
+		
+		return nil
 	}
 
 	err = node.checkPageID(*pageResult)
