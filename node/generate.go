@@ -43,7 +43,7 @@ func (node *Node) generateMaster() {
 
 	err := node.generateFolderPage()
 	if err != nil {
-		log.Println(fmt.Errorf("generate folder page error: %v", err))
+		log.Println(fmt.Errorf("generate folder page error: %w", err))
 		return
 	}
 
