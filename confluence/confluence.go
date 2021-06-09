@@ -44,9 +44,15 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 // confirming whether or not the page is a parent page folder (isroot)
 // and returns byte of page contents
 func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, isroot bool) ([]byte, error) {
+	title, ok := contents.MetaData["title"]
+
+	if !ok {
+		return nil, fmt.Errorf("grabPageContents err - title is empty")
+	}
+
 	newPageContent := Page{
 		Type:  "page",
-		Title: contents.MetaData["title"].(string),
+		Title: title.(string),
 		Space: SpaceObj{Key: a.Space},
 		Body: BodyObj{Storage: StorageObj{
 			Value:          string(contents.Body),
@@ -295,7 +301,7 @@ func (a *APIClient) FindPage(title string, many bool) (*PageResults, error) {
 
 	results, err := newPageResults(resp)
 	if err != nil {
-		log.Println(fmt.Errorf("page results error: %w", err))
+		return nil, err
 	}
 
 	return results, nil

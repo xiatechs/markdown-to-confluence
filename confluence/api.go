@@ -21,7 +21,7 @@ type APIClient struct {
 
 // HTTPClient interface will allow mock Do request
 type HTTPClient interface {
-	Do(req *retryablehttp.Request,) (*http.Response, error)
+	Do(req *retryablehttp.Request) (*http.Response, error)
 }
 
 // CreateAPIClient creates the API client with relevant login details for confluence's API
@@ -30,11 +30,7 @@ func CreateAPIClient() (*APIClient, error) {
 	if apiClient.Password == "" ||
 		apiClient.Username == "" ||
 		apiClient.Space == "" {
-		return nil, fmt.Errorf("%s %s, %s, %s",
-			common.EnvsNotSetError,
-			common.ConfluenceAPIKey,
-			common.ConfluenceSpace,
-			common.ConfluenceUsername)
+		return nil, fmt.Errorf("%s", "one or more arguments are not set - please ensure they are before running this action")
 	}
 
 	return apiClient, nil

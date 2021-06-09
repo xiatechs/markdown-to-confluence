@@ -1,15 +1,11 @@
 // Package common is for storing common constants/vars used in app
 package common
 
-const (
+var (
 	// ConfluenceBaseURL is the base URL for the confluence page you want the API to connect to
+	// by default it is https://xiatech-markup.atlassian.net but can be changed below
 	ConfluenceBaseURL = "https://xiatech-markup.atlassian.net"
 
-	// EnvsNotSetError is template env arg not set error
-	EnvsNotSetError = "args not set, please assign values for: "
-)
-
-var (
 	// ConfluenceUsername is to collect external arg for confluence username
 	ConfluenceUsername string
 

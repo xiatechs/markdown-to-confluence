@@ -13,14 +13,14 @@ import (
 )
 
 // setArgs function takes in cmd line arguments
-// and sets common variables (api key / space / username / project path)
+// and sets common variables (api key / space / username / project path / confluenceURL)
 func setArgs() bool {
-	var argLength = 4
+	var argLength = 5
 
 	if len(os.Args) > 1 {
 		vars := strings.Split(os.Args[1], "_")
 
-		if len(vars) == argLength {
+		if len(vars) == argLength-1 {
 			common.ConfluenceAPIKey = vars[0]
 			common.ConfluenceSpace = vars[1]
 			common.ConfluenceUsername = vars[2]
@@ -28,9 +28,19 @@ func setArgs() bool {
 
 			return true
 		}
+
+		if len(vars) == argLength {
+			common.ConfluenceAPIKey = vars[0]
+			common.ConfluenceSpace = vars[1]
+			common.ConfluenceUsername = vars[2]
+			common.ProjectPathEnv = vars[3]
+			common.ConfluenceBaseURL = vars[4]
+
+			return true
+		}
 	}
 
-	log.Println("usage: app apikey_space_username_path")
+	log.Println("usage: app apikey_space_username_path_confluenceURL")
 
 	return false
 }

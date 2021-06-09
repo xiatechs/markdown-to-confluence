@@ -29,50 +29,46 @@ func (node *Node) generateMaster() {
 
 	const files = false
 
-	var folderPageGenerated bool
-
 	subNode := newNode()
 	subNode.path = node.path
 	subNode.root = node
 	node.branches = append(node.branches, subNode)
 
 	thereAreValidFiles := subNode.iterate(checking, files)
-	if thereAreValidFiles {
-		node.alive = true
 
-		err := node.generateFolderPage()
-		if err != nil {
-			log.Println(fmt.Errorf("generate folder page error: %v", err))
-			return
-		}
-
-		folderPageGenerated = true
+	if !thereAreValidFiles {
+		subNode.iterate(processing, folders)
+		return
 	}
+
+	err := node.generateFolderPage()
+	if err != nil {
+		log.Println(fmt.Errorf("generate folder page error: %v", err))
+		return
+	}
+
+	node.alive = true
 
 	subNode.iterate(processing, folders)
 
-	if folderPageGenerated {
-		subNode.generateChildPages(thereAreValidFiles)
-	}
+	subNode.generateChildPages()
 }
 
 // generateChildPages method generates all children pages for all parent pages
 // can be run concurrently as they all have a parent page to attach to
 // so there's no need to order their generation
-func (node *Node) generateChildPages(thereAreValidFiles bool) {
+func (node *Node) generateChildPages() {
 	const processing = false
 
 	const files = false
 
-	if thereAreValidFiles {
-		wg.Add()
+	wg.Add()
 
-		go func() {
-			defer wg.Done()
-			node.generatePlantuml(node.path) // generate plantuml in folders with markdown in it only
-			node.iterate(processing, files)  // generate child pages for any valid files in parent page
-		}()
-	}
+	go func() {
+		defer wg.Done()
+		node.generatePlantuml(node.path) // generate plantuml in folders with markdown in it only
+		node.iterate(processing, files)  // generate child pages for any valid files in parent page
+	}()
 }
 
 // generateFolderPage method creates a folder page in confluence for a folder
@@ -145,7 +141,7 @@ func (node *Node) generateTitles() (string, string) {
 func (node *Node) generatePlantuml(fpath string) {
 	const minimumPageSize = 20 // plantuml that is generated <= 20 chars long is too small
 
-	const iterateThroughSubFolders = false
+	const iterateThroughSubFolders = false // we want to just generate plantuml for the folder
 
 	path, _ := node.generateTitles()
 
@@ -217,12 +213,16 @@ func (node *Node) generatePage(newPageContents *markdown.FileContents) error {
 	var err error
 
 	if nodeAPIClient != nil {
-		if node.root == nil {
-			node.id, err = nodeAPIClient.CreatePage(0, newPageContents, isParentPage)
-		} else {
-			node.id, err = nodeAPIClient.CreatePage(node.root.id, newPageContents, !isParentPage)
-		}
+		return err
 	}
+
+	if node.root == nil {
+		node.id, err = nodeAPIClient.CreatePage(0, newPageContents, isParentPage)
+
+		return err
+	}
+
+	node.id, err = nodeAPIClient.CreatePage(node.root.id, newPageContents, !isParentPage)
 
 	return err
 }
