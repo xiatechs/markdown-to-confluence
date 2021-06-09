@@ -14,24 +14,13 @@
 ## Features:
 
 1) Folders with no content will be skipped to prevent a long chain of child pages & general confusion.
-2) Images will be displayed in markdown pages - but ONLY if the images are stored in the same folder as the markdown page.
+2) Images will be displayed in markdown pages - but only if the images are stored in the same folder as the markdown page.
 
 ## Important:
 
 1) There must be at least one markdown file in the root repository i.e README.md
-2) All markdown must have a unique title. If two markdown have same the title - one will be ignored.
-3) Markdown title is parsed by the first # header, or if that doesn't exist, the first ## or ### header.
-4) Alternatively, title can be grabbed via TOML frontmatter.
+2) Markdown title is parsed by the first # header, or if that doesn't exist, the first ## or ### header.
+3) Alternatively, title can be grabbed via TOML frontmatter.
+4) Local URL paths currently aren't a feature - if you want to use links that are passed through to confluence they must start with https://
 
 ## This action uses the [Confluence REST API](https://developer.atlassian.com/cloud/confluence/rest/intro/)
-
-## Requirements to run the script:
- - please provide the following env vars:
-    "INPUT_CONFLUENCE_USERNAME"
-    "INPUT_CONFLUENCE_API_KEY"
-    "INPUT_CONFLUENCE_SPACE"
-    "PROJECT_PATH"
-    
-    markdown1
-   
-
