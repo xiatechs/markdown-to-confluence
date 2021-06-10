@@ -162,7 +162,9 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 		if err != nil {
 			return err
 		}
-		
+
+		node.addContents(newPageContents)
+
 		return nil
 	}
 
