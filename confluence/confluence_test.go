@@ -61,7 +61,20 @@ func TestAPIClient_UpdatePage(t *testing.T) {
 
 			apiClient := APIClientWithAuths(mock)
 
-			err := apiClient.UpdatePage(test.pageID, test.pageVersion, test.pageContent)
+			oldResults := PageResults{
+				Results: []Page{
+					{
+						ID: "test",
+						Body: BodyObj{
+							Storage: StorageObj{
+								Value: "testing",
+							},
+						},
+					},
+				},
+			}
+
+			_, err := apiClient.UpdatePage(test.pageID, test.pageVersion, test.pageContent, oldResults)
 
 			asserts.Equal(err, test.expectedError)
 		})

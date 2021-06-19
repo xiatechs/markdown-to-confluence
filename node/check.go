@@ -173,12 +173,16 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 		return err
 	}
 
-	err = nodeAPIClient.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number), newPageContents)
-	if err != nil {
-		return err
+	addToList, err := nodeAPIClient.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number),
+		newPageContents, *pageResult)
+	if addToList {
+		node.addContents(newPageContents)
+		return nil
 	}
 
-	node.addContents(newPageContents)
+	if err != nil { // if page doesn't already exist and there's an error - let's see what the error is?
+		return err
+	}
 
 	return nil
 }

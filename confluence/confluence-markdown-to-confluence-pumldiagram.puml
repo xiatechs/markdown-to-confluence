@@ -8,14 +8,14 @@ namespace confluence {
         + Client HTTPClient
 
         - grabPageContents(contents *markdown.FileContents, root int, isroot bool) ([]byte, error)
-        - updatePageContents(pageVersion int64, contents *markdown.FileContents) ([]byte, error)
+        - updatePageContents(pageVersion int64, contents *markdown.FileContents) ([]byte, *Page, error)
         - createFindPageRequest(title string) (*retryablehttp.Request, error)
         - createFindPagesRequest(id string) (*retryablehttp.Request, error)
         - findPageRequest(title string, many bool) (*retryablehttp.Request, error)
 
         + CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
         + DeletePage(pageID int) error
-        + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error
+        + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, originalPage PageResults) error
         + FindPage(title string, many bool) (*PageResults, error)
         + UploadAttachment(filename string, id int) error
 

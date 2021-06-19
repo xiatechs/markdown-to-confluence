@@ -131,7 +131,7 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 }
 
 // updatePageContents method updates the page contents and return as a []byte JSON to be used
-func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.FileContents) ([]byte, error) {
+func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.FileContents) ([]byte, *Page, error) {
 	newPageContent := Page{
 		Type:  "page",
 		Title: contents.MetaData["title"].(string),
@@ -149,10 +149,10 @@ func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.Fil
 
 	newPageContentsJSON, err := json.Marshal(newPageContent)
 	if err != nil {
-		return nil, fmt.Errorf("json marshal error: %w", err)
+		return nil, nil, fmt.Errorf("json marshal error: %w", err)
 	}
 
-	return newPageContentsJSON, nil
+	return newPageContentsJSON, &newPageContent, nil
 }
 
 // DeletePage deletes a confluence page by page ID
@@ -189,17 +189,25 @@ func (a *APIClient) DeletePage(pageID int) error {
 
 // UpdatePage updates a confluence page with our newly created data and increases the
 // version by 1 each time.
-func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error {
-	newPageContentsJSON, err := a.updatePageContents(pageVersion, pageContents)
+func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents,
+	originalPage PageResults) (bool, error) {
+	newPageContentsJSON, newPage, err := a.updatePageContents(pageVersion, pageContents)
 	if err != nil {
-		return fmt.Errorf("updatePageContents error: %w", err)
+		return false, fmt.Errorf("updatePageContents error: %w", err)
+	}
+
+	if len(originalPage.Results) > 0 {
+		if originalPage.Results[0].Body.Storage == newPage.Body.Storage {
+			log.Println("No changes to this page")
+			return true, nil
+		}
 	}
 
 	URL := fmt.Sprintf("%s/wiki/rest/api/content/%d", a.BaseURL, pageID)
 
 	req, err := retryablehttp.NewRequest(http.MethodPut, URL, bytes.NewBuffer(newPageContentsJSON))
 	if err != nil {
-		return fmt.Errorf("updatePageContents error: %w", err)
+		return false, fmt.Errorf("updatePageContents error: %w", err)
 	}
 
 	req.SetBasicAuth(a.Username, a.Password)
@@ -208,7 +216,7 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		return fmt.Errorf("updatepage failed to do the request: %w", err)
+		return false, fmt.Errorf("updatepage failed to do the request: %w", err)
 	}
 
 	defer func() {
@@ -222,13 +230,13 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *mark
 		log.Println("updatepage error was: ", resp.Status, err)
 	}
 
-	return nil
+	return true, nil
 }
 
 // createFindPageRequest method takes in a title (page title) and searches for page
 // in confluence
 func (a *APIClient) createFindPageRequest(title string) (*retryablehttp.Request, error) {
-	lookUpURL := fmt.Sprintf("%s/wiki/rest/api/content?expand=version&type=page&spaceKey=%s&title=%s",
+	lookUpURL := fmt.Sprintf("%s/wiki/rest/api/content?expand=body.storage,version&type=page&spaceKey=%s&title=%s",
 		a.BaseURL, a.Space, title)
 
 	req, err := retryablehttp.NewRequest(http.MethodGet, lookUpURL, nil)
