@@ -2,7 +2,7 @@ v1.0
 # markdown-to-confluence framework:
 
 ```
-1) markdown files must in same folder as the code that they are talking about
+1) markdown files must be within same folder as the code that they are talking about
 
 2) any images in the markdown must be saved in the same folder as the markdown files
 
