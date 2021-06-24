@@ -18,9 +18,10 @@
 
 ## Important:
 
-1) There must be at least one markdown file in the root repository i.e README.md
-2) Markdown title is parsed by the first # header, or if that doesn't exist, the first ## or ### header.
-3) Alternatively, title can be grabbed via TOML frontmatter.
-4) Local URL paths currently aren't a feature - if you want to use links that are passed through to confluence they must start with https://
+1) This creates a mirror image of documentation in github in confluence - you can add comments to pages but any edits to the pages in confluence will be deleted when the page is next updated. So don't bother editing these pages in confluence!
+3) There must be at least one markdown file in the root repository i.e README.md
+4) Markdown title is parsed by the first # header, or if that doesn't exist, the first ## or ### header.
+5) Alternatively, title can be grabbed via TOML frontmatter.
+6) Local URL paths currently aren't a feature - if you want to use links that are passed through to confluence they must start with https://
 
 ## This action uses the [Confluence REST API](https://developer.atlassian.com/cloud/confluence/rest/intro/)
