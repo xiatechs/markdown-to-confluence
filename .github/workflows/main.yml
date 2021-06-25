@@ -1,25 +1,9 @@
 on:
-  push:
-    branches: [master]
   pull_request:
-    branches: [master]
+    branches: '*'
 
 name: Markdown to Confluence
 jobs:
-  markdown-to-confluence:
-    name: Markdown to Confluence
-    runs-on: ubuntu-latest
-    steps: 
-      - name: Checkout code
-        uses: actions/checkout@v2
-        
-      - name: submit markdown to confluence
-        uses: ./ # Uses an action in the root directory
-        with:
-          confluence_username: "REPLACE_WITH_SECRET"
-          confluence_api_key: "REPLACE WITH SECRET"
-          confluence_space: "REPLACE WITH SPACE"
-
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -46,3 +30,37 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: v1.35.2
+          
+  markdown-to-confluence:
+    needs: [test, lint]
+    name: Markdown to Confluence
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Get branch details
+        shell: bash
+        run: |
+             if [ -z "${GITHUB_HEAD_REF}" ]
+             then
+              echo NOT pull request, branch = $(echo ${GITHUB_REF#refs/heads/})
+              echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+             else
+              echo pull request, branch = $(echo ${GITHUB_HEAD_REF})
+              echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
+             fi
+        id: extract_branch          
+      - name: Checkout branch
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          path: './'
+          fetch-depth: 0
+      - name: example repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          path: './markdown-to-confluence'
+          fetch-depth: 0
+      - name: submit markdown to confluence
+        uses: ./ # Uses an action in the root directory
+        with:
+          args: "${{ secrets.apikey }}_${{ secrets.space }}_${{ secrets.username }}_/github/workspace/markdown-to-confluence" 
