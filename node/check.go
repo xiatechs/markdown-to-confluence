@@ -48,19 +48,24 @@ func (node *Node) fileInDirectoryCheck(fpath string, checking, folders bool) boo
 		return false
 	}
 
+	if node.checkIfGoFile(fpath, checking) && !node.hasGoFiles { // if folder has go files in it - set 'hasGo' to true
+		node.hasGoFiles = true
+	}
+
 	validFile := node.checkIfMarkDown(fpath, checking) // for checking & processing markdown files / images etc
 
 	return validFile && checking
 }
 
-// checkIfMarkDown method checks is a folder or not, and if not
-// passes file to checkIfMarkDownFile method
+// checkStep method checks is a folder or not, and if not
+// passes file to 'checking' methods
+// i.e does it have markdown / go etc
 func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 	if !isFolder(fpath) {
-		if ok := node.checkIfMarkDownFile(checking, fpath); ok {
-			if checking {
-				node.alive = true
-			}
+		hasMarkDown := node.checkIfMarkDownFile(checking, fpath)
+
+		if checking && hasMarkDown {
+			node.alive = true
 
 			return true
 		}
@@ -109,20 +114,26 @@ func (node *Node) checkIfFolder(fpath string) bool {
 // and if not, checks for if it is a go or image file
 func (node *Node) checkOtherFileTypes(fpath string) {
 	if !node.checkIfFolder(fpath) {
-		node.checkIfGoFile(fpath)
+		node.checkIfGoFile(fpath, false)
 		node.checkForImages(fpath)
 	}
 }
 
 // checkIfGoFile method checks to see if the file is
 // a golang file
-func (node *Node) checkIfGoFile(name string) {
+func (node *Node) checkIfGoFile(name string, checking bool) bool {
 	if strings.HasSuffix(name, ".go") {
+		if checking {
+			return true
+		}
+
 		err := node.processGoFile(name)
 		if err != nil {
 			log.Println(err)
 		}
 	}
+
+	return false
 }
 
 // checkForImages method checks to see if the file is

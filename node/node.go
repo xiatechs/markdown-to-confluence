@@ -27,13 +27,14 @@ var (
 
 // Node struct enables creation of a page tree
 type Node struct {
-	id       int          // when page is created, page ID will be stored here.
-	alive    bool         // for tracking if the folder has any valid content within it asides more folders
-	path     string       // file / folderpath will be stored here
-	root     *Node        // the parent page node will be linked here
-	branches []*Node      // any children page nodes will be stored here (for deleting)
-	titles   []string     // titles of pages created by node (for deleting)
-	mu       sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
+	id         int          // when page is created, page ID will be stored here.
+	alive      bool         // for tracking if the folder has any valid content within it asides more folders
+	hasGoFiles bool         // for tracking if the folder has any Go files within it
+	path       string       // file / folderpath will be stored here
+	root       *Node        // the parent page node will be linked here
+	branches   []*Node      // any children page nodes will be stored here (for deleting)
+	titles     []string     // titles of pages created by node (for deleting)
+	mu         sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
 }
 
 // Start method begins the generation of a tree of the repo for confluence

@@ -2,8 +2,6 @@
 
 ## the node package is to enable reading through a repo and create a tree of content on confluence
 
-![method flow](node-method.jpg)
-
 ### The package contains one exported struct:
 ```
 // Node struct enables creation of a page tree

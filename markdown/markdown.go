@@ -47,12 +47,10 @@ func newFileContents() *FileContents {
 	return &f
 }
 
-// Paragraphify takes in a .puml file contents and returns
+// Paragraphify takes in a file contents and returns
 // a formatted HTML page as a string
 func Paragraphify(content string) string {
 	var pre string
-	pre += "### To view this try copy&paste to this site: [PlainText UML Editor](https://www.planttext.com/) \n"
-	pre += "### Alternatively please install a _PlantUML Visualizer plugin_ for Chrome or Firefox \n"
 	pre += "``` + \n"
 	content = strings.ReplaceAll(content, "\r\n", "\n")
 	content = strings.ReplaceAll(content, "\r", "\n")

@@ -66,8 +66,11 @@ func (node *Node) generateChildPages() {
 
 	go func() {
 		defer wg.Done()
-		node.generatePlantuml(node.path) // generate plantuml in folders with markdown in it only
-		node.iterate(processing, files)  // generate child pages for any valid files in parent page
+		if node.hasGoFiles {
+			node.generateGoDoc()
+			node.generatePlantuml(node.path) // generate plantuml in folders with markdown in it only [disabled]
+		}
+		node.iterate(processing, files) // generate child pages for any valid files in parent page
 	}()
 }
 
@@ -82,7 +85,8 @@ func (node *Node) generateFolderPage() error {
 		Body: []byte(`<p>Welcome to the '<b>` + dir + `</b>' folder of this Xiatech code repo.</p>
 		<p>This folder full path in the repo is: ` + fullDir + `</p>
 <p>You will find attachments/images for this folder via the ellipsis at the top right.</p>
-<p>Any markdown or subfolders is available in children pages under this page.</p>`),
+<p>Any markdown or subfolders is available in children pages under this page.</p>
+<p>These pages are uploaded from github - so any edits from confluence end will be deleted!</p>`),
 	}
 
 	err := node.checkConfluencePages(&masterpagecontents)
@@ -134,6 +138,34 @@ func (node *Node) generateTitles() (string, string) {
 	return dir, fullDir
 }
 
+func (node *Node) generateGoDoc() {
+	if node.root.root == nil { // no go doc for main
+		return
+	}
+
+	path, _ := node.generateTitles()
+
+	goDocOutput, err := exec.Command("go", "doc", "-all", node.path).Output() // #nosec - godoc
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	HTMLoutput := markdown.Paragraphify(string(goDocOutput))
+
+	masterpagecontents := markdown.FileContents{
+		MetaData: map[string]interface{}{
+			"title": "godoc-" + path,
+		},
+		Body: []byte(HTMLoutput),
+	}
+
+	err = node.checkConfluencePages(&masterpagecontents)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 // generatePlantuml takes in a folder path and
 // generates a .puml file of the go code in the folder
 // then calls generatePlantumlImage method to create a picture
@@ -157,7 +189,7 @@ func (node *Node) generatePlantuml(fpath string) {
 
 	rendered := result.Render()
 	if len(rendered) > minimumPageSize {
-		var filename = path + "-pumldiagram"
+		var filename = path + "pumlimg"
 
 		var buf bytes.Buffer
 
@@ -176,7 +208,11 @@ func (node *Node) generatePlantuml(fpath string) {
 
 		fmt.Fprint(writer, rendered)
 
-		node.generatePlantumlImage(node.path + "/" + filename + ".puml")
+		err := node.generatePlantumlImage(node.path + "/" + filename + ".puml")
+		if err != nil {
+			log.Println(fmt.Errorf("generatePlantumlImage error: %w", err))
+			return
+		}
 
 		masterpagecontents := markdown.FileContents{
 			MetaData: map[string]interface{}{
@@ -194,14 +230,16 @@ func (node *Node) generatePlantuml(fpath string) {
 
 // generatePlantumlImage method calls external application (plantuml.jar)
 // in the docker container to generate the plantuml image (as a .png)
-func (node *Node) generatePlantumlImage(fpath string) {
+func (node *Node) generatePlantumlImage(fpath string) error {
 	convertPlantuml := exec.Command("java", "-jar", "/app/plantuml.jar", "-tpng", fpath) // #nosec - pumlimage
 	convertPlantuml.Stdout = os.Stdout
 
 	err := convertPlantuml.Run()
 	if err != nil {
-		log.Println(fmt.Errorf("generatePlantumlImage error: %w", err))
+		return err
 	}
+
+	return nil
 }
 
 // generatePage method creates a new page for node.
