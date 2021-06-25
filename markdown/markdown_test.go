@@ -13,10 +13,7 @@ func TestParagraphify(t *testing.T) {
 code line b
 code line c`
 
-	expected := `<h3>To view this try copy&amp;paste to this site: <a href="https://www.planttext.com/">PlainText UML Editor</a></h3>` + //nolint:lll // it's long test string
-		`
-<h3>Alternatively please install a <em>PlantUML Visualizer plugin</em> for Chrome or Firefox</h3>
-<pre><code class="language-+">code line a
+	expected := `<pre><code class="language-+">code line a
 code line b
 code line c
 </code></pre>
@@ -98,6 +95,20 @@ test description`)
 	out, err := markdown.ParseMarkdown(0, testContent)
 	assert.Nil(t, err)
 	assert.Equal(t, out, expectOutput)
+}
+
+func TestURLConverter(t *testing.T) {
+	a := `<p><span class="confluence-embedded-file-wrapped">`
+	b := `<img src="` + common.ConfluenceBaseURL + `/wiki/download/attachments/`
+	c := "999" + `/` + "local_image.png" + `"></img>`
+	d := `</span></p>`
+
+	URL := `<p><img src="local_image.png"></img><p>`
+
+	output := markdown.URLConverter(999, URL)
+	expectedOutput := a + b + c + d
+
+	assert.Equal(t, expectedOutput, output)
 }
 
 func TestParseMarkdown_MalformedFrontMatter(t *testing.T) {

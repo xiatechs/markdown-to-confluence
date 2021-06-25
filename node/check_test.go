@@ -60,7 +60,7 @@ func TestCheckIfGoFile(t *testing.T) {
 	node := Node{}
 	node.root = &node
 	node.alive = true
-	node.checkIfGoFile("test.go")
+	node.checkIfGoFile("test.go", false)
 }
 
 func TestProcessGoFile(t *testing.T) {

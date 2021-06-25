@@ -57,6 +57,7 @@ func (node *Node) generateMaster() {
 // generateChildPages method generates all children pages for all parent pages
 // can be run concurrently as they all have a parent page to attach to
 // so there's no need to order their generation
+// will only be called of the page has markdown in it
 func (node *Node) generateChildPages() {
 	const processing = false
 
@@ -66,10 +67,12 @@ func (node *Node) generateChildPages() {
 
 	go func() {
 		defer wg.Done()
+
 		if node.hasGoFiles {
-			node.generateGoDoc()
+			node.generateGoDoc()             // generate go doc page for each folder that has Go files
 			node.generatePlantuml(node.path) // generate plantuml in folders with markdown in it only [disabled]
 		}
+
 		node.iterate(processing, files) // generate child pages for any valid files in parent page
 	}()
 }
