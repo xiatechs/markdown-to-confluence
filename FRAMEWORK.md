@@ -1,5 +1,5 @@
 v1.0
-# markdown-to-confluence framework:
+# markdown-to-confluence methodology:
 
 ```
 1) markdown files must be within same folder as the code that they are talking about
