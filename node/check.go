@@ -152,7 +152,7 @@ func (node *Node) checkNodeRootIsNil(name string) {
 func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) error {
 	pageTitle := strings.Join(strings.Split(newPageContents.MetaData["title"].(string), " "), "+")
 
-	pageResult, err := nodeAPIClient.FindPage(pageTitle, false)
+	pageResult, err := NodeAPIClient.FindPage(pageTitle, false)
 	if err != nil {
 		return err
 	}
@@ -173,15 +173,16 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 		return err
 	}
 
-	addToList, err := nodeAPIClient.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number),
-		newPageContents, *pageResult)
-	if addToList {
-		node.addContents(newPageContents)
-		return nil
-	}
-
-	if err != nil { // if page doesn't already exist and there's an error - let's see what the error is?
-		return err
+	if len(pageResult.Results) > 0 {
+		addToList, err := NodeAPIClient.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number),
+			newPageContents, *pageResult)
+		if addToList {
+			node.addContents(newPageContents)
+			return nil
+		}
+		if err != nil { // if page doesn't already exist and there's an error - let's see what the error is?
+			return err
+		}
 	}
 
 	return nil

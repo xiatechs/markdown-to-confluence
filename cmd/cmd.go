@@ -53,9 +53,14 @@ func Start() {
 	if setArgs() {
 		root := node.Node{}
 
-		if client, err := confluence.CreateAPIClient(); err != nil {
+		client, err := confluence.CreateAPIClient()
+		if err != nil {
 			log.Println(err)
-		} else if root.Start(common.ProjectPathEnv, client) {
+		}
+
+		node.NodeAPIClient = client
+
+		if root.Start(common.ProjectPathEnv) {
 			root.Delete()
 		}
 	}

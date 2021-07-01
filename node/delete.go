@@ -13,8 +13,8 @@ import (
 func (node *Node) findPagesToDelete(id string) {
 	findParentPageAndChildren := true
 
-	if nodeAPIClient != nil {
-		children, err := nodeAPIClient.FindPage(id, findParentPageAndChildren)
+	if NodeAPIClient != nil {
+		children, err := NodeAPIClient.FindPage(id, findParentPageAndChildren)
 		if err != nil {
 			log.Printf("error finding page: %s", err)
 		}
@@ -56,7 +56,7 @@ func (node *Node) deletePage(id string) {
 		return
 	}
 
-	err = nodeAPIClient.DeletePage(convert)
+	err = NodeAPIClient.DeletePage(convert)
 	if err != nil {
 		log.Printf("error deleting page: %s", err)
 	}

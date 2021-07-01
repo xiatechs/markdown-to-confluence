@@ -212,17 +212,17 @@ func (node *Node) generatePage(newPageContents *markdown.FileContents) error {
 
 	var err error
 
-	if nodeAPIClient == nil {
+	if NodeAPIClient == nil {
 		return err
 	}
 
 	if node.root == nil {
-		node.id, err = nodeAPIClient.CreatePage(0, newPageContents, isParentPage)
+		node.id, err = NodeAPIClient.CreatePage(0, newPageContents, isParentPage)
 
 		return err
 	}
 
-	node.id, err = nodeAPIClient.CreatePage(node.root.id, newPageContents, !isParentPage)
+	node.id, err = NodeAPIClient.CreatePage(node.root.id, newPageContents, !isParentPage)
 
 	return err
 }

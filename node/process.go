@@ -56,7 +56,7 @@ func (node *Node) processMarkDown(path string) error {
 // uploadFile method takes in file and
 // uploads the file to a page by parent page ID (node.root.id)
 func (node *Node) uploadFile(path string) {
-	err := nodeAPIClient.UploadAttachment(filepath.Clean(path), node.root.id)
+	err := NodeAPIClient.UploadAttachment(filepath.Clean(path), node.root.id)
 	if err != nil {
 		log.Printf("error uploading attachment: %s", err)
 	}

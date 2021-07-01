@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/xiatechs/markdown-to-confluence/confluence"
 	"github.com/xiatechs/markdown-to-confluence/semaphore"
 )
 
@@ -22,7 +21,7 @@ var (
 	numberOfFolders     float64                                    // for counting number of folders in repo
 	foldersWithMarkdown float64                                    // for counting number of folders with markdown in repo
 	rootDir             string                                     // will contain the root folderpath of the repo
-	nodeAPIClient       *confluence.APIClient                      // api client will be stored here
+	NodeAPIClient       APIClienter                                // api client will be stored here
 )
 
 // Node struct enables creation of a page tree
@@ -42,7 +41,7 @@ type Node struct {
 // then begins the recursive method generateMaster
 // and returns bool - if true then it means pages have been created/updated/checked on confluence
 // and there is markdown content in the folder
-func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
+func (node *Node) Start(projectPath string) bool {
 	if isFolder(projectPath) {
 		numberOfFolders++
 
@@ -53,8 +52,6 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 		rootDir = strings.ReplaceAll(rootDir, ".", "")
 
 		rootDir = strings.ReplaceAll(rootDir, "/", "")
-
-		nodeAPIClient = client
 
 		node.generateMaster() // contains concurrency
 
