@@ -7,6 +7,7 @@ import (
 
 //go:generate mockgen -destination=./apiclient_mock_test.go -package=node -source=mock_client.go
 
+// APIClienter is interface for confluence API client and mock tests
 type APIClienter interface {
 	CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
 	DeletePage(pageID int) error

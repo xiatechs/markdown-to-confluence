@@ -21,7 +21,8 @@ var (
 	numberOfFolders     float64                                    // for counting number of folders in repo
 	foldersWithMarkdown float64                                    // for counting number of folders with markdown in repo
 	rootDir             string                                     // will contain the root folderpath of the repo
-	NodeAPIClient       APIClienter                                // api client will be stored here
+	// NodeAPIClient is interface where a confluence API client can be placed
+	NodeAPIClient APIClienter // api client will be stored here
 )
 
 // Node struct enables creation of a page tree
