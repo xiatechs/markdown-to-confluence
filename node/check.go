@@ -117,25 +117,29 @@ func (node *Node) checkOtherFileTypes(fpath string) {
 // checkIfGoFile method checks to see if the file is
 // a golang file
 func (node *Node) checkIfGoFile(name string) {
-	if strings.HasSuffix(name, ".go") {
-		err := node.processGoFile(name)
-		if err != nil {
-			log.Println(err)
-		}
+	if !strings.HasSuffix(name, ".go") {
+		return
+	}
+
+	err := node.processGoFile(name)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
 // checkForImages method checks to see if the file is
 // an image file
 func (node *Node) checkForImages(name string) {
-	if node.alive {
-		validFiles := []string{".png", ".jpg", ".jpeg", ".gif"}
+	if !node.alive {
+		return
+	}
 
-		for index := range validFiles {
-			if strings.Contains(name, validFiles[index]) {
-				node.checkNodeRootIsNil(name)
-				return
-			}
+	validFiles := []string{".png", ".jpg", ".jpeg", ".gif"}
+
+	for index := range validFiles {
+		if strings.Contains(name, validFiles[index]) {
+			node.checkNodeRootIsNil(name)
+			return
 		}
 	}
 }
@@ -152,35 +156,55 @@ func (node *Node) checkNodeRootIsNil(name string) {
 func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) error {
 	pageTitle := strings.Join(strings.Split(newPageContents.MetaData["title"].(string), " "), "+")
 
-	pageResult, err := NodeAPIClient.FindPage(pageTitle, false)
+	pageResult, err := nodeAPIClient.FindPage(pageTitle, false)
 	if err != nil {
 		return err
 	}
 
 	if pageResult == nil {
-		err := node.generatePage(newPageContents)
+		err := node.newPage(newPageContents)
 		if err != nil {
 			return err
 		}
 
-		node.addContents(newPageContents)
-
 		return nil
 	}
 
-	err = node.checkPageID(*pageResult)
+	err = node.createOrUpdatePage(newPageContents, pageResult)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (node *Node) newPage(newPageContents *markdown.FileContents) error {
+	err := node.generatePage(newPageContents)
+	if err != nil {
+		return err
+	}
+
+	node.addContents(newPageContents)
+
+	return nil
+}
+
+func (node *Node) createOrUpdatePage(newPageContents *markdown.FileContents,
+	pageResult *confluence.PageResults) error {
+	err := node.checkPageID(*pageResult)
 	if err != nil {
 		return err
 	}
 
 	if len(pageResult.Results) > 0 {
-		addToList, err := NodeAPIClient.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number),
+		addToList, err := nodeAPIClient.UpdatePage(node.id, int64(pageResult.Results[0].Version.Number),
 			newPageContents, *pageResult)
-		if addToList && err != nil {
+		if err != nil {
+			return err
+		}
+		if addToList {
 			node.addContents(newPageContents)
 		}
-
-		return err
 	}
 
 	return nil

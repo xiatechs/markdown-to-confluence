@@ -5,7 +5,7 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
-//go:generate mockgen -destination=./apiclient_mock_test.go -package=node -source=mock_client.go
+//go:generate mockgen -destination=./apiclient_mock_test.go -package=node -source=client_interface.go
 
 // APIClienter is interface for confluence API client and mock tests
 type APIClienter interface {

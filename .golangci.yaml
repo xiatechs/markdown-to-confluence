@@ -114,7 +114,7 @@ linters-settings:
     # put imports beginning with prefix after 3rd-party packages;
     # only support one prefix
     # if not set, use goimports.local-prefixes
-    local-prefixes: github.com/xiatechs/moxie
+    #local-prefixes: github.com/xiatechs/moxie
   gocognit:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 15

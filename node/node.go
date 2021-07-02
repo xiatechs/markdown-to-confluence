@@ -1,8 +1,8 @@
 // Package node is to enable reading through a repo and create a tree of content on confluence
 package node
 
+//notodo: no need
 import (
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -22,8 +22,12 @@ var (
 	foldersWithMarkdown float64                                    // for counting number of folders with markdown in repo
 	rootDir             string                                     // will contain the root folderpath of the repo
 	// NodeAPIClient is interface where a confluence API client can be placed
-	NodeAPIClient APIClienter // api client will be stored here
+	nodeAPIClient APIClienter // api client will be stored here
 )
+
+func SetAPIClient(client APIClienter) {
+	nodeAPIClient = client
+}
 
 // Node struct enables creation of a page tree
 type Node struct {
@@ -55,20 +59,6 @@ func (node *Node) Start(projectPath string) bool {
 		rootDir = strings.ReplaceAll(rootDir, "/", "")
 
 		node.generateMaster() // contains concurrency
-
-		wg.Add()
-
-		go func() {
-			defer wg.Done()
-
-			var oneHundredPercent float64 = 100 // for calculating percentage of folders with markdown
-
-			markDownPercentage := (foldersWithMarkdown / numberOfFolders) * oneHundredPercent
-
-			percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
-
-			node.generateTODOPage(percentageString)
-		}()
 
 		log.Println("WAITING FOR GOROUTINES")
 

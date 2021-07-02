@@ -93,6 +93,7 @@ func (node *Node) generateFolderPage() error {
 	return nil
 }
 
+//notodo: ignore this page
 // generateTODOPage method creates a page in parent folder
 // that contains todo's for a codebase
 func (node *Node) generateTODOPage(percentage string) {
@@ -212,17 +213,17 @@ func (node *Node) generatePage(newPageContents *markdown.FileContents) error {
 
 	var err error
 
-	if NodeAPIClient == nil {
+	if nodeAPIClient == nil {
 		return err
 	}
 
 	if node.root == nil {
-		node.id, err = NodeAPIClient.CreatePage(0, newPageContents, isParentPage)
+		node.id, err = nodeAPIClient.CreatePage(0, newPageContents, isParentPage)
 
 		return err
 	}
 
-	node.id, err = NodeAPIClient.CreatePage(node.root.id, newPageContents, !isParentPage)
+	node.id, err = nodeAPIClient.CreatePage(node.root.id, newPageContents, !isParentPage)
 
 	return err
 }
