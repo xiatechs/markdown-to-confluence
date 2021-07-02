@@ -15,9 +15,11 @@ import (
 // setArgs function takes in cmd line arguments
 // and sets common variables (api key / space / username / project path / confluenceURL)
 func setArgs() bool {
+	var requiredNumberOfArgs = 2
+
 	var argLength = 5
 
-	if len(os.Args) < 2 {
+	if len(os.Args) < requiredNumberOfArgs {
 		log.Println("usage: app apikey_space_username_path[_confluenceURL - optional]")
 		return false
 	}

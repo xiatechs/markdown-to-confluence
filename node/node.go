@@ -25,6 +25,7 @@ var (
 	nodeAPIClient APIClienter // api client will be stored here
 )
 
+// SetAPIClient sets a confluence.APIClient object into the node package
 func SetAPIClient(client APIClienter) {
 	nodeAPIClient = client
 }

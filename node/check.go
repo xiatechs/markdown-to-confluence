@@ -202,6 +202,7 @@ func (node *Node) createOrUpdatePage(newPageContents *markdown.FileContents,
 		if err != nil {
 			return err
 		}
+
 		if addToList {
 			node.addContents(newPageContents)
 		}
