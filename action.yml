@@ -3,25 +3,25 @@ inputs:
   key:
     description: 'the api key'
     required: true
-    default: 'key'
+    default: ''
   space:
     description: 'the confluence space'
     required: true
-    default: 'space'
+    default: ''
   username:
     description: 'the username'
     required: true
-    default: 'username'
+    default: ''
   repo:
     description: 'the repository foldername'
     required: true
-    default: '.....'
+    default: ''
   url:
     description: 'alternative atlassian url'
     required: false
-    default: 'hello'
+    default: ''
 runs:
   using: docker
   image: Dockerfile
   args:
-    - "${{ inputs.key }} ${{ inputs.space }} ${{ inputs.username }} ${{ inputs.repo }} ${{ inputs.url }}"
+    - ${{ inputs.key }} ${{ inputs.space }} ${{ inputs.username }} ${{ inputs.repo }} ${{ inputs.url }}
