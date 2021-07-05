@@ -52,7 +52,7 @@ func TestCheckIfMarkDownFile(t *testing.T) {
 func TestCheckForImages(t *testing.T) {
 	node := Node{}
 	node.root = &node
-	node.alive = true
+	node.alive = false
 	node.checkForImages("test.gif")
 }
 

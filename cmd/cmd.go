@@ -15,34 +15,29 @@ import (
 // setArgs function takes in cmd line arguments
 // and sets common variables (api key / space / username / project path / confluenceURL)
 func setArgs() bool {
+	var requiredNumberOfArgs = 2
+
 	var argLength = 5
 
-	if len(os.Args) > 1 {
-		vars := strings.Split(os.Args[1], "_")
-
-		if len(vars) == argLength-1 {
-			common.ConfluenceAPIKey = vars[0]
-			common.ConfluenceSpace = vars[1]
-			common.ConfluenceUsername = vars[2]
-			common.ProjectPathEnv = vars[3]
-
-			return true
-		}
-
-		if len(vars) == argLength {
-			common.ConfluenceAPIKey = vars[0]
-			common.ConfluenceSpace = vars[1]
-			common.ConfluenceUsername = vars[2]
-			common.ProjectPathEnv = vars[3]
-			common.ConfluenceBaseURL = vars[4]
-
-			return true
-		}
+	if len(os.Args) < requiredNumberOfArgs {
+		log.Println("usage: app apikey_space_username_path[_confluenceURL - optional]")
+		return false
 	}
 
-	log.Println("usage: app apikey_space_username_path_confluenceURL")
+	vars := strings.Split(os.Args[1], "_")
 
-	return false
+	if len(vars) == argLength-1 {
+		common.ConfluenceAPIKey = vars[0]
+		common.ConfluenceSpace = vars[1]
+		common.ConfluenceUsername = vars[2]
+		common.ProjectPathEnv = vars[3]
+	}
+
+	if len(vars) == argLength {
+		common.ConfluenceBaseURL = vars[4]
+	}
+
+	return true
 }
 
 // Start function sets argument inputs, creates confluence API client
@@ -53,9 +48,15 @@ func Start() {
 	if setArgs() {
 		root := node.Node{}
 
-		if client, err := confluence.CreateAPIClient(); err != nil {
+		client, err := confluence.CreateAPIClient()
+		if err != nil {
 			log.Println(err)
-		} else if root.Start(common.ProjectPathEnv, client) {
+			return
+		}
+
+		node.SetAPIClient(client)
+
+		if root.Start(common.ProjectPathEnv) {
 			root.Delete()
 		}
 	}

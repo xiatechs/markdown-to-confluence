@@ -1,4 +1,5 @@
 // Package todo is to gather all TODO's in a repo and store them in one file for people to look through
+//notodo: this is the TODO PACKAGE so we don't need to pick this up
 package todo
 
 import (
@@ -28,6 +29,10 @@ func grabTODO(content, filename string) string {
 	var output string
 
 	var containsTODO bool
+
+	if strings.Contains(content, "//notodo:") {
+		return ""
+	}
 
 	content = strings.ReplaceAll(content, "\r\n", "\n")
 	content = strings.ReplaceAll(content, "\r", "\n")

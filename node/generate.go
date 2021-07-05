@@ -13,7 +13,6 @@ import (
 
 	goplantuml "github.com/jfeliu007/goplantuml/parser"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
-	"github.com/xiatechs/markdown-to-confluence/todo"
 )
 
 // generateMaster method checks whether the folder is alive (has markdown files in it)
@@ -93,6 +92,7 @@ func (node *Node) generateFolderPage() error {
 	return nil
 }
 
+/* DISABLED FOR NOW
 // generateTODOPage method creates a page in parent folder
 // that contains todo's for a codebase
 func (node *Node) generateTODOPage(percentage string) {
@@ -108,6 +108,7 @@ func (node *Node) generateTODOPage(percentage string) {
 		}
 	}
 }
+*/
 
 // generateTitles returns two strings
 // string 1 - folder of the node

@@ -15,7 +15,15 @@ namespace confluence {
 
         + CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
         + DeletePage(pageID int) error
-        + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, originalPage PageResults) error
+        + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, originalPage PageResults) (bool, error)
+        + FindPage(title string, many bool) (*PageResults, error)
+        + UploadAttachment(filename string, id int) error
+
+    }
+    interface APIClienter  {
+        + CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
+        + DeletePage(pageID int) error
+        + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, originalPage PageResults) (bool, error)
         + FindPage(title string, many bool) (*PageResults, error)
         + UploadAttachment(filename string, id int) error
 
@@ -62,5 +70,6 @@ namespace confluence {
     }
 }
 
+"confluence.APIClienter" <|-- "confluence.APIClient"
 
 @enduml

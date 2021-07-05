@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	go_retryablehttp "github.com/hashicorp/go-retryablehttp"
+	retryablehttp "github.com/hashicorp/go-retryablehttp"
 )
 
 // MockHTTPClient is a mock of HTTPClient interface.
@@ -36,7 +36,7 @@ func (m *MockHTTPClient) EXPECT() *MockHTTPClientMockRecorder {
 }
 
 // Do mocks base method.
-func (m *MockHTTPClient) Do(req *go_retryablehttp.Request) (*http.Response, error) {
+func (m *MockHTTPClient) Do(req *retryablehttp.Request) (*http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Do", req)
 	ret0, _ := ret[0].(*http.Response)

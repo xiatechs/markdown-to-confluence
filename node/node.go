@@ -1,8 +1,8 @@
 // Package node is to enable reading through a repo and create a tree of content on confluence
 package node
 
+//notodo: no need
 import (
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/xiatechs/markdown-to-confluence/confluence"
 	"github.com/xiatechs/markdown-to-confluence/semaphore"
 )
 
@@ -22,8 +21,14 @@ var (
 	numberOfFolders     float64                                    // for counting number of folders in repo
 	foldersWithMarkdown float64                                    // for counting number of folders with markdown in repo
 	rootDir             string                                     // will contain the root folderpath of the repo
-	nodeAPIClient       *confluence.APIClient                      // api client will be stored here
+	// NodeAPIClient is interface where a confluence API client can be placed
+	nodeAPIClient APIClienter // api client will be stored here
 )
+
+// SetAPIClient sets a confluence.APIClient object into the node package
+func SetAPIClient(client APIClienter) {
+	nodeAPIClient = client
+}
 
 // Node struct enables creation of a page tree
 type Node struct {
@@ -42,7 +47,7 @@ type Node struct {
 // then begins the recursive method generateMaster
 // and returns bool - if true then it means pages have been created/updated/checked on confluence
 // and there is markdown content in the folder
-func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
+func (node *Node) Start(projectPath string) bool {
 	if isFolder(projectPath) {
 		numberOfFolders++
 
@@ -54,23 +59,7 @@ func (node *Node) Start(projectPath string, client *confluence.APIClient) bool {
 
 		rootDir = strings.ReplaceAll(rootDir, "/", "")
 
-		nodeAPIClient = client
-
 		node.generateMaster() // contains concurrency
-
-		wg.Add()
-
-		go func() {
-			defer wg.Done()
-
-			var oneHundredPercent float64 = 100 // for calculating percentage of folders with markdown
-
-			markDownPercentage := (foldersWithMarkdown / numberOfFolders) * oneHundredPercent
-
-			percentageString := fmt.Sprintf("Folders with markdown percentage: %.2f%s", markDownPercentage, "%")
-
-			node.generateTODOPage(percentageString)
-		}()
 
 		log.Println("WAITING FOR GOROUTINES")
 

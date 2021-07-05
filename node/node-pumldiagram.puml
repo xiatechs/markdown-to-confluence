@@ -1,5 +1,13 @@
 @startuml
 namespace node {
+    interface APIClienter  {
+        + CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
+        + DeletePage(pageID int) error
+        + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, originalPage confluence.PageResults) (bool, error)
+        + FindPage(title string, many bool) (*confluence.PageResults, error)
+        + UploadAttachment(filename string, id int) error
+
+    }
     class Node << (S,Aquamarine) >> {
         - id int
         - alive bool
@@ -19,14 +27,16 @@ namespace node {
         - checkForImages(name string) 
         - checkNodeRootIsNil(name string) 
         - checkConfluencePages(newPageContents *markdown.FileContents) error
+        - newPage(newPageContents *markdown.FileContents) error
+        - createOrUpdatePage(newPageContents *markdown.FileContents, pageResult *confluence.PageResults) error
         - addContents(newPageContents *markdown.FileContents) 
         - checkPageID(pageResult confluence.PageResults) error
         - findPagesToDelete(id string) 
         - deletePages(children *confluence.PageResults) 
         - deletePage(id string) 
         - generateMaster() 
-        - generateChildPages(thereAreValidFiles bool) 
-        - generateFolderPage() 
+        - generateChildPages() 
+        - generateFolderPage() error
         - generateTODOPage(percentage string) 
         - generateTitles() (string, string)
         - generatePlantuml(fpath string) 
@@ -37,7 +47,7 @@ namespace node {
         - processMarkDown(path string) error
         - uploadFile(path string) 
 
-        + Start(projectPath string, client *confluence.APIClient) bool
+        + Start(projectPath string) bool
         + Delete() 
 
     }
