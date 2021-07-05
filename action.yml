@@ -1,11 +1,27 @@
 name: Markdown to Confluence
 inputs:
-  args:
-    description: 'Arguments for markdown tool'
+  key:
+    description: 'the api key'
     required: true
-    default: ''
+    default: 'key'
+  space:
+    description: 'the confluence space'
+    required: true
+    default: 'space'
+  username:
+    description: 'the username'
+    required: true
+    default: 'username'
+  repo:
+    description: 'the repository foldername'
+    required: true
+    default: '.....'
+  url:
+    description: 'alternative atlassian url'
+    required: false
+    default: 'hello'
 runs:
   using: docker
   image: Dockerfile
   args:
-    - ${{ inputs.args }}
+    - "${{ inputs.key }} ${{ inputs.space }} ${{ inputs.username }} ${{ inputs.repo }} ${{ inputs.url }}"

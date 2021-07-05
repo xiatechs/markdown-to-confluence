@@ -5,7 +5,6 @@ package cmd
 import (
 	"log"
 	"os"
-	"strings"
 
 	"github.com/xiatechs/markdown-to-confluence/common"
 	"github.com/xiatechs/markdown-to-confluence/confluence"
@@ -15,16 +14,14 @@ import (
 // setArgs function takes in cmd line arguments
 // and sets common variables (api key / space / username / project path / confluenceURL)
 func setArgs() bool {
-	var requiredNumberOfArgs = 2
+	var argLength = 6
 
-	var argLength = 5
-
-	if len(os.Args) < requiredNumberOfArgs {
-		log.Println("usage: app apikey_space_username_path[_confluenceURL - optional]")
+	if len(os.Args) < argLength-1 {
+		log.Println("usage: app [key space username repopath confluenceURL(optional)]")
 		return false
 	}
 
-	vars := strings.Split(os.Args[1], "_")
+	vars := os.Args[1:]
 
 	if len(vars) == argLength-1 {
 		common.ConfluenceAPIKey = vars[0]
