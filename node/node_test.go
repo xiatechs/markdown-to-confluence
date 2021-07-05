@@ -50,7 +50,7 @@ func TestStartBrandNew(t *testing.T) {
 		MetaData: map[string]interface{}{
 			"title": "plantuml-node",
 		},
-		Body: []byte(`<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/0/node-pumldiagram.png"></img></span></p>`),
+		Body: []byte(`<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech.atlassian.net/wiki/download/attachments/0/node-pumldiagram.png"></img></span></p>`),
 	}
 
 	readmePage := markdown.FileContents{
