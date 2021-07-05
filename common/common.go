@@ -3,8 +3,8 @@ package common
 
 var (
 	// ConfluenceBaseURL is the base URL for the confluence page you want the API to connect to
-	// by default it is https://xiatech-markup.atlassian.net but can be changed below
-	ConfluenceBaseURL = "https://xiatech-markup.atlassian.net"
+	// by default it is https://xiatech.atlassian.net but can be changed below
+	ConfluenceBaseURL = "https://xiatech.atlassian.net"
 	// ConfluenceUsername is to collect external arg for confluence username
 	ConfluenceUsername string
 
