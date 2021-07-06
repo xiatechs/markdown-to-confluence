@@ -68,4 +68,4 @@ jobs:
           key: ${{ secrets.apikey }}
           space: ${{ secrets.space }}
           username: ${{ secrets.username }}
-          repo: "/github/workspace/markdown-to-confluence" 
+          repo: "markdown-to-confluence" 
