@@ -27,7 +27,7 @@ func setArgs() bool {
 		common.ConfluenceAPIKey = vars[0]
 		common.ConfluenceSpace = vars[1]
 		common.ConfluenceUsername = vars[2]
-		common.ProjectPathEnv = "/github/workspace/"+vars[3]
+		common.ProjectPathEnv = vars[3]
 	}
 
 	if len(vars) == argLength {
