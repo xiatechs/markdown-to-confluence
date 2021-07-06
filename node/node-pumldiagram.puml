@@ -37,7 +37,6 @@ namespace node {
         - generateMaster() 
         - generateChildPages() 
         - generateFolderPage() error
-        - generateTODOPage(percentage string) 
         - generateTitles() (string, string)
         - generatePlantuml(fpath string) 
         - generatePlantumlImage(fpath string) 

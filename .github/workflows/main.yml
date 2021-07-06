@@ -65,4 +65,7 @@ jobs:
       - name: submit markdown to confluence
         uses: ./ # Uses an action in the root directory
         with:
-          args: "${{ secrets.apikey }}_${{ secrets.space }}_${{ secrets.username }}_/github/workspace/markdown-to-confluence" 
+          key: ${{ secrets.apikey }}
+          space: ${{ secrets.space }}
+          username: ${{ secrets.username }}
+          repo: "/github/workspace/markdown-to-confluence" 
