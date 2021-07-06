@@ -4,6 +4,7 @@ package confluence
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -355,7 +356,19 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 		return nil, fmt.Errorf("writer close error: %w", err)
 	}
 
-	req.Header.Set("Content-Type", writer.FormDataContentType())
+	data := []byte{}
+
+	_, err = file.Read(data)
+	if err != nil {
+		log.Println(err)
+	}
+
+	sEnc := base64.StdEncoding.EncodeToString(data)
+	req.ContentLength = int64(len(sEnc))
+
+	req.Header = http.Header{
+		"Content-Type": []string{writer.FormDataContentType()},
+	}
 
 	err = writer.Close()
 	if err != nil {
