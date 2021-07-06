@@ -28,10 +28,9 @@ func setArgs() bool {
 		common.ConfluenceSpace = vars[1]
 		common.ConfluenceUsername = vars[2]
 		common.ProjectPathEnv = vars[3]
-	}
-
-	if len(vars) == argLength {
-		common.ConfluenceBaseURL = vars[4]
+		if vars[4] != "" {
+			common.ConfluenceBaseURL = vars[4]
+		}
 	}
 
 	return true
