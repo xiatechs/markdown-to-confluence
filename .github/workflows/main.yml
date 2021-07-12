@@ -1,8 +1,6 @@
 on:
   push:
     branches: 'master'
-  pull_request:
-    branches: 'master'
 
 name: Markdown to Confluence
 jobs:
@@ -68,4 +66,4 @@ jobs:
           key: ${{ secrets.apikey }}
           space: ${{ secrets.space }}
           username: ${{ secrets.username }}
-          repo: "/github/workspace/markdown-to-confluence" 
+          repo: "/github/workspace/markdown-to-confluence"
