@@ -137,7 +137,7 @@ func (node *Node) checkForImages(name string) {
 	validFiles := []string{".png", ".jpg", ".jpeg", ".gif"}
 
 	for index := range validFiles {
-		if strings.Contains(strings.ToLower(name), validFiles[index]) {
+		if strings.HasSuffix(strings.ToLower(name), validFiles[index]) {
 			node.checkNodeRootIsNil(name)
 			return
 		}
