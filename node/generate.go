@@ -92,24 +92,6 @@ func (node *Node) generateFolderPage() error {
 	return nil
 }
 
-/* DISABLED FOR NOW
-// generateTODOPage method creates a page in parent folder
-// that contains todo's for a codebase
-func (node *Node) generateTODOPage(percentage string) {
-	todonode := Node{}
-	todonode.root = node
-
-	page := todo.GenerateTODO(rootDir, percentage)
-
-	if page != nil {
-		err := todonode.checkConfluencePages(page)
-		if err != nil {
-			log.Println(err)
-		}
-	}
-}
-*/
-
 // generateTitles returns two strings
 // string 1 - folder of the node
 // string 2 - the absolute filepath to the node dir from root dir
@@ -183,6 +165,8 @@ func (node *Node) generatePlantuml(fpath string) {
 			log.Println(err)
 			return
 		}
+
+		node.uploadFile(node.path + "/" + filename + ".png")
 
 		masterpagecontents := markdown.FileContents{
 			MetaData: map[string]interface{}{
