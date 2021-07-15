@@ -152,7 +152,7 @@ func (node *Node) generatePlantuml(fpath string) {
 
 	result, err := goplantuml.NewClassDiagram([]string{fpath}, []string{}, iterateThroughSubFolders)
 	if err != nil {
-		log.Println("plantuml file generation error: %w", err)
+		log.Println("[generate diagram] plantuml file generation error: %w", err)
 		return
 	}
 
@@ -170,14 +170,19 @@ func (node *Node) generatePlantuml(fpath string) {
 
 		writer, err = os.Create(node.path + "/" + filename + ".puml")
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+			log.Println("[create file] plantuml file generation error: %w", err)
+			return
 		}
 
 		fmt.Fprint(&buf, headerstring)
 
 		fmt.Fprint(writer, rendered)
 
-		node.generatePlantumlImage(node.path + "/" + filename + ".puml")
+		err := node.generatePlantumlImage(node.path + "/" + filename + ".puml")
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
 		masterpagecontents := markdown.FileContents{
 			MetaData: map[string]interface{}{
@@ -195,14 +200,16 @@ func (node *Node) generatePlantuml(fpath string) {
 
 // generatePlantumlImage method calls external application (plantuml.jar)
 // in the docker container to generate the plantuml image (as a .png)
-func (node *Node) generatePlantumlImage(fpath string) {
+func (node *Node) generatePlantumlImage(fpath string) error {
 	convertPlantuml := exec.Command("java", "-jar", "/app/plantuml.jar", "-tpng", fpath) // #nosec - pumlimage
 	convertPlantuml.Stdout = os.Stdout
 
 	err := convertPlantuml.Run()
 	if err != nil {
-		log.Println(fmt.Errorf("generatePlantumlImage error: %w", err))
+		return fmt.Errorf("generatePlantumlImage error: %w", err)
 	}
+
+	return nil
 }
 
 // generatePage method creates a new page for node.
