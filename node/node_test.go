@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	common "github.com/xiatechs/markdown-to-confluence/common"
 	confluence "github.com/xiatechs/markdown-to-confluence/confluence"
 	markdown "github.com/xiatechs/markdown-to-confluence/markdown"
 )
@@ -24,7 +23,6 @@ func TestStartAlreadyExists(t *testing.T) {
 
 	gomock.InOrder(
 		client.EXPECT().FindPage("node", false).Times(1).Return(&results, nil),
-		client.EXPECT().FindPage("plantuml-node", false).Times(1).Return(&results, nil),
 		client.EXPECT().FindPage("markdown-to-confluence/node+readme", false).Times(1).Return(&results, nil),
 		client.EXPECT().CreatePage(0, &page, true).Times(1).Return(0, nil),
 	)
@@ -32,7 +30,6 @@ func TestStartAlreadyExists(t *testing.T) {
 	node.Start("../node")
 }
 
-//nolint: lll // test function with test contents
 func TestStartBrandNew(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockAPIClienter(ctrl)
@@ -46,14 +43,6 @@ func TestStartBrandNew(t *testing.T) {
 <p>You will find attachments/images for this folder via the ellipsis at the top right.</p>
 <p>Any markdown or subfolders is available in children pages under this page.</p>`),
 	}
-
-	plantumlPage := markdown.FileContents{
-		MetaData: map[string]interface{}{
-			"title": "plantuml-node",
-		},
-		Body: []byte(`<p><span class="confluence-embedded-file-wrapped"><img src="` + common.ConfluenceBaseURL + `/wiki/download/attachments/0/node-pumldiagram.png"></img></span></p>`),
-	}
-
 	readmePage := markdown.FileContents{
 		MetaData: map[string]interface{}{
 			"title": "markdown-to-confluence/node readme",
@@ -84,8 +73,6 @@ Delete()
 	gomock.InOrder(
 		client.EXPECT().FindPage("node", false).Times(1).Return(nil, nil),
 		client.EXPECT().CreatePage(0, &nodePage, true).Times(1).Return(0, nil),
-		client.EXPECT().FindPage("plantuml-node", false).Times(1).Return(nil, nil),
-		client.EXPECT().CreatePage(0, &plantumlPage, false).Times(1).Return(0, nil),
 		client.EXPECT().FindPage("markdown-to-confluence/node+readme", false).Times(1).Return(nil, nil),
 		client.EXPECT().CreatePage(0, &readmePage, false).Times(1).Return(0, nil),
 	)
