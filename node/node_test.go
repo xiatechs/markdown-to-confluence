@@ -30,7 +30,6 @@ func TestStartAlreadyExists(t *testing.T) {
 	node.Start("../node")
 }
 
-//nolint: lll // test function with test contents
 func TestStartBrandNew(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockAPIClienter(ctrl)
