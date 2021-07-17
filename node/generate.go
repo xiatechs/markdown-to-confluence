@@ -166,6 +166,8 @@ func (node *Node) generatePlantuml(fpath string) {
 			return
 		}
 
+		node.uploadFile(node.path + "/" + filename + ".png")
+
 		masterpagecontents := markdown.FileContents{
 			MetaData: map[string]interface{}{
 				"title": "plantuml-" + path,
