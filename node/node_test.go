@@ -23,7 +23,7 @@ func TestStartAlreadyExists(t *testing.T) {
 
 	gomock.InOrder(
 		client.EXPECT().FindPage("node", false).Times(1).Return(&results, nil),
-		client.EXPECT().FindPage("markdown-to-confluence/node+readme", false).Times(1).Return(&results, nil),
+		client.EXPECT().FindPage("markdown-to-confluence/node+readme-node-node", false).Times(1).Return(&results, nil),
 		client.EXPECT().CreatePage(0, &page, true).Times(1).Return(0, nil),
 	)
 
@@ -45,7 +45,7 @@ func TestStartBrandNew(t *testing.T) {
 	}
 	readmePage := markdown.FileContents{
 		MetaData: map[string]interface{}{
-			"title": "markdown-to-confluence/node readme",
+			"title": "markdown-to-confluence/node readme-node-node",
 		},
 		Body: []byte(`<h1>markdown-to-confluence/node readme</h1>
 <h2>the node package is to enable reading through a repo and create a tree of content on confluence</h2>
@@ -73,7 +73,7 @@ Delete()
 	gomock.InOrder(
 		client.EXPECT().FindPage("node", false).Times(1).Return(nil, nil),
 		client.EXPECT().CreatePage(0, &nodePage, true).Times(1).Return(0, nil),
-		client.EXPECT().FindPage("markdown-to-confluence/node+readme", false).Times(1).Return(nil, nil),
+		client.EXPECT().FindPage("markdown-to-confluence/node+readme-node-node", false).Times(1).Return(nil, nil),
 		client.EXPECT().CreatePage(0, &readmePage, false).Times(1).Return(0, nil),
 	)
 
