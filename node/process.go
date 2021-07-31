@@ -45,6 +45,10 @@ func (node *Node) processMarkDown(path string) error {
 		return fmt.Errorf("parse markdown error: %w", err)
 	}
 
+	extraDetails, _ := node.generateTitles()
+
+	parsedContents.MetaData["title"] = parsedContents.MetaData["title"].(string) + "-" + extraDetails
+
 	err = node.checkConfluencePages(parsedContents)
 	if err != nil {
 		log.Printf("error completing confluence operations: %s", err)
