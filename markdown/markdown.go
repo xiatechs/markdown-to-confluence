@@ -100,6 +100,7 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 	if !ok {
 		return nil, fmt.Errorf("markdown page parsing error - page title is not assigned via toml or # section")
 	}
+	
 	if value == "" {
 		return nil, fmt.Errorf("markdown page parsing error - page title is empty")
 	}
