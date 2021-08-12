@@ -95,6 +95,14 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 			f.MetaData["title"] = grabtitle(string(content))
 		}
 	}
+	
+	value, ok := f.MetaData["title"]
+	if !ok {
+		return nil, fmt.Errorf("markdown page parsing error - page title is not assigned via toml or # section")
+	}
+	if value == "" {
+		return nil, fmt.Errorf("markdown page parsing error - page title is empty")
+	}
 
 	md := m.New(
 		m.HTML(true),
@@ -106,10 +114,6 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 
 	preformatted := md.RenderToString(content)
 	f.Body = stripFrontmatterReplaceURL(rootID, preformatted)
-
-	if f.MetaData["title"] == "" {
-		return nil, fmt.Errorf("markdown parsing error - page title is empty")
-	}
 
 	return f, nil
 }
