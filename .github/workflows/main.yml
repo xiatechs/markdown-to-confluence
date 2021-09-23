@@ -37,7 +37,7 @@ jobs:
     name: Markdown To Confluence Action
     runs-on: ubuntu-latest
     env:
-      REPO-NAME: 'markdown-to-confluence' #The name of the page in confluence
+      REPO-NAME: 'mtc-docs' #The name of the page in confluence
       SPACE: 'XKB'                        #The name of the space in confluence
     steps:      
       - name: github auth
