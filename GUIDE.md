@@ -1,6 +1,5 @@
-v1.0
-# markdown-to-confluence guide:
-# these are kind of rules based on the current way the tool is designed.
+v1.1
+# markdown-to-confluence end user guide:
 # if you want to adjust these rules, the tool needs to be adjusted.
 
 ```
