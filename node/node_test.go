@@ -15,55 +15,47 @@ func TestStartAlreadyExists(t *testing.T) {
 
 	results := confluence.PageResults{}
 
-	page := markdown.FileContents{}
-
 	node := Node{}
 
 	SetAPIClient(client)
 
 	gomock.InOrder(
-		client.EXPECT().FindPage("node", false).Times(1).Return(&results, nil),
-		client.EXPECT().FindPage("markdown-to-confluence/node+readme-node-node", false).Times(1).Return(&results, nil),
-		client.EXPECT().CreatePage(0, &page, true).Times(1).Return(0, nil),
+		client.EXPECT().FindPage("testfolder", false).Times(1).Return(&results, nil),
+		client.EXPECT().FindPage("mtc-testpage-testfolder-nodetestfolder", false).Times(1).Return(&results, nil),
 	)
 
-	node.Start("../node")
+	if node.Start("../node/testfolder") {
+		node.Delete()
+	}
 }
 
 func TestStartBrandNew(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockAPIClienter(ctrl)
 
-	nodePage := markdown.FileContents{
+	testfolderFolderpage := markdown.FileContents{
 		MetaData: map[string]interface{}{
-			"title": "node",
+			"title": "testfolder",
 		},
-		Body: []byte(`<p>Welcome to the '<b>node</b>' folder of this Xiatech code repo.</p>
-		<p>This folder full path in the repo is: node</p>
+		Body: []byte(`<p>Welcome to the '<b>testfolder</b>' folder of this Xiatech code repo.</p>
+		<p>This folder full path in the repo is: node/testfolder</p>
 <p>You will find attachments/images for this folder via the ellipsis at the top right.</p>
 <p>Any markdown or subfolders is available in children pages under this page.</p>`),
 	}
-	readmePage := markdown.FileContents{
+
+	testPage := markdown.FileContents{
 		MetaData: map[string]interface{}{
-			"title": "markdown-to-confluence/node readme-node-node",
+			"title": "mtc-testpage-testfolder-nodetestfolder",
 		},
-		Body: []byte(`<h1>markdown-to-confluence/node readme</h1>
-<h2>the node package is to enable reading through a repo and create a tree of content on confluence</h2>
-<h3>The package contains one exported struct:</h3>
-<pre><code>// Node struct enables creation of a page tree
-Node{}
+		Body: []byte(`<h1>mtc-testpage</h1>
+<h2>This is a H2 line of text</h2>
+<h3>This is H3</h3>
+<p>This is some standard text</p>
+<pre><code>Here is some code formatted text
 </code></pre>
-<h3>The package contains two exported methods:</h3>
-<pre><code>Node{}
-
-// this method begins the generation of a page tree in confluence for a repo project path.
-// it ruturns a boolean confirming 'is projectPath a valid folder path'.
-Start(projectPath string, client *confluence.APIClient) bool
-
-// this method begins the deletion of pages in confluence that do not exist in
-// local repository project path - it can be called after Instantiate method is called and returns true.
-Delete()
-</code></pre>`),
+<ul>
+<li><em>Sir Emailington</em> <a href="mailto:email@siremailington.com">email@siremailington.com</a> - Chief Email Office</li>
+</ul>`),
 	}
 
 	node := Node{}
@@ -71,65 +63,13 @@ Delete()
 	SetAPIClient(client)
 
 	gomock.InOrder(
-		client.EXPECT().FindPage("node", false).Times(1).Return(nil, nil),
-		client.EXPECT().CreatePage(0, &nodePage, true).Times(1).Return(0, nil),
-		client.EXPECT().FindPage("markdown-to-confluence/node+readme-node-node", false).Times(1).Return(nil, nil),
-		client.EXPECT().CreatePage(0, &readmePage, false).Times(1).Return(0, nil),
+		client.EXPECT().FindPage("testfolder", false).Times(1).Return(nil, nil),
+		client.EXPECT().CreatePage(0, &testfolderFolderpage, true).Times(1).Return(0, nil),
+		client.EXPECT().FindPage("mtc-testpage-testfolder-nodetestfolder", false).Times(1).Return(nil, nil),
+		client.EXPECT().CreatePage(0, &testPage, false).Times(1).Return(0, nil),
 	)
 
-	if node.Start("../node") {
+	if node.Start("../node/testfolder") {
 		node.Delete()
-	}
-}
-
-func TestStart(t *testing.T) {
-	node := Node{}
-	want := false
-
-	got := node.Start("./fakedirectory")
-	if got != want {
-		t.Errorf("got %t want %t", got, want)
-	}
-
-	nodeOne := Node{}
-
-	nodeTest := Node{
-		root: &nodeOne,
-	}
-	want = false
-
-	got = nodeTest.Start("./fakedirectory")
-	if got != want {
-		t.Errorf("got %t want %t", got, want)
-	}
-}
-
-func TestIsFolder(t *testing.T) {
-	isFolder("hello")
-}
-
-func TestIterate(t *testing.T) {
-	node := Node{}
-
-	node.path = "./"
-
-	boolean := node.iterate(false, false)
-	if boolean != false {
-		t.Errorf("got %t want %t", boolean, false)
-	}
-
-	boolean = node.iterate(true, true)
-	if boolean != false {
-		t.Errorf("got %t want %t", boolean, false)
-	}
-
-	boolean = node.iterate(true, false)
-	if boolean != false {
-		t.Errorf("got %t want %t", boolean, false)
-	}
-
-	boolean = node.iterate(false, true)
-	if boolean != false {
-		t.Errorf("got %t want %t", boolean, false)
 	}
 }

@@ -39,7 +39,7 @@ namespace node {
         - generateFolderPage() error
         - generateTitles() (string, string)
         - generatePlantuml(fpath string) 
-        - generatePlantumlImage(fpath string) 
+        - generatePlantumlImage(fpath string) error
         - generatePage(newPageContents *markdown.FileContents) error
         - iterate(justChecking bool, foldersOnly bool) bool
         - processGoFile(fpath string) error
