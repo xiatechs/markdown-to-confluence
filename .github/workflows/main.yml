@@ -33,23 +33,11 @@ jobs:
         with:
           version: v1.35.2
           
-  markdown:
-    name: Markdown To Confluence Action
+  markdown-to-confluence:
+    name: Markdown to Confluence
     runs-on: ubuntu-latest
-    env:
-      REPO-NAME: 'mtc-docs' #The name of the page in confluence
-      SPACE: 'XKB'                        #The name of the space in confluence
-    steps:      
-      - name: github auth
-        shell: bash
-        env:
-          XIA_MACHINE_SSH_KEY: ${{ secrets.XIA_MACHINE_SSH_KEY }}
-        run: |
-          mkdir ~/.ssh
-          echo $XIA_MACHINE_SSH_KEY | base64 --decode >> ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
-      - name: gather branch details
+    steps: 
+      - name: Get branch details
         shell: bash
         run: |
              if [ -z "${GITHUB_HEAD_REF}" ]
@@ -60,23 +48,24 @@ jobs:
               echo pull request, branch = $(echo ${GITHUB_HEAD_REF})
               echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
              fi
-        id: extract_branch    
-      - name: checkout markdown action
-        uses: actions/checkout@v2-beta
-        with:
-          repository: xiatechs/markdown-to-confluence
-          ref: refs/tags/v1.7
-      - name: checkout branch
+        id: extract_branch          
+      - name: Checkout branch
         uses: actions/checkout@v2
         with:
           ref: ${{ env.BRANCH_NAME }}
-          path: "./${{ env.REPO-NAME }}"
+          path: './'
+          fetch-depth: 0
+      - name: example repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          path: './markdown-to-confluence'
           fetch-depth: 0
       - name: run markdown to confluence action
         uses: ./
         with:
           key: ${{ secrets.CONFLUENCE_KEY }}
-          space: ${{ env.SPACE }}
+          space: "XKB"
           username: ${{ secrets.CONFLUENCE_USERNAME }}
-          repo: ${{ env.REPO-NAME }}
-          url: "https://xiatech.atlassian.net"
+          repo: "markdown-to-confluence"
+          url: "https://xiatech.atlassian.net" 
