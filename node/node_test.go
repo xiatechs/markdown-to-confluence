@@ -29,6 +29,7 @@ func TestStartAlreadyExists(t *testing.T) {
 	}
 }
 
+//nolint: lll // test
 func TestStartBrandNew(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	client := NewMockAPIClienter(ctrl)
