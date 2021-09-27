@@ -95,12 +95,12 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 			f.MetaData["title"] = grabtitle(string(content))
 		}
 	}
-	
+
 	value, ok := f.MetaData["title"]
 	if !ok {
 		return nil, fmt.Errorf("markdown page parsing error - page title is not assigned via toml or # section")
 	}
-	
+
 	if value == "" {
 		return nil, fmt.Errorf("markdown page parsing error - page title is empty")
 	}
@@ -117,6 +117,18 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 	f.Body = stripFrontmatterReplaceURL(rootID, preformatted)
 
 	return f, nil
+}
+
+func linkFilterLogic(item string) bool {
+	if strings.Contains(item, "https://") {
+		return true
+	}
+
+	if strings.Contains(item, "mailto:") {
+		return true
+	}
+
+	return false
 }
 
 // stripFrontmatterReplaceURL function takes in parent page ID and
@@ -136,7 +148,7 @@ func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 		}
 
 		// temporary solution to local url path issue - remove them
-		if strings.Contains(lines[index], "<a href=") && !strings.Contains(lines[index], "https://") {
+		if strings.Contains(lines[index], "<a href=") && !linkFilterLogic(lines[index]) {
 			lines[index] = "<p></p>"
 		}
 
