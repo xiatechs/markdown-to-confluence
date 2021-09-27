@@ -60,13 +60,13 @@ jobs:
 2) Edit the YML:
 ```
 The bits you need to edit:
-space: "REISS" [ROW 65] # this is the confluence space that your MTC page will be created. Make sure it's correct!
+space: "REISS" [ROW 47] # this is the confluence space that your MTC page will be created. Make sure it's correct!
 
-path: './reiss-repo' [ROW 59]
+path: './reiss-repo' [ROW 41]
 
 and
 
-repo: "reiss-repo" [ROW 67]
+repo: "reiss-repo" [ROW 49]
 
 make sure these are called the same thing. They are what the page will be called in confluence.
 Simple example - if your repo is called 'xiatech-nihon' then you would call it something like 'xiatech-nihon-repo'
