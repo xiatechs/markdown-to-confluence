@@ -10,9 +10,11 @@ on:
 name: Markdown To Confluence
 jobs:
   markdown:
-    needs: [test]
     name: Markdown To Confluence Action
     runs-on: ubuntu-latest
+    env: 
+      PAGE-NAME: "START-HERE"
+      SPACE: "XKB"
     steps:
       - name: gather branch details
         shell: bash
@@ -39,20 +41,20 @@ jobs:
         uses: actions/checkout@v2-beta
         with:
           repository: xiatechs/markdown-to-confluence
-          ref: refs/tags/v1.7
+          ref: refs/tags/v1.8
       - name: checkout branch
         uses: actions/checkout@v2
         with:
           ref: ${{ env.BRANCH_NAME }}
-          path: './reiss-repo'
+          path: "./${{ env.PAGE-NAME }}"
           fetch-depth: 0
       - name: run markdown to confluence action
         uses: ./
         with:
           key: ${{ secrets.CONFLUENCE_KEY }}
-          space: "REISS"
+          space: "${{ env.SPACE }}"
           username: ${{ secrets.CONFLUENCE_USERNAME }}
-          repo: "reiss-repo"
+          repo: "${{ env.PAGE-NAME }}"
           url: "https://xiatech.atlassian.net"
 
 ```
@@ -60,16 +62,11 @@ jobs:
 2) Edit the YML:
 ```
 The bits you need to edit:
-space: "REISS" [ROW 47] # this is the confluence space that your MTC page will be created. Make sure it's correct!
 
-path: './reiss-repo' [ROW 41]
-
-and
-
-repo: "reiss-repo" [ROW 49]
-
-make sure these are called the same thing. They are what the page will be called in confluence.
-Simple example - if your repo is called 'xiatech-nihon' then you would call it something like 'xiatech-nihon-repo'
+[from row 15]
+    env: 
+      PAGE-NAME: "START-HERE" #page name is the name of the page you want created in confluence
+      SPACE: "XKB"            #space is the name of the space in confluence you want the page to be in
 ```
 
 You can add tests/lint to the configuration if you want. 
