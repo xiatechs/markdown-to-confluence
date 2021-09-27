@@ -63,7 +63,6 @@ jobs:
 ```
 The bits you need to edit:
 
-[from row 15]
     env: 
       PAGE-NAME: "START-HERE" #page name is the name of the page you want created in confluence
       SPACE: "XKB"            #space is the name of the space in confluence you want the page to be in
