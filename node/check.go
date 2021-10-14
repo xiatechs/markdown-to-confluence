@@ -3,6 +3,7 @@ package node
 // check - methods for checking various conditions
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -154,17 +155,21 @@ func (node *Node) checkNodeRootIsNil(name string) {
 
 // checkConfluencePages method runs through the CRUD operations for confluence
 func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) error {
+	_, abs := node.generateTitles()
+
 	pageTitle := strings.Join(strings.Split(newPageContents.MetaData["title"].(string), " "), "+")
 
 	pageResult, err := nodeAPIClient.FindPage(pageTitle, false)
 	if err != nil {
-		return err
+		return fmt.Errorf("find page error for folder path [%s] - page title [%s]: %w",
+			abs, pageTitle, err)
 	}
 
 	if pageResult == nil {
 		err := node.newPage(newPageContents)
 		if err != nil {
-			return err
+			return fmt.Errorf("create page error for folder path [%s] - page title [%s]: %w",
+				abs, pageTitle, err)
 		}
 
 		return nil
@@ -172,7 +177,8 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 
 	err = node.createOrUpdatePage(newPageContents, pageResult)
 	if err != nil {
-		return err
+		return fmt.Errorf("create/update page error for folder path [%s] - page title [%s]: %w",
+			abs, pageTitle, err)
 	}
 
 	return nil
