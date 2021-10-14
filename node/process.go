@@ -18,6 +18,7 @@ import (
 // file path
 func (node *Node) processGoFile(fpath string) error {
 	_, abs := node.generateTitles()
+
 	contents, err := ioutil.ReadFile(filepath.Clean(fpath))
 	if err != nil {
 		return fmt.Errorf("absolute path [%s] - file [%s] - read file error: %w",
@@ -65,7 +66,7 @@ func (node *Node) processMarkDown(path string) error {
 // uploadFile method takes in file and
 // uploads the file to a page by parent page ID (node.root.id)
 func (node *Node) uploadFile(path string) {
-	path, abs := node.generateTitles()
+	_, abs := node.generateTitles()
 
 	err := nodeAPIClient.UploadAttachment(filepath.Clean(path), node.root.id)
 	if err != nil {
