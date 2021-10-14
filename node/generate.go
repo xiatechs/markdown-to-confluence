@@ -208,6 +208,7 @@ func (node *Node) generatePage(newPageContents *markdown.FileContents) error {
 	if nodeAPIClient == nil {
 		return fmt.Errorf("error: confluence API client is nil")
 	}
+
 	var err error
 
 	if node.root == nil {
