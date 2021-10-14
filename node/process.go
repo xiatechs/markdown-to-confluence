@@ -17,16 +17,19 @@ import (
 // calls method todo.ParseGo on the file contents with the
 // file path
 func (node *Node) processGoFile(fpath string) error {
+	_, abs := node.generateTitles()
+
 	contents, err := ioutil.ReadFile(filepath.Clean(fpath))
 	if err != nil {
-		return fmt.Errorf("read file error: %w", err)
+		return fmt.Errorf("absolute path [%s] - file [%s] - read file error: %w",
+			abs, fpath, err)
 	}
 
 	fullpath := strings.Replace(fpath, ".", "", 2)
 
 	fullpath = strings.TrimPrefix(fullpath, "/")
 
-	todo.ParseGo(contents, fullpath)
+	todo.ParseGo(contents, fullpath) // not used atm but will be maybe in future
 
 	return nil
 }
@@ -35,23 +38,26 @@ func (node *Node) processGoFile(fpath string) error {
 // and parses the markdown file before calling
 // checkConfluencePages method
 func (node *Node) processMarkDown(path string) error {
+	fpath, abs := node.generateTitles()
+
 	contents, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
-		return fmt.Errorf("read file error: %w", err)
+		return fmt.Errorf("absolute path [%s] - file [%s] - read file error: %w",
+			abs, path, err)
 	}
 
 	parsedContents, err := markdown.ParseMarkdown(node.root.id, contents)
 	if err != nil {
-		return fmt.Errorf("parse markdown error: %w", err)
+		return fmt.Errorf("absolute path [%s] - file [%s] - parse markdown error: %w",
+			abs, path, err)
 	}
 
-	extraDetails, _ := node.generateTitles()
-
-	parsedContents.MetaData["title"] = parsedContents.MetaData["title"].(string) + "-" + extraDetails
+	parsedContents.MetaData["title"] = parsedContents.MetaData["title"].(string) + "-" + fpath
 
 	err = node.checkConfluencePages(parsedContents)
 	if err != nil {
-		log.Printf("error completing confluence operations: %s", err)
+		return fmt.Errorf("absolute path [%s] - file [%s] - confluence check error: %w",
+			abs, path, err)
 	}
 
 	return nil
@@ -60,8 +66,11 @@ func (node *Node) processMarkDown(path string) error {
 // uploadFile method takes in file and
 // uploads the file to a page by parent page ID (node.root.id)
 func (node *Node) uploadFile(path string) {
+	_, abs := node.generateTitles()
+
 	err := nodeAPIClient.UploadAttachment(filepath.Clean(path), node.root.id)
 	if err != nil {
-		log.Printf("error uploading attachment: %s", err)
+		log.Printf("absolute path [%s] - local path [%s] - file upload error: %v",
+			path, abs, err)
 	}
 }
