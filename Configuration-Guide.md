@@ -28,20 +28,11 @@ jobs:
               echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
              fi
         id: extract_branch          
-      - name: github auth
-        shell: bash
-        env:
-          XIA_MACHINE_SSH_KEY: ${{ secrets.XIA_MACHINE_SSH_KEY }}
-        run: |
-          mkdir ~/.ssh
-          echo $XIA_MACHINE_SSH_KEY | base64 --decode >> ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          git config --global url."ssh://git@github.com/".insteadOf "https://github.com/"
       - name: checkout markdown action
         uses: actions/checkout@v2-beta
         with:
           repository: xiatechs/markdown-to-confluence
-          ref: refs/tags/v1.8
+          ref: refs/tags/v1.10
       - name: checkout branch
         uses: actions/checkout@v2
         with:
