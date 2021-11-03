@@ -468,7 +468,7 @@ severity:
   # - Code climate: https://docs.codeclimate.com/docs/issues#issue-severity
   # -   Checkstyle: https://checkstyle.sourceforge.io/property_types.html#severity
   # -       Github: https://help.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-error-message
-  default-severity: error
+  default-severity: info
 
   # The default value is false.
   # If set to true severity-rules regular expressions become case sensitive.

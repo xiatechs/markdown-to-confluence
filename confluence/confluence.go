@@ -6,9 +6,9 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -26,12 +26,14 @@ import (
 func newPageResults(resp *http.Response) (*PageResults, error) {
 	pageResultVar := PageResults{}
 
-	if err := json.NewDecoder(resp.Body).Decode(&pageResultVar); err != nil {
-		if errors.Is(err, io.EOF) {
-			return nil, nil
-		}
-
+	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		return nil, fmt.Errorf("newPageResults decode error: %w", err)
+	}
+
+	err = json.Unmarshal(contents, &pageResultVar)
+	if err != nil {
+		return nil, fmt.Errorf("newPageresults json unmarshal error: %w", err)
 	}
 
 	if len(pageResultVar.Results) == 0 { // we want to return nil to skip this result

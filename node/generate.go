@@ -86,6 +86,7 @@ func (node *Node) generateFolderPage() error {
 
 	err := node.checkConfluencePages(&masterpagecontents)
 	if err != nil {
+		log.Printf("[generate folderpage] generation error for path [%s]: %v", node.path, err)
 		return err
 	}
 
@@ -126,7 +127,7 @@ func (node *Node) generatePlantuml(fpath string) {
 
 	const iterateThroughSubFolders = false // we want to just generate plantuml for the folder
 
-	path, _ := node.generateTitles()
+	path, abs := node.generateTitles()
 
 	if node.root.root == nil {
 		path = rootDir
@@ -134,7 +135,7 @@ func (node *Node) generatePlantuml(fpath string) {
 
 	result, err := goplantuml.NewClassDiagram([]string{fpath}, []string{}, iterateThroughSubFolders)
 	if err != nil {
-		log.Println("[generate diagram] plantuml file generation error: %w", err)
+		log.Printf("[generate diagram] plantuml file generation error for path [%s]: %v", abs, err)
 		return
 	}
 
@@ -152,7 +153,7 @@ func (node *Node) generatePlantuml(fpath string) {
 
 		writer, err = os.Create(node.path + "/" + filename + ".puml")
 		if err != nil {
-			log.Println("[create file] plantuml file generation error: %w", err)
+			log.Printf("[create file] plantuml file generation error for path [%s]: %v", abs, err)
 			return
 		}
 
@@ -162,7 +163,7 @@ func (node *Node) generatePlantuml(fpath string) {
 
 		err := node.generatePlantumlImage(node.path + "/" + filename + ".puml")
 		if err != nil {
-			log.Println(err)
+			log.Printf("generatePlantumlImage error for path [%s]: %v", abs, err)
 			return
 		}
 
@@ -177,7 +178,7 @@ func (node *Node) generatePlantuml(fpath string) {
 
 		err = node.checkConfluencePages(&masterpagecontents)
 		if err != nil {
-			log.Println(err)
+			log.Printf("check confluence page error for path [%s]: %v", abs, err)
 		}
 	}
 }
@@ -200,21 +201,29 @@ func (node *Node) generatePlantumlImage(fpath string) error {
 // and sets the parent page as the node root id.
 // unless the node.root is nil in which case it is the root page
 func (node *Node) generatePage(newPageContents *markdown.FileContents) error {
+	_, abs := node.generateTitles()
+
 	var isParentPage = true
+
+	if nodeAPIClient == nil {
+		return fmt.Errorf("error: confluence API client is nil")
+	}
 
 	var err error
 
-	if nodeAPIClient == nil {
-		return err
-	}
-
 	if node.root == nil {
 		node.id, err = nodeAPIClient.CreatePage(0, newPageContents, isParentPage)
+		if err != nil {
+			return fmt.Errorf("create page error for folder path [%s]: %w", abs, err)
+		}
 
-		return err
+		return nil
 	}
 
 	node.id, err = nodeAPIClient.CreatePage(node.root.id, newPageContents, !isParentPage)
+	if err != nil {
+		return fmt.Errorf("create page error for folder path [%s]: %w", abs, err)
+	}
 
-	return err
+	return nil
 }
