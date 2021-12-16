@@ -40,7 +40,7 @@ func (node *Node) generateMaster() {
 		return
 	}
 
-	err := node.generateFolderPage()
+	err := node.generateFolderPage(subNode.hasIndex)
 	if err != nil {
 		log.Println(fmt.Errorf("generate folder page error: %w", err))
 		return
@@ -71,10 +71,29 @@ func (node *Node) generateChildPages() {
 }
 
 // generateFolderPage method creates a folder page in confluence for a folder
-func (node *Node) generateFolderPage() error {
+func (node *Node) generateFolderPage(hasIndex bool) error {
+	if node.root == nil {
+		return nil
+	}
+
 	dir, fullDir := node.generateTitles()
 
-	masterpagecontents := markdown.FileContents{
+	if hasIndex {
+		masterpagecontents, err := node.processMarkDownIndex(node.path + "/" + indexName)
+		if err != nil {
+			return err
+		}
+
+		err = node.checkConfluencePages(masterpagecontents)
+		if err != nil {
+			log.Printf("[generate folderpage] generation error for path [%s]: %v", node.path, err)
+			return err
+		}
+
+		return nil
+	}
+
+	masterpagecontents := &markdown.FileContents{
 		MetaData: map[string]interface{}{
 			"title": dir,
 		},
@@ -84,7 +103,7 @@ func (node *Node) generateFolderPage() error {
 <p>Any markdown or subfolders is available in children pages under this page.</p>`),
 	}
 
-	err := node.checkConfluencePages(&masterpagecontents)
+	err := node.checkConfluencePages(masterpagecontents)
 	if err != nil {
 		log.Printf("[generate folderpage] generation error for path [%s]: %v", node.path, err)
 		return err

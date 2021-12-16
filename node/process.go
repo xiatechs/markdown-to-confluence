@@ -34,6 +34,34 @@ func (node *Node) processGoFile(fpath string) error {
 	return nil
 }
 
+// processMarkDownIndex method takes in index file contents
+// and parses the markdown file
+func (node *Node) processMarkDownIndex(path string) (*markdown.FileContents, error) {
+	fpath, abs := node.generateTitles()
+
+	contents, err := ioutil.ReadFile(filepath.Clean(path))
+	if err != nil {
+		return nil, fmt.Errorf("absolute path [%s] - file [%s] - read file error: %w",
+			abs, path, err)
+	}
+
+	parsedContents, err := markdown.ParseMarkdown(func() int {
+		if node.root == nil {
+			return 0
+		}
+
+		return node.root.id
+	}(), contents)
+	if err != nil {
+		return nil, fmt.Errorf("absolute path [%s] - file [%s] - parse markdown error: %w",
+			abs, path, err)
+	}
+
+	parsedContents.MetaData["title"] = fpath
+
+	return parsedContents, nil
+}
+
 // processMarkDown method takes in file contents
 // and parses the markdown file before calling
 // checkConfluencePages method
@@ -46,7 +74,13 @@ func (node *Node) processMarkDown(path string) error {
 			abs, path, err)
 	}
 
-	parsedContents, err := markdown.ParseMarkdown(node.root.id, contents)
+	parsedContents, err := markdown.ParseMarkdown(func() int {
+		if node.root == nil {
+			return 0
+		}
+
+		return node.root.id
+	}(), contents)
 	if err != nil {
 		return fmt.Errorf("absolute path [%s] - file [%s] - parse markdown error: %w",
 			abs, path, err)

@@ -5,6 +5,7 @@ package node
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -74,8 +75,17 @@ func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 // checking bool is for whether we are just checking returning bool, or
 // if we are doing work on file
 func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
-	if strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".MD") {
+	fileName := filepath.Base(name)
+	if strings.ToLower(fileName) == indexName {
+		node.hasIndex = true
+	}
+
+	if strings.HasSuffix(strings.ToLower(fileName), ".md") {
 		if !checking {
+			if strings.ToLower(fileName) == indexName { // we don't want to process index.md here
+				return true
+			}
+
 			err := node.processMarkDown(name)
 			if err != nil {
 				log.Println(err)

@@ -24,7 +24,7 @@ func TestStartAlreadyExists(t *testing.T) {
 		client.EXPECT().FindPage("mtc-testpage-testfolder-nodetestfolder", false).Times(1).Return(&results, nil),
 	)
 
-	if node.Start("../node/testfolder") {
+	if node.Start("./testfolder") {
 		node.Delete()
 	}
 }
@@ -70,7 +70,7 @@ func TestStartBrandNew(t *testing.T) {
 		client.EXPECT().CreatePage(0, &testPage, false).Times(1).Return(0, nil),
 	)
 
-	if node.Start("../node/testfolder") {
+	if node.Start(".testfolder") {
 		node.Delete()
 	}
 }

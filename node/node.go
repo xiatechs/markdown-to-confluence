@@ -14,7 +14,10 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/semaphore"
 )
 
-const numberOfRoutines = 10 // limit number of goroutines (to balance load on confluence API)
+const (
+	numberOfRoutines = 10 // limit number of goroutines (to balance load on confluence API)
+	indexName        = "readme.md"
+)
 
 var (
 	wg                  = semaphore.NewSemaphore(numberOfRoutines) // for controlling number of goroutines
@@ -32,9 +35,10 @@ func SetAPIClient(client APIClienter) {
 
 // Node struct enables creation of a page tree
 type Node struct {
-	id       int          // when page is created, page ID will be stored here.
-	alive    bool         // for tracking if the folder has any valid content within it asides more folders
-	path     string       // file / folderpath will be stored here
+	id       int    // when page is created, page ID will be stored here.
+	alive    bool   // for tracking if the folder has any valid content within it asides more folders
+	path     string // file / folderpath will be stored here
+	hasIndex bool
 	root     *Node        // the parent page node will be linked here
 	branches []*Node      // any children page nodes will be stored here (for deleting)
 	titles   []string     // titles of pages created by node (for deleting)

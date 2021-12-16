@@ -11,5 +11,3 @@ Here is some code formatted text
 ```
 
 - *Sir Emailington* <email@siremailington.com> - Chief Email Office
-
-
