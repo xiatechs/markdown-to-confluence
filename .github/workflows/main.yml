@@ -34,7 +34,6 @@ jobs:
           version: v1.35.2
           
   markdown-to-confluence:
-    needs: [test, lint]
     name: Markdown to Confluence
     runs-on: ubuntu-latest
     steps: 
@@ -62,10 +61,11 @@ jobs:
           ref: ${{ env.BRANCH_NAME }}
           path: './markdown-to-confluence'
           fetch-depth: 0
-      - name: submit markdown to confluence
-        uses: ./ # Uses an action in the root directory
+      - name: run markdown to confluence action
+        uses: ./
         with:
-          key: ${{ secrets.apikey }}
-          space: ${{ secrets.space }}
-          username: ${{ secrets.username }}
-          repo: "/github/workspace/markdown-to-confluence" 
+          key: ${{ secrets.CONFLUENCE_KEY }}
+          space: "XKB"
+          username: ${{ secrets.CONFLUENCE_USERNAME }}
+          repo: "markdown-to-confluence"
+          url: "https://xiatech.atlassian.net" 
