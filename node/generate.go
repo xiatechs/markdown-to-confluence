@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	goplantuml "github.com/jfeliu007/goplantuml/parser"
@@ -79,7 +80,7 @@ func (node *Node) generateFolderPage(hasIndex bool) error {
 	dir, fullDir := node.generateTitles()
 
 	if hasIndex {
-		masterpagecontents, err := node.processMarkDownIndex(node.path + "/" + indexName)
+		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, indexName))
 		if err != nil {
 			return err
 		}
