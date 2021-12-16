@@ -1,5 +1,5 @@
 # Markdown to Confluence Action
-![PLEASE READ THIS GUIDE ON HOW TO USE THIS TOOL CORRECTLY](https://github.com/xiatechs/markdown-to-confluence/blob/master/GUIDE.md)
+[PLEASE READ THIS GUIDE ON HOW TO USE THIS TOOL CORRECTLY](https://github.com/xiatechs/markdown-to-confluence/blob/master/GUIDE.md)
 
 - This Action will crawl through a repository on github and create a tree of pages on confluence for all markdown / images:
 
@@ -44,3 +44,5 @@ against just using the # / ## titles.
 ```
 
 ## This action uses the [Confluence REST API](https://developer.atlassian.com/cloud/confluence/rest/intro/)
+
+- Tom
