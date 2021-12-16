@@ -76,9 +76,6 @@ func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 // if we are doing work on file
 func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
 	fileName := filepath.Base(name)
-	if strings.ToLower(fileName) == indexName {
-		node.hasIndex = true
-	}
 
 	if strings.HasSuffix(strings.ToLower(fileName), ".md") {
 		if !checking {

@@ -3,7 +3,6 @@ package node
 
 //notodo: no need
 import (
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -87,10 +86,11 @@ func (node *Node) iterate(justChecking, foldersOnly bool) (validFile bool) {
 	// Go 1.16 method: err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if withinDirectory(node.path, fpath) {
-			validFile = node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
-			if validFile {
-				return io.EOF
+			if strings.ToLower(filepath.Base(fpath)) == indexName {
+				node.hasIndex = true
 			}
+
+			validFile = node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
 		}
 		return nil
 	})
