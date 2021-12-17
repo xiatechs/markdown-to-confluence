@@ -1,4 +1,3 @@
-//nolint: wsl // is fine
 package node
 
 // generate - methods where pages/content/nodes are being created
@@ -82,6 +81,7 @@ func (node *Node) generateFolderPage(hasIndex bool) error {
 
 	if hasIndex {
 		node.indexPage = true
+
 		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, indexName))
 		if err != nil {
 			return err
