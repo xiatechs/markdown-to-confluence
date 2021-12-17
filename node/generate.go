@@ -1,3 +1,4 @@
+//nolint: wsl // is fine
 package node
 
 // generate - methods where pages/content/nodes are being created
