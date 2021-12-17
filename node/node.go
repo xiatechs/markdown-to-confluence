@@ -3,8 +3,8 @@ package node
 
 //notodo: no need
 import (
+	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -81,24 +81,27 @@ func (node *Node) Start(projectPath string) bool {
 // if justChecking is true then it will only check whether
 // there is a valid file in folder and return true if there is
 // if foldersOnly is true then it will only iterate through folders
-func (node *Node) iterate(justChecking, foldersOnly bool) (validFile bool) {
-	// Go 1.15 method: err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-	// Go 1.16 method: err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
-	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-		if withinDirectory(node.path, fpath) {
-			if strings.ToLower(filepath.Base(fpath)) == indexName {
-				node.hasIndex = true
-			}
+func (node *Node) iterate(justChecking, foldersOnly bool) bool {
+	var thereIsAValidFile bool
 
-			validFile = node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
-		}
-		return nil
-	})
+	items, err := ioutil.ReadDir(node.path)
 	if err != nil {
-		log.Println("iterate: ", err)
+		log.Println(err)
+		return false
 	}
 
-	return validFile
+	for _, item := range items {
+		fpath := filepath.Join(node.path + item.Name())
+
+		if withinDirectory(node.path, fpath) {
+			validFile := node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
+			if validFile {
+				thereIsAValidFile = true
+			}
+		}
+	}
+
+	return thereIsAValidFile
 }
 
 // Delete method starts loop through node.branches
