@@ -2,7 +2,7 @@
 
 ## the node package is to enable reading through a repo and create a tree of content on confluence
 
-[Diagram of node recursive methodology](methodology.jpg)
+![Diagram of node recursive methodology](methodology.jpg)
 
 ### The package contains one exported struct:
 ```
