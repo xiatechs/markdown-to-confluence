@@ -1,4 +1,5 @@
 // Package markdown provides a method for working with and parsing markdown documents
+//nolint: wsl // is fine
 package markdown
 
 import (
