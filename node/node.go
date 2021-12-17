@@ -3,8 +3,8 @@ package node
 
 //notodo: no need
 import (
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -83,22 +83,24 @@ func (node *Node) Start(projectPath string) bool {
 // if foldersOnly is true then it will only iterate through folders
 func (node *Node) iterate(justChecking, foldersOnly bool) bool {
 	var thereIsAValidFile bool
-
-	items, err := ioutil.ReadDir(node.path)
-	if err != nil {
-		log.Println(err)
-		return false
-	}
-
-	for _, item := range items {
-		fpath := filepath.Join(node.path + item.Name())
-
+	// Go 1.15 method: err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
+	// Go 1.16 method: err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if withinDirectory(node.path, fpath) {
+			if strings.ToLower(filepath.Base(fpath)) == indexName {
+				node.hasIndex = true
+			}
+
 			validFile := node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
 			if validFile {
 				thereIsAValidFile = true
 			}
 		}
+
+		return nil
+	})
+	if err != nil {
+		log.Println("iterate: ", err)
 	}
 
 	return thereIsAValidFile
