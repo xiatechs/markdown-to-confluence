@@ -382,8 +382,14 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 
 // UploadAttachment to a page identify by page ID
 // you need the page ID to upload the attachment(file path)
-func (a *APIClient) UploadAttachment(filename string, id int) error {
-	targetURL := fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", id)
+func (a *APIClient) UploadAttachment(filename string, id int, isindex bool, indexid int) error {
+	var targetURL string
+
+	if isindex {
+		targetURL = fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", indexid)
+	} else {
+		targetURL = fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", id)
+	}
 
 	req, err := newfileUploadRequest(targetURL, "file", filename)
 	if err != nil {

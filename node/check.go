@@ -156,7 +156,7 @@ func (node *Node) checkForImages(name string) {
 // node root is nil before calling uploadFile method
 func (node *Node) checkNodeRootIsNil(name string) {
 	if node.root != nil {
-		node.uploadFile(name)
+		node.uploadFile(name, node.indexPage)
 	}
 }
 
