@@ -45,6 +45,8 @@ func (node *Node) processMarkDownIndex(path string, subindex int) (*markdown.Fil
 			abs, path, err)
 	}
 
+	log.Printf("uploading image [%s] - indexpage: [%t] - subindex id: [%d]", path, node.indexPage, subindex)
+
 	parsedContents, err := markdown.ParseMarkdown(func() int {
 		if node.root == nil {
 			return 0
@@ -52,7 +54,6 @@ func (node *Node) processMarkDownIndex(path string, subindex int) (*markdown.Fil
 
 		return node.root.id
 	}(), contents, node.indexPage, subindex)
-	log.Printf("uploading image [%s] - indexpage: [%t] - subindex id: [%d]", path, node.indexPage, subindex)
 	if err != nil {
 		return nil, fmt.Errorf("absolute path [%s] - file [%s] - parse markdown error: %w",
 			abs, path, err)
