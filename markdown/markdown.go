@@ -79,7 +79,7 @@ func Paragraphify(content string) string {
 
 // ParseMarkdown function uses external parsing library to grab markdown contents
 // and return a filecontents object
-func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
+func ParseMarkdown(rootID int, content []byte, isIndex bool, id int) (*FileContents, error) {
 	r := bytes.NewReader(content)
 	f := newFileContents()
 
@@ -114,7 +114,7 @@ func ParseMarkdown(rootID int, content []byte) (*FileContents, error) {
 	)
 
 	preformatted := md.RenderToString(content)
-	f.Body = stripFrontmatterReplaceURL(rootID, preformatted)
+	f.Body = stripFrontmatterReplaceURL(rootID, preformatted, isIndex, id)
 
 	return f, nil
 }
@@ -134,7 +134,8 @@ func linkFilterLogic(item string) bool {
 // stripFrontmatterReplaceURL function takes in parent page ID and
 // markdown file contents and removes TOML frontmatter, and replaces
 // local URL with relative confluence URL
-func stripFrontmatterReplaceURL(rootID int, content string) []byte {
+func stripFrontmatterReplaceURL(rootID int, content string,
+	isIndex bool, id int) []byte {
 	var pre string
 
 	var frontmatter bool
@@ -153,7 +154,7 @@ func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 		}
 
 		if strings.Contains(lines[index], "<img src=") {
-			lines[index] = URLConverter(rootID, lines[index])
+			lines[index] = URLConverter(rootID, lines[index], isIndex, id)
 		}
 
 		if !frontmatter {
@@ -175,18 +176,23 @@ func flip(b bool) bool {
 // (they must be in same directory as markdown to work)
 // this function replaces local url paths in html img links
 // with a confluence path for folder page attachments on parent page
-func URLConverter(rootID int, item string) string {
+func URLConverter(rootID int, item string, isindex bool, id int) string {
 	sliceOne := strings.Split(item, `<p><img src="`)
-
+	var c string
 	if len(sliceOne) > 1 {
 		sliceTwo := strings.Split(sliceOne[1], `"`)
 
 		if len(sliceTwo) > 1 {
 			attachmentFileName := sliceTwo[0]
 			rootPageID := strconv.Itoa(rootID)
+			ID := strconv.Itoa(id)
 			a := `<p><span class="confluence-embedded-file-wrapped">`
 			b := `<img src="` + common.ConfluenceBaseURL + `/wiki/download/attachments/`
-			c := rootPageID + `/` + attachmentFileName + `"></img>`
+			if isindex {
+				c = ID + `/` + attachmentFileName + `"></img>`
+			} else {
+				c = rootPageID + `/` + attachmentFileName + `"></img>`
+			}
 			d := `</span></p>`
 
 			return a + b + c + d

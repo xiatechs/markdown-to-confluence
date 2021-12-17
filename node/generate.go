@@ -80,6 +80,7 @@ func (node *Node) generateFolderPage(hasIndex bool) error {
 	dir, fullDir := node.generateTitles()
 
 	if hasIndex {
+		node.indexPage = true
 		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, indexName))
 		if err != nil {
 			return err
@@ -167,7 +168,7 @@ func (node *Node) generatePlantuml(fpath string) {
 
 		var headerstring = `<p><img src="` + filename + ".png" + `"/></img></p>`
 
-		headerstring = markdown.URLConverter(node.root.id, headerstring)
+		headerstring = markdown.URLConverter(node.root.id, headerstring, node.indexPage, node.id)
 
 		var writer io.Writer
 
