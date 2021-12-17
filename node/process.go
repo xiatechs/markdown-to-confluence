@@ -36,7 +36,7 @@ func (node *Node) processGoFile(fpath string) error {
 
 // processMarkDownIndex method takes in index file contents
 // and parses the markdown file
-func (node *Node) processMarkDownIndex(path string) (*markdown.FileContents, error) {
+func (node *Node) processMarkDownIndex(path string, subindex int) (*markdown.FileContents, error) {
 	fpath, abs := node.generateTitles()
 
 	contents, err := ioutil.ReadFile(filepath.Clean(path))
@@ -51,7 +51,7 @@ func (node *Node) processMarkDownIndex(path string) (*markdown.FileContents, err
 		}
 
 		return node.root.id
-	}(), contents, node.indexPage, node.id)
+	}(), contents, node.indexPage, subindex)
 	if err != nil {
 		return nil, fmt.Errorf("absolute path [%s] - file [%s] - parse markdown error: %w",
 			abs, path, err)

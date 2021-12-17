@@ -41,7 +41,7 @@ func (node *Node) generateMaster() {
 		return
 	}
 
-	err := node.generateFolderPage(subNode.hasIndex)
+	err := node.generateFolderPage(subNode.hasIndex, subNode.id)
 	if err != nil {
 		log.Println(fmt.Errorf("generate folder page error: %w", err))
 		return
@@ -72,7 +72,7 @@ func (node *Node) generateChildPages() {
 }
 
 // generateFolderPage method creates a folder page in confluence for a folder
-func (node *Node) generateFolderPage(hasIndex bool) error {
+func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 	if node.root == nil {
 		return nil
 	}
@@ -82,7 +82,7 @@ func (node *Node) generateFolderPage(hasIndex bool) error {
 	if hasIndex {
 		node.indexPage = true
 
-		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, indexName))
+		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, indexName), subindex)
 		if err != nil {
 			return err
 		}
