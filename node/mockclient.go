@@ -28,16 +28,21 @@ var s = make(chan bool, 1)
 
 func (m mockclient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
 	s <- true // race blocker
+
 	m.i.mockiter++
+
 	a := m.i.mockiter
 
 	if !m.i.isroot {
 		m.i.isroot = true
+
 		isroot = true
 	}
+
 	<-s
 
 	log.Printf("CREATING PAGE:\n%s\nroot [%d]\nisRoot [%t]\n ", string(contents.Body), root, isroot)
+
 	return a, nil
 }
 

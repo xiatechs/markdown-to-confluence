@@ -65,7 +65,9 @@ type Node struct {
 // and there is markdown content in the folder
 func (node *Node) Start(projectPath string) bool {
 	node.treeLink = t
+
 	node.mu = &sync.RWMutex{}
+
 	if isFolder(projectPath) {
 		numberOfFolders++
 
@@ -84,6 +86,7 @@ func (node *Node) Start(projectPath string) bool {
 		wg.Wait()
 
 		log.Println("FINISHED GOROUTINES - NOW CHECKING FOR DELETE")
+
 		return true
 	}
 
