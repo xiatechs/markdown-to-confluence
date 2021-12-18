@@ -52,6 +52,7 @@ namespace node {
         - uploadFile(path string, isIndexPage bool) 
 
         + Start(projectPath string) bool
+        + Tree() 
         + Delete() 
 
     }

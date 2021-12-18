@@ -1,0 +1,744 @@
+2021/12/18 23:01:36 skipping this folder [./testfolder] because no valid files here
+2021/12/18 23:01:36 WAITING FOR GOROUTINES
+2021/12/18 23:01:36 Here are the pages I captured today:
+2021/12/18 23:01:36 FINISHED GOROUTINES - NOW CHECKING FOR DELETE
+2021/12/18 23:01:36 skipping this folder [./testfolder] because no valid files here
+2021/12/18 23:01:36 WAITING FOR GOROUTINES
+2021/12/18 23:01:36 Here are the pages I captured today:
+2021/12/18 23:01:36 FINISHED GOROUTINES - NOW CHECKING FOR DELETE
+2021/12/18 23:01:37 generating a folder page here [../../markdown-to-confluence] this page is alive
+2021/12/18 23:01:38 skipping this folder [../../markdown-to-confluence/cmd] because no valid files here
+2021/12/18 23:01:38 skipping this folder [../../markdown-to-confluence/common] because no valid files here
+2021/12/18 23:01:38 generating a folder page here [../../markdown-to-confluence/confluence] this page is alive
+2021/12/18 23:01:38 this location [../../markdown-to-confluence/confluence] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:38 CREATING PAGE:
+<h1>markdown-to-confluence/confluence readme</h1>
+<h2>the confluence package is for confluence api logic</h2>
+<h3>The package contains multiple exported structs:</h3>
+<pre><code>// PageResults contains a slice of returned Pages
+PageResults{}
+
+//Page holds the data of a page from confluence wiki
+Page{}
+
+there are more exported structs within Page available in confluence/structs.go of this repo
+
+// APIClient struct is for interacting with confluence
+APIClient{}
+</code></pre>
+<h3>The package contains multiple exported methods:</h3>
+<pre><code>APIClient{}
+
+// CreateAPIClient creates the API client with relevant login details for confluence's API
+CreateAPIClient() (*APIClient, error)
+The username, API key and confluence space are provided via environment variables
+
+// CreatePage is for creating a confluence page, root is the parent page ID
+// if isroot is true the page is created as a root parent page in confluence
+// it returns the page ID generated for the page
+CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
+
+// DeletePage deletes a confluence page using pageID to identify page to delete
+DeletePage(pageID int) error
+
+// UpdatePage updates a confluence page using pageID to identify page
+UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error
+
+// FindPage in confluence using title and returns page results
+// if many is set to true it will also return the children pages of the page
+FindPage(title string, many bool) (*PageResults, error)
+
+// UploadAttachment to a page identified by page ID
+UploadAttachment(filename string, id int) error
+</code></pre>
+root [0]
+isRoot [true]
+ 
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>markdown-to-confluence/confluence readme</h1>
+<h2>the confluence package is for confluence api logic</h2>
+<h3>The package contains multiple exported structs:</h3>
+<pre><code>// PageResults contains a slice of returned Pages
+PageResults{}
+
+//Page holds the data of a page from confluence wiki
+Page{}
+
+there are more exported structs within Page available in confluence/structs.go of this repo
+
+// APIClient struct is for interacting with confluence
+APIClient{}
+</code></pre>
+<h3>The package contains multiple exported methods:</h3>
+<pre><code>APIClient{}
+
+// CreateAPIClient creates the API client with relevant login details for confluence's API
+CreateAPIClient() (*APIClient, error)
+The username, API key and confluence space are provided via environment variables
+
+// CreatePage is for creating a confluence page, root is the parent page ID
+// if isroot is true the page is created as a root parent page in confluence
+// it returns the page ID generated for the page
+CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
+
+// DeletePage deletes a confluence page using pageID to identify page to delete
+DeletePage(pageID int) error
+
+// UpdatePage updates a confluence page using pageID to identify page
+UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error
+
+// FindPage in confluence using title and returns page results
+// if many is set to true it will also return the children pages of the page
+FindPage(title string, many bool) (*PageResults, error)
+
+// UploadAttachment to a page identified by page ID
+UploadAttachment(filename string, id int) error
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:39 processed bespoke index file - id: [0]
+2021/12/18 23:01:39 skipping this folder [../../markdown-to-confluence/confluence/test] because no valid files here
+2021/12/18 23:01:39 skipping this folder [../../markdown-to-confluence/confluence/test/confluencemocks] because no valid files here
+2021/12/18 23:01:39 generating plantuml text for confluence-markdown-to-confluence-markdown-to-confluence
+2021/12/18 23:01:39 generating plantuml png from plantuml context provided by go code...
+2021/12/18 23:01:39 generatePlantumlImage error for path [/markdown-to-confluence/confluence]: generatePlantumlImage error: exit status 1
+2021/12/18 23:01:39 generating a folder page here [../../markdown-to-confluence/markdown] this page is alive
+2021/12/18 23:01:39 this location [../../markdown-to-confluence/markdown] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>markdown-to-confluence/markdown readme</h1>
+<h2>the markdown package is to enable working with and parsing markdown documents</h2>
+<h3>The package contains one exported struct:</h3>
+<pre><code>// FileContents contains information from a file after being parsed from markdown.
+FileContents{}
+</code></pre>
+<h3>The package contains one exported function:</h3>
+<pre><code>// ParseMarkdown is a function that uses external parsing library to grab markdown contents
+// and return a filecontents object (a page to be uploaded to confluence wiki)
+ParseMarkdown(rootID int, content []byte) (*FileContents, error)
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>markdown-to-confluence/markdown readme</h1>
+<h2>the markdown package is to enable working with and parsing markdown documents</h2>
+<h3>The package contains one exported struct:</h3>
+<pre><code>// FileContents contains information from a file after being parsed from markdown.
+FileContents{}
+</code></pre>
+<h3>The package contains one exported function:</h3>
+<pre><code>// ParseMarkdown is a function that uses external parsing library to grab markdown contents
+// and return a filecontents object (a page to be uploaded to confluence wiki)
+ParseMarkdown(rootID int, content []byte) (*FileContents, error)
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:39 processed bespoke index file - id: [0]
+2021/12/18 23:01:39 generating plantuml text for markdown-markdown-to-confluence-markdown-to-confluence
+2021/12/18 23:01:39 UPLOADING: name:[../../markdown-to-confluence/methodology.png], id:[0], index:[false], indexID:[0]
+2021/12/18 23:01:39 generating plantuml png from plantuml context provided by go code...
+2021/12/18 23:01:39 generatePlantumlImage error for path [/markdown-to-confluence/markdown]: generatePlantumlImage error: exit status 1
+2021/12/18 23:01:39 generating a folder page here [../../markdown-to-confluence/node] this page is alive
+2021/12/18 23:01:39 this location [../../markdown-to-confluence/node] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>markdown-to-confluence/node readme</h1>
+<pre><code>    the node package is to enable 
+    reading through a repo and 
+    create a tree of content on confluence
+</code></pre>
+<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/0/node_methodology.jpg"></img></span></p>
+<h3>The package contains one exported struct:</h3>
+<pre><code>// Node struct enables creation of a page tree
+Node{}
+</code></pre>
+<h3>The package contains two exported methods:</h3>
+<pre><code>Node{}
+
+// this method begins the generation of a page tree in confluence for a repo project path.
+// it ruturns a boolean confirming 'is projectPath a valid folder path'.
+Start(projectPath string, client *confluence.APIClient) bool
+
+// this method begins the deletion of pages in confluence that do not exist in
+// local repository project path - it can be called after Instantiate method is called and returns true.
+Delete()
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>markdown-to-confluence/node readme</h1>
+<pre><code>    the node package is to enable 
+    reading through a repo and 
+    create a tree of content on confluence
+</code></pre>
+<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/5/node_methodology.jpg"></img></span></p>
+<h3>The package contains one exported struct:</h3>
+<pre><code>// Node struct enables creation of a page tree
+Node{}
+</code></pre>
+<h3>The package contains two exported methods:</h3>
+<pre><code>Node{}
+
+// this method begins the generation of a page tree in confluence for a repo project path.
+// it ruturns a boolean confirming 'is projectPath a valid folder path'.
+Start(projectPath string, client *confluence.APIClient) bool
+
+// this method begins the deletion of pages in confluence that do not exist in
+// local repository project path - it can be called after Instantiate method is called and returns true.
+Delete()
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:39 processed bespoke index file - id: [0]
+2021/12/18 23:01:39 skipping this folder [../../markdown-to-confluence/node/deeplynested] because no valid files here
+2021/12/18 23:01:39 generating a folder page here [../../markdown-to-confluence/node/deeplynested/file] this page is alive
+2021/12/18 23:01:39 this location [../../markdown-to-confluence/node/deeplynested/file] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>INDEX readme</h1>
+<p><a href="https://xiatech-markup.atlassian.net/wiki/spaces//pages/6"></a></p>
+<p>hello</p>
+root [6]
+isRoot [false]
+ 
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>INDEX readme</h1>
+<p><a href="https://xiatech-markup.atlassian.net/wiki/spaces//pages/6"></a></p>
+<p>hello</p>
+root [6]
+isRoot [false]
+ 
+2021/12/18 23:01:39 processed bespoke index file - id: [0]
+2021/12/18 23:01:39 generating a folder page here [../../markdown-to-confluence/node/deeplynested/file/downhere] this page is alive
+2021/12/18 23:01:39 this location [../../markdown-to-confluence/node/deeplynested/file/downhere] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>a deeply nested readme file</h1>
+<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/0/picture.jpg"></img></span></p>
+<p>this readme should be the index of a folder with another file in
+it called 'file-within-readme' or something similar</p>
+root [8]
+isRoot [false]
+ 
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>a deeply nested readme file</h1>
+<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/9/picture.jpg"></img></span></p>
+<p>this readme should be the index of a folder with another file in
+it called 'file-within-readme' or something similar</p>
+root [8]
+isRoot [false]
+ 
+2021/12/18 23:01:39 processed bespoke index file - id: [0]
+2021/12/18 23:01:39 UPLOADING: name:[../../markdown-to-confluence/node/deeplynested/file/downhere/picture.jpg], id:[10], index:[false], indexID:[0]
+2021/12/18 23:01:39 generating plantuml text for downhere-file-markdown-to-confluence
+2021/12/18 23:01:39 generating plantuml text for file-deeplynested-markdown-to-confluence
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>file within readme!</h1>
+<p>this is the file within the readme</p>
+root [10]
+isRoot [false]
+ 
+2021/12/18 23:01:39 UPLOADING: name:[../../markdown-to-confluence/node/node_methodology.jpg], id:[6], index:[false], indexID:[0]
+2021/12/18 23:01:39 generating a folder page here [../../markdown-to-confluence/node/testfolder] this page is alive
+2021/12/18 23:01:39 no [readme.md] located here [../../markdown-to-confluence/node/testfolder], will generated generic folderpage
+2021/12/18 23:01:39 CREATING PAGE:
+<p>Welcome to the '<b>testfolder-node-markdown-to-confluence</b>' folder of this Xiatech code repo.</p>
+		<p>This folder full path in the repo is: /markdown-to-confluence/node/testfolder</p>
+<p>You will find attachments/images for this folder via the ellipsis at the top right.</p>
+<p>Any markdown or subfolders is available in children pages under this page.</p>
+root [6]
+isRoot [false]
+ 
+2021/12/18 23:01:39 processed generic index file - id: [12]
+2021/12/18 23:01:39 generating plantuml text for testfolder-node-markdown-to-confluence
+2021/12/18 23:01:39 generating plantuml text for node-markdown-to-confluence-markdown-to-confluence
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>mtc-testpage</h1>
+<h2>This is a H2 line of text</h2>
+<h3>This is H3</h3>
+<p>This is some standard text</p>
+<pre><code>Here is some code formatted text
+</code></pre>
+<ul>
+<li><em>Sir Emailington</em> <a href="mailto:email@siremailington.com">email@siremailington.com</a> - Chief Email Office</li>
+</ul>
+root [12]
+isRoot [false]
+ 
+2021/12/18 23:01:39 generating plantuml png from plantuml context provided by go code...
+2021/12/18 23:01:39 generatePlantumlImage error for path [/markdown-to-confluence/node]: generatePlantumlImage error: exit status 1
+2021/12/18 23:01:39 skipping this folder [../../markdown-to-confluence/semaphore] because no valid files here
+2021/12/18 23:01:39 generating a folder page here [../../markdown-to-confluence/todo] this page is alive
+2021/12/18 23:01:39 this location [../../markdown-to-confluence/todo] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>markdown-to-confluence/todo readme</h1>
+<h2>the todo package provides the logic necessary to gather TODO's in a repository codebase and store them</h2>
+<h3>The package contains one exported variable:</h3>
+<pre><code>// this variable is of a type 'markdown.FileContents'.
+MainTODOPage
+</code></pre>
+<h3>The package contains two exported functions:</h3>
+<pre><code>// this function takes in a .go file and file name and collects all TODO's in the code
+ParseGo(content []byte, filename string) 
+
+// this function takes in the root directory of the repository and creates a page that can be posted on confluence.
+GenerateTODO(rootDir string) *markdown.FileContents
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:39 CREATING PAGE:
+<h1>markdown-to-confluence/todo readme</h1>
+<h2>the todo package provides the logic necessary to gather TODO's in a repository codebase and store them</h2>
+<h3>The package contains one exported variable:</h3>
+<pre><code>// this variable is of a type 'markdown.FileContents'.
+MainTODOPage
+</code></pre>
+<h3>The package contains two exported functions:</h3>
+<pre><code>// this function takes in a .go file and file name and collects all TODO's in the code
+ParseGo(content []byte, filename string) 
+
+// this function takes in the root directory of the repository and creates a page that can be posted on confluence.
+GenerateTODO(rootDir string) *markdown.FileContents
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:39 processed bespoke index file - id: [0]
+2021/12/18 23:01:39 generating plantuml text for todo-markdown-to-confluence-markdown-to-confluence
+2021/12/18 23:01:39 WAITING FOR GOROUTINES
+2021/12/18 23:01:39 generating plantuml text for markdown-to-confluence
+2021/12/18 23:01:40 CREATING PAGE:
+<h1><strong>How to contribute</strong></h1>
+<hr />
+<p>The following is a set of guidelines for contributing to our tooling projects. These are mostly guidlelines, not rules, so use your best judgement and feel free to propose changes to this document in a pull request.</p>
+<br />  
+<h3><strong>First steps</strong></h3>
+<p>The first thing to do is check the <a href="https://xiatech.atlassian.net/jira/software/projects/XT/boards/106">jira board</a> (filtered by the relevant label) to see what work has already been planned for the project. If you're not sure what to tackle first, reach out to the <a href="https://slack.com/app_redirect?channel=xiatech-tooling">xiatech-tooling slack channel</a> and they should be able to point you in the right direction.</p>
+<br />
+<h3><strong>Want to add a new feature?</strong></h3>
+<p>The first thing to do is check to see if it is on the jira board. If it is and hasn't been started then assign the ticket to yourself, move it to <code>In Progress</code>, create a new code branch and away you go.</p>
+<p>There may be cases where your feature is already on the board and has already been picked up by someone else. If so, reach out to them on the Xiatech-Tooling slack channel.</p>
+<p>If your feature doesn't exist on the board, create a ticket, adding as much detail as possible, assign it to yourself and get started.</p>
+<br />  
+<h3><strong>Did you find a bug?</strong></h3>
+<p>Check the jira board to see if it has already been reported. If it is being worked on, reach out to whoever is working on it via the Xiatech-Tooling slack channel.</p>
+<p>If it isn't on the board, create a defect with as much information as possible. If you're not able to work on it for any reason, post a message in the Xiatech-Tooling slack channel to let others know that you've found an issue.</p>
+<br />  
+<h3><strong>Submitting</strong></h3>
+<p>Always write clear messages for your commits. One line messages are fine for small, simple changes but more information is required for larger, more complex changes.</p>
+<p>When creating a Pull Request, thoroughly fill out the PR template. Once completed, post a link to your PR in the Xiatech-Tooling slack channel.</p>
+<br />  
+<h3><strong>Code Conventions</strong></h3>
+<ul>
+<li>
+<p>Ensure your code passes a linter. We use <code>golangci-lint</code> and only merge in to the main branch if there are no linter errors</p>
+</li>
+<li>
+<p>Tests. We like unit tests. Add them, and be thorough with your test cases</p>
+</li>
+<li>
+<p>We try to leave the codebase in a better state than we found it so if you see that something needs refactoring, make the change.</p>
+</li>
+</ul>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:40 CREATING PAGE:
+<p>v1.1</p>
+<h1>markdown-to-confluence end user guide:</h1>
+<h1>if you want to adjust these rules, the tool needs to be adjusted.</h1>
+<pre><code>1) URL links i.e [link](https://hey.com) can be be one instance per row. 
+	- the tool currently cannot parse multiple URL links one one line
+
+2) markdown files should be within same folder as the code that they are talking about
+	- this enables the tool to also generate plantuml diagrams for the code.
+
+3) any images you want to link using relative links in the markdown must be saved in the same folder as the markdown files
+	- alternatively, the image must be linked using an absolute path. Then it can be saved anywhere.
+
+4) if you want to use those images in the markdown file, it must be linked locally i.e ![Diagram](diagram.png):
+	- alternatively, as previously mentioned, you can just use absolute paths i.e:
+	![Diagram](https://absolute-url/diagram.png)
+  
+5) you can have as many markdown files as you want in one folder, but typically
+it should just be one for each package.
+	- the markdown tool will create a page for each folder, obviously because
+	if multiple markdown pages are in the same folder you need to be able to
+	place them in the same page.
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:40 Here are the pages I captured today:
+2021/12/18 23:01:40 FINISHED GOROUTINES - NOW CHECKING FOR DELETE
+2021/12/18 23:01:41 generating a folder page here [../../markdown-to-confluence] this page is alive
+2021/12/18 23:01:42 skipping this folder [../../markdown-to-confluence/cmd] because no valid files here
+2021/12/18 23:01:42 skipping this folder [../../markdown-to-confluence/common] because no valid files here
+2021/12/18 23:01:42 generating a folder page here [../../markdown-to-confluence/confluence] this page is alive
+2021/12/18 23:01:42 this location [../../markdown-to-confluence/confluence] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>markdown-to-confluence/confluence readme</h1>
+<h2>the confluence package is for confluence api logic</h2>
+<h3>The package contains multiple exported structs:</h3>
+<pre><code>// PageResults contains a slice of returned Pages
+PageResults{}
+
+//Page holds the data of a page from confluence wiki
+Page{}
+
+there are more exported structs within Page available in confluence/structs.go of this repo
+
+// APIClient struct is for interacting with confluence
+APIClient{}
+</code></pre>
+<h3>The package contains multiple exported methods:</h3>
+<pre><code>APIClient{}
+
+// CreateAPIClient creates the API client with relevant login details for confluence's API
+CreateAPIClient() (*APIClient, error)
+The username, API key and confluence space are provided via environment variables
+
+// CreatePage is for creating a confluence page, root is the parent page ID
+// if isroot is true the page is created as a root parent page in confluence
+// it returns the page ID generated for the page
+CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
+
+// DeletePage deletes a confluence page using pageID to identify page to delete
+DeletePage(pageID int) error
+
+// UpdatePage updates a confluence page using pageID to identify page
+UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error
+
+// FindPage in confluence using title and returns page results
+// if many is set to true it will also return the children pages of the page
+FindPage(title string, many bool) (*PageResults, error)
+
+// UploadAttachment to a page identified by page ID
+UploadAttachment(filename string, id int) error
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>markdown-to-confluence/confluence readme</h1>
+<h2>the confluence package is for confluence api logic</h2>
+<h3>The package contains multiple exported structs:</h3>
+<pre><code>// PageResults contains a slice of returned Pages
+PageResults{}
+
+//Page holds the data of a page from confluence wiki
+Page{}
+
+there are more exported structs within Page available in confluence/structs.go of this repo
+
+// APIClient struct is for interacting with confluence
+APIClient{}
+</code></pre>
+<h3>The package contains multiple exported methods:</h3>
+<pre><code>APIClient{}
+
+// CreateAPIClient creates the API client with relevant login details for confluence's API
+CreateAPIClient() (*APIClient, error)
+The username, API key and confluence space are provided via environment variables
+
+// CreatePage is for creating a confluence page, root is the parent page ID
+// if isroot is true the page is created as a root parent page in confluence
+// it returns the page ID generated for the page
+CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
+
+// DeletePage deletes a confluence page using pageID to identify page to delete
+DeletePage(pageID int) error
+
+// UpdatePage updates a confluence page using pageID to identify page
+UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents) error
+
+// FindPage in confluence using title and returns page results
+// if many is set to true it will also return the children pages of the page
+FindPage(title string, many bool) (*PageResults, error)
+
+// UploadAttachment to a page identified by page ID
+UploadAttachment(filename string, id int) error
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:42 processed bespoke index file - id: [0]
+2021/12/18 23:01:42 skipping this folder [../../markdown-to-confluence/confluence/test] because no valid files here
+2021/12/18 23:01:42 skipping this folder [../../markdown-to-confluence/confluence/test/confluencemocks] because no valid files here
+2021/12/18 23:01:42 generating plantuml text for confluence-markdown-to-confluence-markdown-to-confluence
+2021/12/18 23:01:42 generating plantuml png from plantuml context provided by go code...
+2021/12/18 23:01:42 generatePlantumlImage error for path [/markdown-to-confluence/confluence]: generatePlantumlImage error: exit status 1
+2021/12/18 23:01:42 generating a folder page here [../../markdown-to-confluence/markdown] this page is alive
+2021/12/18 23:01:42 this location [../../markdown-to-confluence/markdown] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>markdown-to-confluence/markdown readme</h1>
+<h2>the markdown package is to enable working with and parsing markdown documents</h2>
+<h3>The package contains one exported struct:</h3>
+<pre><code>// FileContents contains information from a file after being parsed from markdown.
+FileContents{}
+</code></pre>
+<h3>The package contains one exported function:</h3>
+<pre><code>// ParseMarkdown is a function that uses external parsing library to grab markdown contents
+// and return a filecontents object (a page to be uploaded to confluence wiki)
+ParseMarkdown(rootID int, content []byte) (*FileContents, error)
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>markdown-to-confluence/markdown readme</h1>
+<h2>the markdown package is to enable working with and parsing markdown documents</h2>
+<h3>The package contains one exported struct:</h3>
+<pre><code>// FileContents contains information from a file after being parsed from markdown.
+FileContents{}
+</code></pre>
+<h3>The package contains one exported function:</h3>
+<pre><code>// ParseMarkdown is a function that uses external parsing library to grab markdown contents
+// and return a filecontents object (a page to be uploaded to confluence wiki)
+ParseMarkdown(rootID int, content []byte) (*FileContents, error)
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:42 processed bespoke index file - id: [0]
+2021/12/18 23:01:42 generating plantuml text for markdown-markdown-to-confluence-markdown-to-confluence
+2021/12/18 23:01:42 UPLOADING: name:[../../markdown-to-confluence/methodology.png], id:[0], index:[false], indexID:[0]
+2021/12/18 23:01:42 generating plantuml png from plantuml context provided by go code...
+2021/12/18 23:01:42 generatePlantumlImage error for path [/markdown-to-confluence/markdown]: generatePlantumlImage error: exit status 1
+2021/12/18 23:01:42 generating a folder page here [../../markdown-to-confluence/node] this page is alive
+2021/12/18 23:01:42 this location [../../markdown-to-confluence/node] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>markdown-to-confluence/node readme</h1>
+<pre><code>    the node package is to enable 
+    reading through a repo and 
+    create a tree of content on confluence
+</code></pre>
+<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/0/node_methodology.jpg"></img></span></p>
+<h3>The package contains one exported struct:</h3>
+<pre><code>// Node struct enables creation of a page tree
+Node{}
+</code></pre>
+<h3>The package contains two exported methods:</h3>
+<pre><code>Node{}
+
+// this method begins the generation of a page tree in confluence for a repo project path.
+// it ruturns a boolean confirming 'is projectPath a valid folder path'.
+Start(projectPath string, client *confluence.APIClient) bool
+
+// this method begins the deletion of pages in confluence that do not exist in
+// local repository project path - it can be called after Instantiate method is called and returns true.
+Delete()
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>markdown-to-confluence/node readme</h1>
+<pre><code>    the node package is to enable 
+    reading through a repo and 
+    create a tree of content on confluence
+</code></pre>
+<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/22/node_methodology.jpg"></img></span></p>
+<h3>The package contains one exported struct:</h3>
+<pre><code>// Node struct enables creation of a page tree
+Node{}
+</code></pre>
+<h3>The package contains two exported methods:</h3>
+<pre><code>Node{}
+
+// this method begins the generation of a page tree in confluence for a repo project path.
+// it ruturns a boolean confirming 'is projectPath a valid folder path'.
+Start(projectPath string, client *confluence.APIClient) bool
+
+// this method begins the deletion of pages in confluence that do not exist in
+// local repository project path - it can be called after Instantiate method is called and returns true.
+Delete()
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:42 processed bespoke index file - id: [0]
+2021/12/18 23:01:42 skipping this folder [../../markdown-to-confluence/node/deeplynested] because no valid files here
+2021/12/18 23:01:42 generating a folder page here [../../markdown-to-confluence/node/deeplynested/file] this page is alive
+2021/12/18 23:01:42 this location [../../markdown-to-confluence/node/deeplynested/file] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>INDEX readme</h1>
+<p><a href="https://xiatech-markup.atlassian.net/wiki/spaces//pages/17"></a></p>
+<p>hello</p>
+root [23]
+isRoot [false]
+ 
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>INDEX readme</h1>
+<p><a href="https://xiatech-markup.atlassian.net/wiki/spaces//pages/17"></a></p>
+<p>hello</p>
+root [23]
+isRoot [false]
+ 
+2021/12/18 23:01:42 processed bespoke index file - id: [0]
+2021/12/18 23:01:42 generating a folder page here [../../markdown-to-confluence/node/deeplynested/file/downhere] this page is alive
+2021/12/18 23:01:42 this location [../../markdown-to-confluence/node/deeplynested/file/downhere] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>a deeply nested readme file</h1>
+<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/0/picture.jpg"></img></span></p>
+<p>this readme should be the index of a folder with another file in
+it called 'file-within-readme' or something similar</p>
+root [25]
+isRoot [false]
+ 
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>a deeply nested readme file</h1>
+<p><span class="confluence-embedded-file-wrapped"><img src="https://xiatech-markup.atlassian.net/wiki/download/attachments/26/picture.jpg"></img></span></p>
+<p>this readme should be the index of a folder with another file in
+it called 'file-within-readme' or something similar</p>
+root [25]
+isRoot [false]
+ 
+2021/12/18 23:01:42 processed bespoke index file - id: [0]
+2021/12/18 23:01:42 UPLOADING: name:[../../markdown-to-confluence/node/deeplynested/file/downhere/picture.jpg], id:[27], index:[false], indexID:[0]
+2021/12/18 23:01:42 generating plantuml text for downhere-file-markdown-to-confluence
+2021/12/18 23:01:42 generating plantuml text for file-deeplynested-markdown-to-confluence
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>file within readme!</h1>
+<p>this is the file within the readme</p>
+root [27]
+isRoot [false]
+ 
+2021/12/18 23:01:42 UPLOADING: name:[../../markdown-to-confluence/node/node_methodology.jpg], id:[23], index:[false], indexID:[0]
+2021/12/18 23:01:42 generating a folder page here [../../markdown-to-confluence/node/testfolder] this page is alive
+2021/12/18 23:01:42 no [readme.md] located here [../../markdown-to-confluence/node/testfolder], will generated generic folderpage
+2021/12/18 23:01:42 CREATING PAGE:
+<p>Welcome to the '<b>testfolder-node-markdown-to-confluence</b>' folder of this Xiatech code repo.</p>
+		<p>This folder full path in the repo is: /markdown-to-confluence/node/testfolder</p>
+<p>You will find attachments/images for this folder via the ellipsis at the top right.</p>
+<p>Any markdown or subfolders is available in children pages under this page.</p>
+root [23]
+isRoot [false]
+ 
+2021/12/18 23:01:42 processed generic index file - id: [29]
+2021/12/18 23:01:42 generating plantuml text for testfolder-node-markdown-to-confluence
+2021/12/18 23:01:42 generating plantuml text for node-markdown-to-confluence-markdown-to-confluence
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>mtc-testpage</h1>
+<h2>This is a H2 line of text</h2>
+<h3>This is H3</h3>
+<p>This is some standard text</p>
+<pre><code>Here is some code formatted text
+</code></pre>
+<ul>
+<li><em>Sir Emailington</em> <a href="mailto:email@siremailington.com">email@siremailington.com</a> - Chief Email Office</li>
+</ul>
+root [29]
+isRoot [false]
+ 
+2021/12/18 23:01:42 generating plantuml png from plantuml context provided by go code...
+2021/12/18 23:01:42 generatePlantumlImage error for path [/markdown-to-confluence/node]: generatePlantumlImage error: exit status 1
+2021/12/18 23:01:42 skipping this folder [../../markdown-to-confluence/semaphore] because no valid files here
+2021/12/18 23:01:42 generating a folder page here [../../markdown-to-confluence/todo] this page is alive
+2021/12/18 23:01:42 this location [../../markdown-to-confluence/todo] has a [readme.md] file so will use that as index at this location
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>markdown-to-confluence/todo readme</h1>
+<h2>the todo package provides the logic necessary to gather TODO's in a repository codebase and store them</h2>
+<h3>The package contains one exported variable:</h3>
+<pre><code>// this variable is of a type 'markdown.FileContents'.
+MainTODOPage
+</code></pre>
+<h3>The package contains two exported functions:</h3>
+<pre><code>// this function takes in a .go file and file name and collects all TODO's in the code
+ParseGo(content []byte, filename string) 
+
+// this function takes in the root directory of the repository and creates a page that can be posted on confluence.
+GenerateTODO(rootDir string) *markdown.FileContents
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:42 CREATING PAGE:
+<h1>markdown-to-confluence/todo readme</h1>
+<h2>the todo package provides the logic necessary to gather TODO's in a repository codebase and store them</h2>
+<h3>The package contains one exported variable:</h3>
+<pre><code>// this variable is of a type 'markdown.FileContents'.
+MainTODOPage
+</code></pre>
+<h3>The package contains two exported functions:</h3>
+<pre><code>// this function takes in a .go file and file name and collects all TODO's in the code
+ParseGo(content []byte, filename string) 
+
+// this function takes in the root directory of the repository and creates a page that can be posted on confluence.
+GenerateTODO(rootDir string) *markdown.FileContents
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:42 processed bespoke index file - id: [0]
+2021/12/18 23:01:42 generating plantuml text for todo-markdown-to-confluence-markdown-to-confluence
+2021/12/18 23:01:42 WAITING FOR GOROUTINES
+2021/12/18 23:01:42 generating plantuml text for markdown-to-confluence
+2021/12/18 23:01:43 CREATING PAGE:
+<h1><strong>How to contribute</strong></h1>
+<hr />
+<p>The following is a set of guidelines for contributing to our tooling projects. These are mostly guidlelines, not rules, so use your best judgement and feel free to propose changes to this document in a pull request.</p>
+<br />  
+<h3><strong>First steps</strong></h3>
+<p>The first thing to do is check the <a href="https://xiatech.atlassian.net/jira/software/projects/XT/boards/106">jira board</a> (filtered by the relevant label) to see what work has already been planned for the project. If you're not sure what to tackle first, reach out to the <a href="https://slack.com/app_redirect?channel=xiatech-tooling">xiatech-tooling slack channel</a> and they should be able to point you in the right direction.</p>
+<br />
+<h3><strong>Want to add a new feature?</strong></h3>
+<p>The first thing to do is check to see if it is on the jira board. If it is and hasn't been started then assign the ticket to yourself, move it to <code>In Progress</code>, create a new code branch and away you go.</p>
+<p>There may be cases where your feature is already on the board and has already been picked up by someone else. If so, reach out to them on the Xiatech-Tooling slack channel.</p>
+<p>If your feature doesn't exist on the board, create a ticket, adding as much detail as possible, assign it to yourself and get started.</p>
+<br />  
+<h3><strong>Did you find a bug?</strong></h3>
+<p>Check the jira board to see if it has already been reported. If it is being worked on, reach out to whoever is working on it via the Xiatech-Tooling slack channel.</p>
+<p>If it isn't on the board, create a defect with as much information as possible. If you're not able to work on it for any reason, post a message in the Xiatech-Tooling slack channel to let others know that you've found an issue.</p>
+<br />  
+<h3><strong>Submitting</strong></h3>
+<p>Always write clear messages for your commits. One line messages are fine for small, simple changes but more information is required for larger, more complex changes.</p>
+<p>When creating a Pull Request, thoroughly fill out the PR template. Once completed, post a link to your PR in the Xiatech-Tooling slack channel.</p>
+<br />  
+<h3><strong>Code Conventions</strong></h3>
+<ul>
+<li>
+<p>Ensure your code passes a linter. We use <code>golangci-lint</code> and only merge in to the main branch if there are no linter errors</p>
+</li>
+<li>
+<p>Tests. We like unit tests. Add them, and be thorough with your test cases</p>
+</li>
+<li>
+<p>We try to leave the codebase in a better state than we found it so if you see that something needs refactoring, make the change.</p>
+</li>
+</ul>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:43 CREATING PAGE:
+<p>v1.1</p>
+<h1>markdown-to-confluence end user guide:</h1>
+<h1>if you want to adjust these rules, the tool needs to be adjusted.</h1>
+<pre><code>1) URL links i.e [link](https://hey.com) can be be one instance per row. 
+	- the tool currently cannot parse multiple URL links one one line
+
+2) markdown files should be within same folder as the code that they are talking about
+	- this enables the tool to also generate plantuml diagrams for the code.
+
+3) any images you want to link using relative links in the markdown must be saved in the same folder as the markdown files
+	- alternatively, the image must be linked using an absolute path. Then it can be saved anywhere.
+
+4) if you want to use those images in the markdown file, it must be linked locally i.e ![Diagram](diagram.png):
+	- alternatively, as previously mentioned, you can just use absolute paths i.e:
+	![Diagram](https://absolute-url/diagram.png)
+  
+5) you can have as many markdown files as you want in one folder, but typically
+it should just be one for each package.
+	- the markdown tool will create a page for each folder, obviously because
+	if multiple markdown pages are in the same folder you need to be able to
+	place them in the same page.
+</code></pre>
+root [0]
+isRoot [false]
+ 
+2021/12/18 23:01:43 Here are the pages I captured today:
+2021/12/18 23:01:43 FINISHED GOROUTINES - NOW CHECKING FOR DELETE
+PASS
+ok  	github.com/xiatechs/markdown-to-confluence/node	7.108s

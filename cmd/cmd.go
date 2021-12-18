@@ -54,7 +54,11 @@ func Start() {
 		node.SetAPIClient(client)
 
 		if root.Start(common.ProjectPathEnv) {
-			root.Delete()
+			if root.Start(common.ProjectPathEnv) {
+				root.Delete()
+			}
 		}
+
+		root.Tree()
 	}
 }

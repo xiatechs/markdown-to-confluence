@@ -116,6 +116,8 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 			return err
 		}
 
+		log.Printf("processed bespoke index file - id: [%d]", subindex)
+
 		return nil
 	}
 
@@ -138,6 +140,8 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 		log.Printf("[generate folderpage] generation error for path [%s]: %v", node.path, err)
 		return err
 	}
+
+	log.Printf("processed generic index file - id: [%d]", node.id)
 
 	return nil
 }

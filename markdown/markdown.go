@@ -80,7 +80,7 @@ func Paragraphify(content string) string {
 
 // ParseMarkdown function uses external parsing library to grab markdown contents
 // and return a filecontents object
-func ParseMarkdown(rootID int, content []byte, isIndex bool, id int) (*FileContents, error) {
+func ParseMarkdown(rootID int, content []byte, isIndex bool, id int, pages map[string]string) (*FileContents, error) {
 	r := bytes.NewReader(content)
 	f := newFileContents()
 
@@ -115,7 +115,7 @@ func ParseMarkdown(rootID int, content []byte, isIndex bool, id int) (*FileConte
 	)
 
 	preformatted := md.RenderToString(content)
-	f.Body = stripFrontmatterReplaceURL(rootID, preformatted, isIndex, id)
+	f.Body = stripFrontmatterReplaceURL(rootID, preformatted, isIndex, id, pages)
 
 	return f, nil
 }
@@ -136,7 +136,7 @@ func linkFilterLogic(item string) bool {
 // markdown file contents and removes TOML frontmatter, and replaces
 // local URL with relative confluence URL
 func stripFrontmatterReplaceURL(rootID int, content string,
-	isIndex bool, id int) []byte {
+	isIndex bool, id int, pages map[string]string) []byte {
 	var pre string
 
 	var frontmatter bool
@@ -151,7 +151,7 @@ func stripFrontmatterReplaceURL(rootID int, content string,
 
 		// temporary solution to local url path issue - remove them
 		if strings.Contains(lines[index], "<a href=") && !linkFilterLogic(lines[index]) {
-			lines[index] = "<p></p>"
+			lines[index] = localLinkConverter(lines[index], pages)
 		}
 
 		if strings.Contains(lines[index], "<img src=") {
@@ -171,6 +171,68 @@ func stripFrontmatterReplaceURL(rootID int, content string,
 // flip function returns the opposite of bool
 func flip(b bool) bool {
 	return !b
+}
+
+func localLinkConverter(item string, page map[string]string) string {
+	sliceOne := strings.Split(item, `<p><a href="`)
+	url := strings.Split(sliceOne[0], `"`)[0]
+	minimum := 1000
+	likelypage := ""
+	for localURL, confluencepage := range page {
+		if strings.Contains(localURL, item) {
+			check := levenshtein([]rune(url), []rune(localURL))
+			if check < minimum {
+				minimum = check
+				likelypage = confluencepage
+			}
+		}
+	}
+
+	a := `<p><a href="`
+
+	b := common.ConfluenceBaseURL + "/wiki/spaces/" + common.ConfluenceSpace + "/pages/" + likelypage
+
+	c := `"></a></p>`
+
+	return a + b + c
+}
+
+func levenshtein(str1, str2 []rune) int {
+	s1len := len(str1)
+	s2len := len(str2)
+	column := make([]int, len(str1)+1)
+
+	for y := 1; y <= s1len; y++ {
+		column[y] = y
+	}
+	for x := 1; x <= s2len; x++ {
+		column[0] = x
+		lastkey := x - 1
+		for y := 1; y <= s1len; y++ {
+			oldkey := column[y]
+			var incr int
+			if str1[y-1] != str2[x-1] {
+				incr = 1
+			}
+
+			column[y] = minimum(column[y]+1, column[y-1]+1, lastkey+incr)
+			lastkey = oldkey
+		}
+	}
+	return column[s1len]
+}
+
+func minimum(a, b, c int) int {
+	if a < b {
+		if a < c {
+			return a
+		}
+	} else {
+		if b < c {
+			return b
+		}
+	}
+	return c
 }
 
 // URLConverter function for images to be loaded in to confluence page

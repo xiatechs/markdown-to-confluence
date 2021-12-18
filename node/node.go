@@ -20,14 +20,14 @@ const (
 )
 
 var (
-	mapSem              = make(chan struct{}, 1)
+	mapSem              = make(chan struct{}, 1)                   // for controlling access to Tree map
 	wg                  = semaphore.NewSemaphore(numberOfRoutines) // for controlling number of goroutines
 	numberOfFolders     float64                                    // for counting number of folders in repo
 	foldersWithMarkdown float64                                    // for counting number of folders with markdown in repo
 	rootDir             string                                     // will contain the root folderpath of the repo
 	// NodeAPIClient is interface where a confluence API client can be placed
-	nodeAPIClient APIClienter // api client will be stored here
-	t             = func() *Tree {
+	nodeAPIClient APIClienter      // api client will be stored here
+	t             = func() *Tree { // t - Tree - will contain tree of pages created and their subsequent confluence URL
 		return &Tree{
 			branches: make(map[string]string),
 		}
@@ -86,9 +86,7 @@ func (node *Node) Start(projectPath string) bool {
 
 		wg.Wait()
 
-		for path, id := range t.branches {
-			log.Println(path, "|", common.ConfluenceBaseURL+"/wiki/spaces/"+common.ConfluenceSpace+"/pages/"+id)
-		}
+		log.Println("Here are the pages I captured today:")
 
 		log.Println("FINISHED GOROUTINES - NOW CHECKING FOR DELETE")
 
@@ -96,6 +94,13 @@ func (node *Node) Start(projectPath string) bool {
 	}
 
 	return false
+}
+
+// Tree - print out what has been generated
+func (node *Node) Tree() {
+	for path, id := range t.branches {
+		log.Println(path, "|", common.ConfluenceBaseURL+"/wiki/spaces/"+common.ConfluenceSpace+"/pages/"+id)
+	}
 }
 
 // iterate method is to scan through the files or folders in a folder.
