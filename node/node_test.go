@@ -82,7 +82,7 @@ func TestStartBrandNewNested(t *testing.T) {
 	}
 
 	SetAPIClient(mockclient{
-		mu: &sync.RWMutex{},
+		i: &iterator{},
 	})
 
 	if node.Start("../../markdown-to-confluence") {

@@ -44,6 +44,11 @@ func (node *Node) deletePages(children *confluence.PageResults) {
 			go node.deletePage(children.Results[index].ID)
 		}
 	}
+
+	log.Println("Here are the pages:")
+	for path, id := range t.branches {
+		log.Println(path, "|", common.ConfluenceBaseURL+"/wiki/spaces/"+common.ConfluenceSpace+"/pages/"+id)
+	}
 }
 
 // deletePage method converts id to integer to pass to the API method DeletePage

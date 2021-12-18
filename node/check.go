@@ -21,6 +21,7 @@ import (
 func (node *Node) checkIfRootAlive(fpath string) {
 	if node.path != fpath {
 		subNode := newNode()
+		subNode.treeLink = node.treeLink
 		subNode.path = fpath
 
 		if node.alive {
@@ -179,6 +180,11 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 				abs, pageTitle, err)
 		}
 
+		mapSem <- struct{}{}
+		id := strconv.Itoa(node.id)
+		node.treeLink.branches[node.path] = id
+		<-mapSem
+
 		return nil
 	}
 
@@ -187,6 +193,11 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 		return fmt.Errorf("create/update page error for folder path [%s] - page title [%s]: %w",
 			abs, pageTitle, err)
 	}
+
+	mapSem <- struct{}{}
+	id := strconv.Itoa(node.id)
+	node.treeLink.branches[node.path] = id
+	<-mapSem
 
 	return nil
 }

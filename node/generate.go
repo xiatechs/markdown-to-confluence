@@ -32,6 +32,7 @@ func (node *Node) generateMaster() {
 	subNode := newNode()
 	subNode.path = node.path
 	subNode.root = node
+	subNode.treeLink = node.treeLink
 	node.branches = append(node.branches, subNode)
 
 	thereAreValidFiles := subNode.iterate(checking, files)

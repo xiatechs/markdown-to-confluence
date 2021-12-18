@@ -9,6 +9,7 @@ namespace node {
 
     }
     class Node << (S,Aquamarine) >> {
+        - treeLink *Tree
         - id int
         - alive bool
         - path string
@@ -54,10 +55,17 @@ namespace node {
         + Delete() 
 
     }
-    class mockclient << (S,Aquamarine) >> {
+    class Tree << (S,Aquamarine) >> {
+        - branches <font color=blue>map</font>[string]string
+
+    }
+    class iterator << (S,Aquamarine) >> {
         - mockiter int
-        - toproot bool
-        - mu *sync.RWMutex
+        - isroot bool
+
+    }
+    class mockclient << (S,Aquamarine) >> {
+        - i *iterator
 
         + CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
         + DeletePage(pageID int) error

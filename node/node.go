@@ -19,12 +19,18 @@ const (
 )
 
 var (
+	mapSem              = make(chan struct{}, 1)
 	wg                  = semaphore.NewSemaphore(numberOfRoutines) // for controlling number of goroutines
 	numberOfFolders     float64                                    // for counting number of folders in repo
 	foldersWithMarkdown float64                                    // for counting number of folders with markdown in repo
 	rootDir             string                                     // will contain the root folderpath of the repo
 	// NodeAPIClient is interface where a confluence API client can be placed
 	nodeAPIClient APIClienter // api client will be stored here
+	t             = func() *Tree {
+		return &Tree{
+			branches: make(map[string]string),
+		}
+	}
 )
 
 // SetAPIClient sets a confluence.APIClient object into the node package
@@ -32,8 +38,13 @@ func SetAPIClient(client APIClienter) {
 	nodeAPIClient = client
 }
 
+type Tree struct {
+	branches map[string]string
+}
+
 // Node struct enables creation of a page tree
 type Node struct {
+	treeLink  *Tree
 	id        int    // when page is created, page ID will be stored here.
 	alive     bool   // for tracking if the folder has any valid content within it asides more folders
 	path      string // file / folderpath will be stored here
@@ -52,6 +63,7 @@ type Node struct {
 // and returns bool - if true then it means pages have been created/updated/checked on confluence
 // and there is markdown content in the folder
 func (node *Node) Start(projectPath string) bool {
+	node.treeLink = t
 	node.mu = &sync.RWMutex{}
 	if isFolder(projectPath) {
 		numberOfFolders++
@@ -71,7 +83,6 @@ func (node *Node) Start(projectPath string) bool {
 		wg.Wait()
 
 		log.Println("FINISHED GOROUTINES - NOW CHECKING FOR DELETE")
-
 		return true
 	}
 
