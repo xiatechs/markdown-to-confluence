@@ -109,6 +109,8 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 		return nil
 	}
 
+	node.indexPage = false
+
 	masterpagecontents := &markdown.FileContents{
 		MetaData: map[string]interface{}{
 			"title": dir,
