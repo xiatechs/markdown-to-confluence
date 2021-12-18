@@ -2,6 +2,7 @@ package node
 
 import (
 	"log"
+	"sync"
 
 	"github.com/xiatechs/markdown-to-confluence/confluence"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
@@ -16,23 +17,24 @@ import (
 	UploadAttachment(filename string, id int, index bool, indexid int) error
 */
 
-var mockiter = 0
-var toproot bool
-
 type mockclient struct {
+	mockiter int
+	toproot  bool
+	mu       *sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
 }
 
 func (m mockclient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
-	mockiter++
+	m.mu.Lock()
+	m.mockiter++
 
-	if !toproot {
+	if !m.toproot {
 		isroot = true
-		toproot = true
+		m.toproot = true
 	}
 
 	log.Printf("CREATING PAGE:\n%s\nroot [%d]\nisRoot [%t]\n ", string(contents.Body), root, isroot)
-
-	return mockiter, nil
+	m.mu.Unlock()
+	return m.mockiter, nil
 }
 
 func (m mockclient) DeletePage(pageID int) error {
@@ -50,6 +52,8 @@ func (m mockclient) FindPage(title string, many bool) (*confluence.PageResults, 
 }
 
 func (m mockclient) UploadAttachment(filename string, id int, index bool, indexid int) error {
+	m.mu.Lock()
 	log.Printf("UPLOADING: name:[%s], id:[%d], index:[%t], indexID:[%d]", filename, id, index, indexid)
+	m.mu.Unlock()
 	return nil
 }

@@ -2,6 +2,7 @@ package node
 
 //notodo: ignore this page
 import (
+	"sync"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -76,9 +77,13 @@ func TestStartBrandNew(t *testing.T) {
 }
 
 func TestStartBrandNewNested(t *testing.T) {
-	node := Node{}
+	node := Node{
+		mu: &sync.RWMutex{},
+	}
 
-	SetAPIClient(mockclient{})
+	SetAPIClient(mockclient{
+		mu: &sync.RWMutex{},
+	})
 
 	if node.Start("../../markdown-to-confluence") {
 		node.Delete()

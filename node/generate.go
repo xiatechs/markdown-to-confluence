@@ -92,7 +92,6 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 			log.Printf("[generate folderpage] generation error for path [%s]: %v", node.path, err)
 			return err
 		}
-
 		// have to do it twice...
 
 		masterpagecontents, err = node.processMarkDownIndex(filepath.Join(node.path, indexName), node.id)

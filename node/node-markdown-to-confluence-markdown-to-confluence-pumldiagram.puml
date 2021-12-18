@@ -16,7 +16,7 @@ namespace node {
         - root *Node
         - branches []*Node
         - titles []string
-        - mu sync.RWMutex
+        - mu *sync.RWMutex
         - indexPage bool
 
         - checkIfRootAlive(fpath string) 
@@ -55,6 +55,10 @@ namespace node {
 
     }
     class mockclient << (S,Aquamarine) >> {
+        - mockiter int
+        - toproot bool
+        - mu *sync.RWMutex
+
         + CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
         + DeletePage(pageID int) error
         + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, originalPage confluence.PageResults) (bool, error)

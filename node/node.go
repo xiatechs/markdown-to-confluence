@@ -38,10 +38,10 @@ type Node struct {
 	alive     bool   // for tracking if the folder has any valid content within it asides more folders
 	path      string // file / folderpath will be stored here
 	hasIndex  bool
-	root      *Node        // the parent page node will be linked here
-	branches  []*Node      // any children page nodes will be stored here (for deleting)
-	titles    []string     // titles of pages created by node (for deleting)
-	mu        sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
+	root      *Node         // the parent page node will be linked here
+	branches  []*Node       // any children page nodes will be stored here (for deleting)
+	titles    []string      // titles of pages created by node (for deleting)
+	mu        *sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
 	indexPage bool
 }
 
@@ -52,6 +52,7 @@ type Node struct {
 // and returns bool - if true then it means pages have been created/updated/checked on confluence
 // and there is markdown content in the folder
 func (node *Node) Start(projectPath string) bool {
+	node.mu = &sync.RWMutex{}
 	if isFolder(projectPath) {
 		numberOfFolders++
 
