@@ -45,7 +45,7 @@ func (node *Node) processMarkDownIndex(path string, subindex int) (*markdown.Fil
 			abs, path, err)
 	}
 
-	log.Printf("processing index file [%s] - indexpage: [%t] - subindex id: [%d] - these must ALIGN",
+	log.Printf("processing index file [%s] - indexpage: [%t] - subindex id: [%d]",
 		path, node.indexPage, subindex)
 
 	parsedContents, err := markdown.ParseMarkdown(func() int {

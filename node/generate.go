@@ -10,9 +10,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	goplantuml "github.com/jfeliu007/goplantuml/parser"
+	"github.com/xiatechs/markdown-to-confluence/common"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
@@ -38,9 +40,12 @@ func (node *Node) generateMaster() {
 	thereAreValidFiles := subNode.iterate(checking, files)
 
 	if !thereAreValidFiles {
+		log.Printf("skipping this folder [%s] because no valid files here", node.path)
 		subNode.iterate(processing, folders)
 		return
 	}
+
+	log.Printf("generating a folder page here - this page is alive", node.path)
 
 	err := node.generateFolderPage(subNode.hasIndex, subNode.id)
 	if err != nil {
@@ -81,6 +86,8 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 	dir, fullDir := node.generateTitles()
 
 	if hasIndex {
+		log.Println("this location [%s] has a [%s] file so will use that as index at this location",
+			node.path, indexName)
 		node.indexPage = true
 
 		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, indexName), subindex)
@@ -95,7 +102,8 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 		}
 		// have to do it twice...
 
-		masterpagecontents, err = node.processMarkDownIndex(filepath.Join(node.path, indexName), node.id)
+		masterpagecontents, err = node.processMarkDownIndex(filepath.Join(node.path,
+			indexName), node.id)
 		if err != nil {
 			return err
 		}
@@ -110,6 +118,8 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 	}
 
 	node.indexPage = false
+	log.Printf("no [%s] located here [%s], will generated generic folderpage",
+		indexName, node.path)
 
 	masterpagecontents := &markdown.FileContents{
 		MetaData: map[string]interface{}{
@@ -170,6 +180,8 @@ func (node *Node) generatePlantuml(fpath string) {
 		path = rootDir
 	}
 
+	log.Println("generating plantuml text for %s", path)
+
 	result, err := goplantuml.NewClassDiagram([]string{fpath}, []string{}, iterateThroughSubFolders)
 	if err != nil {
 		log.Printf("[generate diagram] plantuml file generation error for path [%s]: %v", abs, err)
@@ -204,6 +216,9 @@ func (node *Node) generatePlantuml(fpath string) {
 			return
 		}
 
+		log.Printf("uploading generated png file [%s] to page id of [%d]",
+			node.path+"/"+filename+".png", node.id)
+
 		node.uploadFile(node.path+"/"+filename+".png", node.indexPage)
 
 		masterpagecontents := markdown.FileContents{
@@ -217,12 +232,21 @@ func (node *Node) generatePlantuml(fpath string) {
 		if err != nil {
 			log.Printf("check confluence page error for path [%s]: %v", abs, err)
 		}
+
+		url := common.ConfluenceBaseURL + "/wiki/spaces/" +
+			common.ConfluenceSpace + "/pages/" + func() string {
+			return strconv.Itoa(node.id)
+		}()
+
+		log.Printf("a plantuml image was generated for location [%s] & is available at [%s]", fpath, url)
 	}
 }
 
 // generatePlantumlImage method calls external application (plantuml.jar)
 // in the docker container to generate the plantuml image (as a .png)
 func (node *Node) generatePlantumlImage(fpath string) error {
+	log.Printf("MTC calling plantuml app for plantuml PNG generation...")
+
 	convertPlantuml := exec.Command("java", "-jar", "/app/plantuml.jar", "-tpng", fpath) // #nosec - pumlimage
 	convertPlantuml.Stdout = os.Stdout
 
@@ -231,6 +255,7 @@ func (node *Node) generatePlantumlImage(fpath string) error {
 		return fmt.Errorf("generatePlantumlImage error: %w", err)
 	}
 
+	log.Printf("MTC calling plantuml app for plantuml PNG generation...")
 	return nil
 }
 
