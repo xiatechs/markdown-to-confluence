@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/xiatechs/markdown-to-confluence/common"
 	"github.com/xiatechs/markdown-to-confluence/semaphore"
 )
 
@@ -84,6 +85,10 @@ func (node *Node) Start(projectPath string) bool {
 		log.Println("WAITING FOR GOROUTINES")
 
 		wg.Wait()
+
+		for path, id := range t.branches {
+			log.Println(path, "|", common.ConfluenceBaseURL+"/wiki/spaces/"+common.ConfluenceSpace+"/pages/"+id)
+		}
 
 		log.Println("FINISHED GOROUTINES - NOW CHECKING FOR DELETE")
 
