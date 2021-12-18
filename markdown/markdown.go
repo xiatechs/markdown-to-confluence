@@ -175,17 +175,27 @@ func flip(b bool) bool {
 
 func localLinkConverter(item string, page map[string]string) string {
 	sliceOne := strings.Split(item, `<p><a href="`)
-	url := strings.Split(sliceOne[0], `"`)[0]
+	if len(sliceOne) <= 1 {
+		return `<p>[invalid link - needs to start with https://]<p>`
+	}
+
+	url := strings.Split(sliceOne[1], `"`)[0]
 	minimum := 1000
 	likelypage := ""
+	exists := false
 	for localURL, confluencepage := range page {
 		if strings.Contains(localURL, item) {
+			exists = true
 			check := levenshtein([]rune(url), []rune(localURL))
 			if check < minimum {
 				minimum = check
 				likelypage = confluencepage
 			}
 		}
+	}
+
+	if !exists {
+		return `<p>[invalid link - needs to start with https://]<p>`
 	}
 
 	a := `<p><a href="`
