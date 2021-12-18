@@ -30,7 +30,7 @@ var (
 		return &Tree{
 			branches: make(map[string]string),
 		}
-	}
+	}()
 )
 
 // SetAPIClient sets a confluence.APIClient object into the node package
@@ -38,6 +38,7 @@ func SetAPIClient(client APIClienter) {
 	nodeAPIClient = client
 }
 
+// Tree - capture what has been generated
 type Tree struct {
 	branches map[string]string
 }

@@ -13,7 +13,9 @@ import (
 // newNode function creates a new node object
 func newNode() *Node {
 	node := Node{}
+
 	node.mu = &sync.RWMutex{}
+
 	return &node
 }
 

@@ -28,7 +28,7 @@ var s = make(chan bool, 1)
 
 func (m mockclient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
 	s <- true // race blocker
-	m.i.mockiter = m.i.mockiter + 1
+	m.i.mockiter++
 	a := m.i.mockiter
 
 	if !m.i.isroot {

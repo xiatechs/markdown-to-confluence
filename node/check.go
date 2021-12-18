@@ -181,8 +181,11 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 		}
 
 		mapSem <- struct{}{}
+
 		id := strconv.Itoa(node.id)
+
 		node.treeLink.branches[node.path] = id
+
 		<-mapSem
 
 		return nil
@@ -195,8 +198,11 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 	}
 
 	mapSem <- struct{}{}
+
 	id := strconv.Itoa(node.id)
+
 	node.treeLink.branches[node.path] = id
+
 	<-mapSem
 
 	return nil

@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/xiatechs/markdown-to-confluence/common"
 	"github.com/xiatechs/markdown-to-confluence/confluence"
 )
 
@@ -46,6 +47,7 @@ func (node *Node) deletePages(children *confluence.PageResults) {
 	}
 
 	log.Println("Here are the pages:")
+
 	for path, id := range t.branches {
 		log.Println(path, "|", common.ConfluenceBaseURL+"/wiki/spaces/"+common.ConfluenceSpace+"/pages/"+id)
 	}
