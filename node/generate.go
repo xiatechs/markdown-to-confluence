@@ -42,10 +42,11 @@ func (node *Node) generateMaster() {
 	if !thereAreValidFiles {
 		log.Printf("skipping this folder [%s] because no valid files here", node.path)
 		subNode.iterate(processing, folders)
+
 		return
 	}
 
-	log.Printf("generating a folder page here - this page is alive", node.path)
+	log.Printf("generating a folder page here [%s] this page is alive", node.path)
 
 	err := node.generateFolderPage(subNode.hasIndex, subNode.id)
 	if err != nil {
@@ -86,8 +87,9 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 	dir, fullDir := node.generateTitles()
 
 	if hasIndex {
-		log.Println("this location [%s] has a [%s] file so will use that as index at this location",
+		log.Printf("this location [%s] has a [%s] file so will use that as index at this location",
 			node.path, indexName)
+
 		node.indexPage = true
 
 		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, indexName), subindex)
@@ -180,7 +182,7 @@ func (node *Node) generatePlantuml(fpath string) {
 		path = rootDir
 	}
 
-	log.Println("generating plantuml text for %s", path)
+	log.Printf("generating plantuml text for %s", path)
 
 	result, err := goplantuml.NewClassDiagram([]string{fpath}, []string{}, iterateThroughSubFolders)
 	if err != nil {
@@ -245,7 +247,7 @@ func (node *Node) generatePlantuml(fpath string) {
 // generatePlantumlImage method calls external application (plantuml.jar)
 // in the docker container to generate the plantuml image (as a .png)
 func (node *Node) generatePlantumlImage(fpath string) error {
-	log.Printf("MTC calling plantuml app for plantuml PNG generation...")
+	log.Printf("generating plantuml png from plantuml context provided by go code...")
 
 	convertPlantuml := exec.Command("java", "-jar", "/app/plantuml.jar", "-tpng", fpath) // #nosec - pumlimage
 	convertPlantuml.Stdout = os.Stdout
@@ -255,7 +257,6 @@ func (node *Node) generatePlantumlImage(fpath string) error {
 		return fmt.Errorf("generatePlantumlImage error: %w", err)
 	}
 
-	log.Printf("MTC calling plantuml app for plantuml PNG generation...")
 	return nil
 }
 
