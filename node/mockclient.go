@@ -24,11 +24,14 @@ type mockclient struct {
 
 func (m mockclient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
 	mockiter++
+
 	if !toproot {
 		isroot = true
 		toproot = true
 	}
+
 	log.Printf("CREATING PAGE:\n%s\nroot [%d]\nisRoot [%t]\n ", string(contents.Body), root, isroot)
+
 	return mockiter, nil
 }
 
