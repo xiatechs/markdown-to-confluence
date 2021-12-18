@@ -87,7 +87,7 @@ func (node *Node) iterate(justChecking, foldersOnly bool) bool {
 	// Go 1.15 method: err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 	// Go 1.16 method: err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
 	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-		if withinDirectory(node.path, fpath) {
+		if node.withinDirectory(node.path, fpath) {
 			if strings.ToLower(filepath.Base(fpath)) == indexName {
 				node.hasIndex = true
 			}

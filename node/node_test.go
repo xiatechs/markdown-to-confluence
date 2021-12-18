@@ -70,7 +70,17 @@ func TestStartBrandNew(t *testing.T) {
 		client.EXPECT().CreatePage(0, &testPage, false).Times(1).Return(0, nil),
 	)
 
-	if node.Start(".testfolder") {
+	if node.Start("./testfolder") {
+		node.Delete()
+	}
+}
+
+func TestStartBrandNewNested(t *testing.T) {
+	node := Node{}
+
+	SetAPIClient(mockclient{})
+
+	if node.Start("../../markdown-to-confluence") {
 		node.Delete()
 	}
 }

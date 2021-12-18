@@ -16,7 +16,7 @@ func newNode() *Node {
 }
 
 // withinDirectory function checks to see if the file (base) is within the folder (path)
-func withinDirectory(base, path string) bool {
+func (node *Node) withinDirectory(base, path string) bool {
 	return strings.Count(path, "/")-strings.Count(base, "/") == 1
 }
 
