@@ -52,7 +52,7 @@ func (node *Node) processMarkDownIndex(path string, subindex int) (*markdown.Fil
 
 		return node.root.id
 	}(), contents, node.indexPage,
-		subindex, node.treeLink.branches)
+		subindex, node.treeLink.branches, node.path)
 	if err != nil {
 		return nil, fmt.Errorf("absolute path [%s] - file [%s] - parse markdown error: %w",
 			abs, path, err)
@@ -82,7 +82,7 @@ func (node *Node) processMarkDown(path string) error {
 
 		return node.root.id
 	}(), contents, node.indexPage, node.id,
-		node.treeLink.branches)
+		node.treeLink.branches, node.path)
 	if err != nil {
 		return fmt.Errorf("absolute path [%s] - file [%s] - parse markdown error: %w",
 			abs, path, err)

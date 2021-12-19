@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/common"
 	m "gitlab.com/golang-commonmark/markdown"
 )
+
+var GrabAuthors bool
 
 // FileContents contains information from a file after being parsed from markdown.
 // `Metadata` in the format of a `map[string]interface{}` this can contain title, description, slug etc.
@@ -78,12 +81,48 @@ func Paragraphify(content string) string {
 	return preformatted
 }
 
+func capGit(path string) string {
+	log.Println(path)
+	git := exec.Command("git", "log", `--format='%ae'`, path)
+
+	out, err := git.CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	authors := make(map[string]int)
+	lines := strings.Split(string(out), "\n")
+	for _, line := range lines {
+		l := strings.ReplaceAll(line, `'`, "")
+		authors[l]++
+	}
+
+	output := "```" + "\n"
+
+	index := 0
+	for author, number := range authors {
+		if author == "" {
+			continue
+		}
+		no := strconv.Itoa(number)
+		if index == 0 {
+			output += author + " total commits: " + no
+		} else {
+			output += "\n" + author + " total commits: " + no
+		}
+
+	}
+
+	output += "```"
+
+	return output
+}
+
 // ParseMarkdown function uses external parsing library to grab markdown contents
 // and return a filecontents object
-func ParseMarkdown(rootID int, content []byte, isIndex bool, id int, pages map[string]string) (*FileContents, error) {
+func ParseMarkdown(rootID int, content []byte, isIndex bool, id int, pages map[string]string, path string) (*FileContents, error) {
 	r := bytes.NewReader(content)
 	f := newFileContents()
-
 	fmc, err := pageparser.ParseFrontMatterAndContent(r)
 	if err != nil {
 		log.Println("issue parsing frontmatter - (using # title instead): %w", err)
@@ -116,6 +155,10 @@ func ParseMarkdown(rootID int, content []byte, isIndex bool, id int, pages map[s
 
 	preformatted := md.RenderToString(content)
 	f.Body = stripFrontmatterReplaceURL(rootID, preformatted, isIndex, id, pages)
+
+	if GrabAuthors {
+		f.Body = append(f.Body, []byte(capGit(path))...)
+	}
 
 	return f, nil
 }

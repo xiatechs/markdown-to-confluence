@@ -85,7 +85,7 @@ func TestStartBrandNewNested(t *testing.T) {
 		i: &iterator{},
 	})
 
-	if node.Start("../node") {
+	if node.Start("../../markdown-to-confluence") {
 		node.Delete()
 	}
 }

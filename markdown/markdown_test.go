@@ -64,7 +64,7 @@ This Action will trawl through a repository.`),
 	for _, test := range testInputs {
 		test := test
 		t.Run(test.Name, func(t *testing.T) {
-			result, _ := markdown.ParseMarkdown(0, test.input, false, 0, map[string]string{})
+			result, _ := markdown.ParseMarkdown(0, test.input, false, 0, map[string]string{}, ".")
 			assert.Equal(t, test.expected, result)
 		})
 	}
@@ -95,7 +95,7 @@ test description`)
 <p>test description</p>`),
 	}
 
-	out, err := markdown.ParseMarkdown(0, testContent, false, 0, map[string]string{})
+	out, err := markdown.ParseMarkdown(0, testContent, false, 0, map[string]string{}, ".")
 	assert.Nil(t, err)
 	assert.Equal(t, out, expectOutput)
 }
@@ -114,6 +114,6 @@ func TestParseMarkdown_MalformedFrontMatter(t *testing.T) {
 	# Test Content 
 	test description`)
 
-	_, err := markdown.ParseMarkdown(0, testContent, false, 0, map[string]string{})
+	_, err := markdown.ParseMarkdown(0, testContent, false, 0, map[string]string{}, "markdown_test.go")
 	assert.NotNil(t, err)
 }

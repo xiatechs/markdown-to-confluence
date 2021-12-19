@@ -8,6 +8,7 @@ import (
 
 	"github.com/xiatechs/markdown-to-confluence/common"
 	"github.com/xiatechs/markdown-to-confluence/confluence"
+	"github.com/xiatechs/markdown-to-confluence/markdown"
 	"github.com/xiatechs/markdown-to-confluence/node"
 )
 
@@ -43,6 +44,8 @@ func setArgs() bool {
 // if node.Start returns true, then calls node.Delete method
 func Start() {
 	if setArgs() {
+		markdown.GrabAuthors = true
+
 		root := node.Node{}
 
 		client, err := confluence.CreateAPIClient()
