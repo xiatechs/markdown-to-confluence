@@ -86,11 +86,12 @@ func Paragraphify(content string) string {
 }
 
 //nolint: gosec // is fine
+// use git to capture authoriship (best way atm TODO: use shortlog)
 func capGit(path string) string {
 	sem <- true // race block
 	here, _ := os.Getwd()
 	log.Println("collecting authorship for ", path)
-	git := exec.Command("git", "log", `--format='%ae'`, here)
+	git := exec.Command("git", "log", `--format='%ae'`, "--", here)
 
 	out, err := git.CombinedOutput()
 	if err != nil {
@@ -104,8 +105,9 @@ func capGit(path string) string {
 		authors[l]++
 	}
 
+	// to let the output be displayed in confluence - wrapping it in code block
 	output := `<pre><code>
-[authors (email addresses)]
+[authors - email addresses]
 `
 
 	index := 0
@@ -117,11 +119,13 @@ func capGit(path string) string {
 		no := strconv.Itoa(number)
 
 		if index == 0 {
-			output += author + " total commits: " + no + " | "
+			output += author + " - total commits: " + no
 		} else {
 			output += `
-|` + author + " total commits: " + no + " "
+` + author + " - total commits: " + no
 		}
+
+		index++
 	}
 
 	output += `
@@ -177,8 +181,17 @@ func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
 	return f, nil
 }
 
+// for absolute links we don't need to do any fancy pants processing
 func linkFilterLogic(item string) bool {
 	if strings.Contains(item, "https://") {
+		return true
+	}
+
+	if strings.Contains(item, "http://") {
+		return true
+	}
+
+	if strings.Contains(item, "www") {
 		return true
 	}
 
@@ -211,6 +224,7 @@ func stripFrontmatterReplaceURL(rootID int, content string,
 			lines[index] = fuzzyLogicURLdetector(lines[index], pages)
 		}
 
+		// can't use local links yet for images
 		if strings.Contains(lines[index], "<img src=") {
 			lines[index] = URLConverter(rootID, lines[index], isIndex, id)
 		}
@@ -249,19 +263,20 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 		return fail
 	}
 
-	url := strings.Split(sliceOne[1], `"`)[0]
+	url := strings.Split(sliceOne[1], `"`)[0] // the local/relative URL for the page
 	minimum := 0
 	simMinimum := 0
 	likelypage := ""
 	likelyURL := ""
 	first := true
 	for localURL, confluencepage := range page {
-		similarity := exists(localURL, url)
+		similarity := exists(localURL, url) // how many similar fields are in the two links we are looking at
 
 		if similarity != 0 && similarity > simMinimum {
 			simMinimum = similarity
 
 			// if a page link is more similar than previous page link, let's use that page
+			// and use levenshtein algorithm to determine which is most similar out of a group
 			check := levenshtein([]rune(url), []rune(localURL))
 
 			if first {
@@ -285,6 +300,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 
 	log.Println("relative link -> ", url, "is LIKELY to be this page:", likelyURL, likelypage)
 
+	// to format this in confluence we must follow how confluence formats its content in the web frontend
 	a := `<p><a class="confluence-link" href="`
 
 	b := "/wiki/spaces/" + common.ConfluenceSpace + "/pages/" + likelypage + `"`

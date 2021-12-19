@@ -76,7 +76,8 @@ func TestStartBrandNew(t *testing.T) {
 	}
 }
 
-func TestStartBrandNewNested(t *testing.T) {
+// this test lets you see visually how all the content is generated in case you want to test the output locally
+func TestStartDebugEverything(t *testing.T) {
 	markdown.GrabAuthors = true
 
 	node := Node{
