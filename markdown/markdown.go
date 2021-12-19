@@ -209,9 +209,13 @@ func localLinkConverter(item string, page map[string]string) string {
 
 	a := `<p><a href="`
 
-	b := common.ConfluenceBaseURL + "/wiki/spaces/" + common.ConfluenceSpace + "/pages/" + likelypage
-
 	c := `"></a></p>`
+
+	if likelypage == "" {
+		return a + "[please start your links with https://]" + c
+	}
+
+	b := common.ConfluenceBaseURL + "/wiki/spaces/" + common.ConfluenceSpace + "/pages/" + likelypage
 
 	return a + b + c
 }
