@@ -63,6 +63,7 @@ type Node struct {
 func (node *Node) Start(projectPath string) bool {
 	if t == nil {
 		log.Println("instantiating TREE")
+
 		t = func() *Tree { // t - Tree - will contain tree of pages created and their subsequent confluence URL
 			return &Tree{
 				branches: make(map[string]string),
