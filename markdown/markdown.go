@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -85,6 +86,44 @@ func Paragraphify(content string) string {
 	return preformatted
 }
 
+type author struct {
+	name    string
+	howmany int
+}
+
+type authors []author
+
+func (a *authors) append(item string) {
+	au := *a
+	var exists bool
+	for index := range au {
+		if au[index].name == item {
+			au[index].howmany++
+			exists = true
+			break
+		}
+	}
+
+	if !exists {
+		au = append(au, author{
+			name:    item,
+			howmany: 1,
+		})
+	}
+
+	*a = au
+}
+
+func (a *authors) sort() {
+	au := *a
+
+	sort.Slice(au, func(i, j int) bool {
+		return au[i].howmany > au[j].howmany
+	})
+
+	*a = au
+}
+
 //nolint: gosec // is fine
 // use git to capture authoriship (best way atm TODO: use shortlog)
 func capGit(path string) string {
@@ -98,12 +137,14 @@ func capGit(path string) string {
 		log.Fatal(err)
 	}
 
-	authors := make(map[string]int)
+	a := authors{}
 	lines := strings.Split(string(out), "\n")
 	for _, line := range lines {
 		l := strings.ReplaceAll(line, `'`, "")
-		authors[l]++
+		a.append(l)
 	}
+
+	a.sort()
 
 	// to let the output be displayed in confluence - wrapping it in code block
 	output := `<pre><code>
@@ -111,18 +152,18 @@ func capGit(path string) string {
 `
 
 	index := 0
-	for author, number := range authors {
-		if author == "" {
+	for _, author := range a {
+		if author.name == "" {
 			continue
 		}
 
-		no := strconv.Itoa(number)
+		no := strconv.Itoa(author.howmany)
 
 		if index == 0 {
-			output += author + " - total commits: " + no
+			output += author.name + " - total commits: " + no
 		} else {
 			output += `
-` + author + " - total commits: " + no
+` + author.name + " - total commits: " + no
 		}
 
 		index++

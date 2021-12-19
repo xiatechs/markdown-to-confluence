@@ -5,7 +5,20 @@ namespace markdown {
         + Body []byte
 
     }
+    class author << (S,Aquamarine) >> {
+        - name string
+        - howmany int
+
+    }
+    class authors << (S,Aquamarine) >> {
+        - append(item string) 
+        - sort() 
+
+    }
+    class markdown.authors << (T, #FF7700) >>  {
+    }
 }
 
 
+"markdown.[]author" #.. "markdown.authors"
 @enduml
