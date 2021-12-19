@@ -103,7 +103,8 @@ func capGit(path string) string {
 		authors[l]++
 	}
 
-	output := "```" + "\n"
+	output := `<pre><code>
+`
 
 	index := 0
 	for author, number := range authors {
@@ -120,7 +121,8 @@ func capGit(path string) string {
 		}
 	}
 
-	output += "```"
+	output += `
+</code></pre>`
 
 	<-sem
 	return output
