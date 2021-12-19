@@ -204,19 +204,21 @@ func localLinkConverter(item string, page map[string]string) string {
 		}
 	}
 
-	log.Println("LIKELY:", likelyURL, likelypage)
-
-	a := `<p><a href="`
-
-	c := `"></a>` + likelyURL + `</p>`
-
 	if likelypage == "" {
-		return a + "[please start your links with https://]" + c
+		return "<p>[please start your links with https://]</p>"
 	}
 
-	b := common.ConfluenceBaseURL + "/wiki/spaces/" + common.ConfluenceSpace + "/pages/" + likelypage
+	log.Println("LIKELY:", likelyURL, likelypage)
 
-	return a + b + c
+	a := `<p><a class="confluence-link" href="`
+
+	b := "/wiki/spaces/" + common.ConfluenceSpace + "/pages/" + likelypage + `"`
+
+	c := ` data-linked-resource-id="` + likelypage + `" data-base-url="` + common.ConfluenceBaseURL + `/wiki">`
+
+	d := `</a>` + likelyURL + `</p>`
+
+	return a + b + c + d
 }
 
 func exists(a, b string) bool {
