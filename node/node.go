@@ -81,7 +81,8 @@ func (node *Node) Start(projectPath string) bool {
 		is created - bizarre i know - so the logic has to be run twice so that we can first:
 
 		- generate a tree of pages with their confluence ID's
-		- re-generate a tree of pages with the confluence ID's known to try and match RELATIVE links to confluence pages via fuzzy logic
+		- re-generate a tree of pages with the confluence ID's known to
+		  try and match RELATIVE links to confluence pages via fuzzy logic
 	*/
 
 	node.mu = &sync.RWMutex{}
