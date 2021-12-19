@@ -73,6 +73,17 @@ func (node *Node) Start(projectPath string) bool {
 
 	node.treeLink = t
 
+	/*
+		FOR RELATIVE FILE LINKS IN CONFLUENCE...
+
+		Start needs to be called twice because confluence page ID's are captured _only_ when they are generated
+		successfully. So, if there are local links inside pages, they cannot be determined until after the page
+		is created - bizarre i know - so the logic has to be run twice so that we can first:
+
+		- generate a tree of pages with their confluence ID's
+		- re-generate a tree of pages with the confluence ID's known to try and match RELATIVE links to confluence pages via fuzzy logic
+	*/
+
 	node.mu = &sync.RWMutex{}
 
 	if isFolder(projectPath) {
@@ -88,13 +99,13 @@ func (node *Node) Start(projectPath string) bool {
 
 		node.generateMaster() // contains concurrency
 
-		log.Println("WAITING FOR GOROUTINES [1]")
+		log.Println("WAITING FOR GOROUTINES [1] - generating first run to capture page ID's")
 
 		wg.Wait()
 
 		node.generateMaster() // contains concurrency
 
-		log.Println("WAITING FOR GOROUTINES [2]")
+		log.Println("WAITING FOR GOROUTINES [2] - now trying to match relative links to page ID's")
 
 		wg.Wait()
 
@@ -124,8 +135,7 @@ func (node *Node) Tree() {
 // if foldersOnly is true then it will only iterate through folders
 func (node *Node) iterate(justChecking, foldersOnly bool) bool {
 	var thereIsAValidFile bool
-	// Go 1.15 method: err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
-	// Go 1.16 method: err := filepath.WalkDir(node.path, func(fpath string, info os.DirEntry, err error) error {
+
 	err := filepath.Walk(node.path, func(fpath string, info os.FileInfo, err error) error {
 		if node.withinDirectory(node.path, fpath) {
 			if strings.ToLower(filepath.Base(fpath)) == indexName {

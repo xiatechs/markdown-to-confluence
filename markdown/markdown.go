@@ -173,6 +173,8 @@ func flip(b bool) bool {
 	return !b
 }
 
+// fuzzy logic for local links - it'll try and match the link to a generated confluence page
+// if this fails, it will just return a template
 func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	const fail = `<p>[please start your links with https://]</p>`
 
@@ -198,10 +200,11 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	first := true
 	for localURL, confluencepage := range page {
 		similarity := exists(localURL, url)
-		log.Println("SIMILARITY:", similarity, localURL, url)
+
 		if similarity != 0 && similarity > simMinimum {
 			simMinimum = similarity
 
+			// if a page link is more similar than previous page link, let's use that page
 			check := levenshtein([]rune(url), []rune(localURL))
 
 			if first {
@@ -223,7 +226,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 		return fail
 	}
 
-	log.Println("LIKELY:", likelyURL, likelypage)
+	log.Println("relative link -> ", url, "is LIKELY to be this page:", likelyURL, likelypage)
 
 	a := `<p><a class="confluence-link" href="`
 
@@ -238,6 +241,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	return a + b + c + d + e
 }
 
+// check how many fields exist in two strings (split by '/')
 func exists(a, b string) int {
 	similarity := 0
 	aa := strings.Split(a, "/")
@@ -253,6 +257,7 @@ func exists(a, b string) int {
 	return similarity
 }
 
+// levenshtein fuzzy logic algorithm to determine similarity of two strings
 func levenshtein(str1, str2 []rune) int {
 	s1len := len(str1)
 	s2len := len(str2)
