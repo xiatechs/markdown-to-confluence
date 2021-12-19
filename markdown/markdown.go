@@ -197,10 +197,6 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 		log.Println("================================LINKS", localURL, url)
 
 		similarity := exists(localURL, url)
-		if simMinimum == 0 {
-			simMinimum = similarity
-		}
-
 		if similarity > simMinimum || first {
 			simMinimum = similarity
 
