@@ -175,7 +175,7 @@ func flip(b bool) bool {
 
 func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	const fail = `<p>[please start your links with https://]</p>`
-	urlLink := strings.Split(item, `<\a>`)
+	urlLink := strings.Split(item, `</a>`)
 	if len(urlLink) <= 1 {
 		return fail
 	}
