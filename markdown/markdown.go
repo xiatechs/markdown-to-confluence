@@ -87,8 +87,9 @@ func Paragraphify(content string) string {
 //nolint: gosec // is fine
 func capGit(path string) string {
 	sem <- true // race block
-	log.Println("collecting authorship for ", "/github/workspace/"+path)
-	git := exec.Command("git", "log", `--format='%ae'`, path)
+	log.Println("collecting authorship for ", path)
+	git := exec.Command("git", "log", `--format='%ae'`,
+		"/github/workspace/"+path)
 
 	out, err := git.CombinedOutput()
 	if err != nil {
