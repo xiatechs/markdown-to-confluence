@@ -31,6 +31,7 @@ func (m mockclient) CreatePage(root int, contents *markdown.FileContents, isroot
 
 	a := m.i.mockiter
 
+	//nolint: staticcheck // is fine
 	if !m.i.isroot {
 		m.i.isroot = true
 

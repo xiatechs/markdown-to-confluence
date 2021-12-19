@@ -15,7 +15,10 @@ import (
 	m "gitlab.com/golang-commonmark/markdown"
 )
 
+// GrabAuthors - do we want to collect authors?
 var GrabAuthors bool
+
+var sem = make(chan bool, 1)
 
 // FileContents contains information from a file after being parsed from markdown.
 // `Metadata` in the format of a `map[string]interface{}` this can contain title, description, slug etc.
@@ -81,8 +84,10 @@ func Paragraphify(content string) string {
 	return preformatted
 }
 
+//nolint: gosec // is fine
 func capGit(path string) string {
-	log.Println(path)
+	sem <- true // race block
+	log.Println("collecting authorship for ", path)
 	git := exec.Command("git", "log", `--format='%ae'`, path)
 
 	out, err := git.CombinedOutput()
@@ -104,23 +109,26 @@ func capGit(path string) string {
 		if author == "" {
 			continue
 		}
+
 		no := strconv.Itoa(number)
+
 		if index == 0 {
 			output += author + " total commits: " + no
 		} else {
 			output += "\n" + author + " total commits: " + no
 		}
-
 	}
 
 	output += "```"
 
+	<-sem
 	return output
 }
 
 // ParseMarkdown function uses external parsing library to grab markdown contents
 // and return a filecontents object
-func ParseMarkdown(rootID int, content []byte, isIndex bool, id int, pages map[string]string, path string) (*FileContents, error) {
+func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
+	pages map[string]string, path string) (*FileContents, error) {
 	r := bytes.NewReader(content)
 	f := newFileContents()
 	fmc, err := pageparser.ParseFrontMatterAndContent(r)
