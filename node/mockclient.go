@@ -1,6 +1,8 @@
 package node
 
 import (
+	"log"
+
 	"github.com/xiatechs/markdown-to-confluence/confluence"
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
@@ -40,6 +42,7 @@ func (m mockclient) CreatePage(root int, contents *markdown.FileContents, isroot
 
 	<-s
 
+	log.Println(string(contents.Body))
 	return a, nil
 }
 

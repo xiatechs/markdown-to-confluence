@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -87,9 +88,9 @@ func Paragraphify(content string) string {
 //nolint: gosec // is fine
 func capGit(path string) string {
 	sem <- true // race block
+	here, _ := os.Getwd()
 	log.Println("collecting authorship for ", path)
-	git := exec.Command("git", "log", `--format='%ae'`,
-		"/github/workspace/"+path)
+	git := exec.Command("git", "log", `--format='%ae'`, here)
 
 	out, err := git.CombinedOutput()
 	if err != nil {
@@ -104,6 +105,7 @@ func capGit(path string) string {
 	}
 
 	output := `<pre><code>
+[authors (email addresses)]
 `
 
 	index := 0
@@ -115,9 +117,10 @@ func capGit(path string) string {
 		no := strconv.Itoa(number)
 
 		if index == 0 {
-			output += author + " total commits: " + no
+			output += author + " total commits: " + no + " | "
 		} else {
-			output += "\n" + author + " total commits: " + no
+			output += `
+|` + author + " total commits: " + no + " "
 		}
 	}
 

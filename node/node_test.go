@@ -77,6 +77,8 @@ func TestStartBrandNew(t *testing.T) {
 }
 
 func TestStartBrandNewNested(t *testing.T) {
+	markdown.GrabAuthors = true
+
 	node := Node{
 		mu: &sync.RWMutex{},
 	}
