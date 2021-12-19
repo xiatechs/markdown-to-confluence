@@ -202,7 +202,6 @@ func localLinkConverter(item string, page map[string]string) string {
 				likelyURL = localURL
 			}
 		}
-
 	}
 
 	log.Println("LIKELY:", likelyURL, likelypage)
