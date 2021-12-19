@@ -180,23 +180,32 @@ func localLinkConverter(item string, page map[string]string) string {
 	}
 
 	url := strings.Split(sliceOne[1], `"`)[0]
-	minimum := 1000
+	minimum := 0
 	likelypage := ""
-	exists := false
+	likelyURL := ""
+	first := true
 	for localURL, confluencepage := range page {
-		if strings.Contains(localURL, item) {
-			exists = true
+		log.Println("================================LINKS", localURL, url)
+		if exists(localURL, url) {
 			check := levenshtein([]rune(url), []rune(localURL))
+
+			if first {
+				first = false
+				minimum = check
+				likelypage = confluencepage
+				likelyURL = localURL
+			}
+
 			if check < minimum {
 				minimum = check
 				likelypage = confluencepage
+				likelyURL = localURL
 			}
 		}
+
 	}
 
-	if !exists {
-		return `<p>[invalid link - needs to start with https://]<p>`
-	}
+	log.Println("LIKELY:", likelyURL, likelypage)
 
 	a := `<p><a href="`
 
@@ -205,6 +214,20 @@ func localLinkConverter(item string, page map[string]string) string {
 	c := `"></a></p>`
 
 	return a + b + c
+}
+
+func exists(a, b string) bool {
+	aa := strings.Split(a, "/")
+	bb := strings.Split(b, "/")
+	for _, line := range aa {
+		for _, line2 := range bb {
+			if line == line2 {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func levenshtein(str1, str2 []rune) int {

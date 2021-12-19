@@ -186,6 +186,7 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 
 		node.treeLink.branches[node.path] = id
 
+		log.Printf("processed file - id: [%d]", node.id)
 		<-mapSem
 
 		return nil
@@ -203,6 +204,7 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 
 	node.treeLink.branches[node.path] = id
 
+	log.Printf("processed file - id: [%d]", node.id)
 	<-mapSem
 
 	return nil

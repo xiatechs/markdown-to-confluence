@@ -26,12 +26,8 @@ var (
 	foldersWithMarkdown float64                                    // for counting number of folders with markdown in repo
 	rootDir             string                                     // will contain the root folderpath of the repo
 	// NodeAPIClient is interface where a confluence API client can be placed
-	nodeAPIClient APIClienter      // api client will be stored here
-	t             = func() *Tree { // t - Tree - will contain tree of pages created and their subsequent confluence URL
-		return &Tree{
-			branches: make(map[string]string),
-		}
-	}()
+	nodeAPIClient APIClienter // api client will be stored here
+	t             *Tree
 )
 
 // SetAPIClient sets a confluence.APIClient object into the node package
@@ -65,6 +61,15 @@ type Node struct {
 // and returns bool - if true then it means pages have been created/updated/checked on confluence
 // and there is markdown content in the folder
 func (node *Node) Start(projectPath string) bool {
+	if t == nil {
+		log.Println("instantiating TREE")
+		t = func() *Tree { // t - Tree - will contain tree of pages created and their subsequent confluence URL
+			return &Tree{
+				branches: make(map[string]string),
+			}
+		}()
+	}
+
 	node.treeLink = t
 
 	node.mu = &sync.RWMutex{}
@@ -82,11 +87,19 @@ func (node *Node) Start(projectPath string) bool {
 
 		node.generateMaster() // contains concurrency
 
-		log.Println("WAITING FOR GOROUTINES")
+		log.Println("WAITING FOR GOROUTINES [1]")
 
 		wg.Wait()
 
-		log.Println("Here are the pages I captured today:")
+		node.generateMaster() // contains concurrency
+
+		log.Println("WAITING FOR GOROUTINES [2]")
+
+		wg.Wait()
+
+		log.Println("Here are the pages I got today:")
+
+		node.Tree()
 
 		log.Println("FINISHED GOROUTINES - NOW CHECKING FOR DELETE")
 
