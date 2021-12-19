@@ -175,12 +175,15 @@ func flip(b bool) bool {
 
 func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	const fail = `<p>[please start your links with https://]</p>`
+
 	urlLink := strings.Split(item, `</a>`)
-	if len(urlLink) <= 1 {
+
+	originalURLslice := strings.Split(strings.ReplaceAll(urlLink[0], "<p>", ""), `>`)
+	if len(originalURLslice) <= 1 {
 		return fail
 	}
 
-	originalURL := strings.Split(urlLink[1], `<`)[0]
+	originalURL := originalURLslice[1]
 
 	sliceOne := strings.Split(item, `<p><a href="`)
 	if len(sliceOne) <= 1 {
@@ -194,10 +197,9 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	likelyURL := ""
 	first := true
 	for localURL, confluencepage := range page {
-		log.Println("================================LINKS", localURL, url)
-
 		similarity := exists(localURL, url)
-		if similarity > simMinimum || first {
+		log.Println("SIMILARITY:", similarity, localURL, url)
+		if similarity != 0 && similarity > simMinimum {
 			simMinimum = similarity
 
 			check := levenshtein([]rune(url), []rune(localURL))
