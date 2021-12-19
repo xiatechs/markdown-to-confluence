@@ -43,6 +43,7 @@ func (m mockclient) CreatePage(root int, contents *markdown.FileContents, isroot
 	<-s
 
 	log.Println(string(contents.Body))
+
 	return a, nil
 }
 
