@@ -174,16 +174,17 @@ func flip(b bool) bool {
 }
 
 func fuzzyLogicURLdetector(item string, page map[string]string) string {
+	const fail = `<p>[please start your links with https://]</p>`
 	urlLink := strings.Split(item, `<\a>`)
 	if len(urlLink) <= 1 {
-		return "<p>[please start your links with https://]</p>"
+		return fail
 	}
 
 	originalURL := strings.Split(urlLink[1], `<`)[0]
 
 	sliceOne := strings.Split(item, `<p><a href="`)
 	if len(sliceOne) <= 1 {
-		return "<p>[please start your links with https://]</p>"
+		return fail
 	}
 
 	url := strings.Split(sliceOne[1], `"`)[0]
@@ -221,7 +222,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	}
 
 	if likelypage == "" {
-		return "<p>[please start your links with https://]</p>"
+		return fail
 	}
 
 	log.Println("LIKELY:", likelyURL, likelypage)
