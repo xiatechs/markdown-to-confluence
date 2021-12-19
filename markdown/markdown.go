@@ -201,7 +201,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 			simMinimum = similarity
 		}
 
-		if similarity > simMinimum {
+		if similarity > simMinimum || first {
 			simMinimum = similarity
 
 			check := levenshtein([]rune(url), []rune(localURL))
