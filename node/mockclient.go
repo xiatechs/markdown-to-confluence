@@ -24,6 +24,7 @@ type mockclient struct {
 
 var s = make(chan bool, 1)
 
+//nolint: staticcheck,ineffassign // is fine
 func (m mockclient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
 	s <- true // race blocker
 
@@ -31,7 +32,6 @@ func (m mockclient) CreatePage(root int, contents *markdown.FileContents, isroot
 
 	a := m.i.mockiter
 
-	//nolint: staticcheck // is fine
 	if !m.i.isroot {
 		m.i.isroot = true
 

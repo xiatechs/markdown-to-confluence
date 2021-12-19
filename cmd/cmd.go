@@ -43,9 +43,9 @@ func setArgs() bool {
 // the node.Start method
 // if node.Start returns true, then calls node.Delete method
 func Start() {
-	if setArgs() {
-		markdown.GrabAuthors = true
+	markdown.GrabAuthors = true
 
+	if setArgs() {
 		root := node.Node{}
 
 		client, err := confluence.CreateAPIClient()
