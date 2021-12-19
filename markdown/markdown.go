@@ -208,7 +208,7 @@ func localLinkConverter(item string, page map[string]string) string {
 
 	a := `<p><a href="`
 
-	c := `"></a></p>`
+	c := `"></a>` + likelyURL + `</p>`
 
 	if likelypage == "" {
 		return a + "[please start your links with https://]" + c
