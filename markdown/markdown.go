@@ -149,9 +149,9 @@ func stripFrontmatterReplaceURL(rootID int, content string,
 			continue
 		}
 
-		// temporary solution to local url path issue - remove them
+		// temporary solution to local url path issue - try and identify them with fuzzy logic
 		if strings.Contains(lines[index], "<a href=") && !linkFilterLogic(lines[index]) {
-			lines[index] = localLinkConverter(lines[index], pages)
+			lines[index] = fuzzyLogicURLdetector(lines[index], pages)
 		}
 
 		if strings.Contains(lines[index], "<img src=") {
@@ -173,20 +173,36 @@ func flip(b bool) bool {
 	return !b
 }
 
-func localLinkConverter(item string, page map[string]string) string {
+func fuzzyLogicURLdetector(item string, page map[string]string) string {
+	urlLink := strings.Split(item, `<\a>`)
+	if len(urlLink) <= 1 {
+		return "<p>[please start your links with https://]</p>"
+	}
+
+	originalURL := strings.Split(urlLink[1], `<`)[0]
+
 	sliceOne := strings.Split(item, `<p><a href="`)
 	if len(sliceOne) <= 1 {
-		return `<p>[invalid link - needs to start with https://]<p>`
+		return "<p>[please start your links with https://]</p>"
 	}
 
 	url := strings.Split(sliceOne[1], `"`)[0]
 	minimum := 0
+	simMinimum := 0
 	likelypage := ""
 	likelyURL := ""
 	first := true
 	for localURL, confluencepage := range page {
 		log.Println("================================LINKS", localURL, url)
-		if exists(localURL, url) {
+
+		similarity := exists(localURL, url)
+		if simMinimum == 0 {
+			simMinimum = similarity
+		}
+
+		if similarity > simMinimum {
+			simMinimum = similarity
+
 			check := levenshtein([]rune(url), []rune(localURL))
 
 			if first {
@@ -216,25 +232,26 @@ func localLinkConverter(item string, page map[string]string) string {
 
 	c := ` data-linked-resource-id="` + likelypage + `" data-base-url="` + common.ConfluenceBaseURL + `/wiki">`
 
-	d := likelyURL
+	d := originalURL
 
 	e := `</a></p>`
 
 	return a + b + c + d + e
 }
 
-func exists(a, b string) bool {
+func exists(a, b string) int {
+	similarity := 0
 	aa := strings.Split(a, "/")
 	bb := strings.Split(b, "/")
 	for _, line := range aa {
 		for _, line2 := range bb {
 			if line == line2 {
-				return true
+				similarity++
 			}
 		}
 	}
 
-	return false
+	return similarity
 }
 
 func levenshtein(str1, str2 []rune) int {
