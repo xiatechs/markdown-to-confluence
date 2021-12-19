@@ -216,9 +216,11 @@ func localLinkConverter(item string, page map[string]string) string {
 
 	c := ` data-linked-resource-id="` + likelypage + `" data-base-url="` + common.ConfluenceBaseURL + `/wiki">`
 
-	d := `</a>` + likelyURL + `</p>`
+	d := likelyURL
 
-	return a + b + c + d
+	e := `</a></p>`
+
+	return a + b + c + d + e
 }
 
 func exists(a, b string) bool {
