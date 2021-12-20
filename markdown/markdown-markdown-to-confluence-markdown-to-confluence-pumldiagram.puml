@@ -22,7 +22,6 @@ namespace markdown {
 
     }
     class fielditems << (S,Aquamarine) >> {
-        - sort() 
         - validate() bool
 
     }
