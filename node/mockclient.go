@@ -56,11 +56,15 @@ var mocksem = make(chan bool, 1)
 
 func (m mockclient) GetPages() []Page {
 	mocksem <- true
+
 	pages := []Page{}
+
 	for _, page := range m.i.pages {
 		pages = append(pages, *page)
 	}
+
 	<-mocksem
+
 	return pages
 }
 
