@@ -19,10 +19,11 @@ import (
 type iterator struct { // enables pointer arithmetic
 	mockiter int
 	isroot   bool
-	pages    []*page
+	pages    []*Page
 }
 
-type page struct {
+// Page - test pages are generated and stored in here
+type Page struct {
 	title  string
 	isroot bool
 	body   string
@@ -51,6 +52,15 @@ func (m mockclient) Print() {
 	}
 }
 
+func (m mockclient) GetPages() []Page {
+	pages := []Page{}
+	for _, page := range m.i.pages {
+		pages = append(pages, *page)
+	}
+
+	return pages
+}
+
 //nolint: ineffassign // is ok
 func (i *iterator) append(root int, contents *markdown.FileContents, isroot bool) int {
 	var exists bool
@@ -66,7 +76,7 @@ func (i *iterator) append(root int, contents *markdown.FileContents, isroot bool
 	}
 
 	if !exists {
-		i.pages = append(i.pages, &page{
+		i.pages = append(i.pages, &Page{
 			title:  contents.MetaData["title"].(string),
 			body:   string(contents.Body),
 			root:   root,

@@ -56,6 +56,14 @@ namespace node {
         + Delete() 
 
     }
+    class Page << (S,Aquamarine) >> {
+        - title string
+        - isroot bool
+        - body string
+        - root int
+        - id int
+
+    }
     class Tree << (S,Aquamarine) >> {
         - branches <font color=blue>map</font>[string]string
 
@@ -63,7 +71,7 @@ namespace node {
     class iterator << (S,Aquamarine) >> {
         - mockiter int
         - isroot bool
-        - pages []*page
+        - pages []*Page
 
         - append(root int, contents *markdown.FileContents, isroot bool) int
 
@@ -72,19 +80,12 @@ namespace node {
         - i *iterator
 
         + Print() 
+        + GetPages() []Page
         + CreatePage(root int, contents *markdown.FileContents, _ bool) (int, error)
         + DeletePage(pageID int) error
         + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, originalPage confluence.PageResults) (bool, error)
         + FindPage(title string, many bool) (*confluence.PageResults, error)
         + UploadAttachment(filename string, id int, index bool, indexid int) error
-
-    }
-    class page << (S,Aquamarine) >> {
-        - title string
-        - isroot bool
-        - body string
-        - root int
-        - id int
 
     }
 }
