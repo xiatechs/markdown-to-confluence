@@ -11,6 +11,8 @@ confluence absolute links - as if by magic.
 
 [node](../../markdown-to-confluence/readme.md)
 
+[confluence](../../markdown-to-confluence/confluence/readme.md)
+
 using fuzzy logic the links above to re-jigged to align with their correct source.
 it's not 100% foolproof but hey it's better than nothing, right?
 

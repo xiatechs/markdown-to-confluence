@@ -76,19 +76,24 @@ func TestStartBrandNew(t *testing.T) {
 	}
 }
 
-// this test lets you see visually how all the content is generated in case you want to test the output locally
+// this test lets you see visually how all the content is generated in case you want to debug the output locally
+// basically run it against any path you want and you'll see the pages generated at the end - after logging
 func TestStartDebugEverything(t *testing.T) {
-	markdown.GrabAuthors = true
+	markdown.GrabAuthors = false
 
 	node := Node{
 		mu: &sync.RWMutex{},
 	}
 
-	SetAPIClient(mockclient{
+	m := mockclient{
 		i: &iterator{},
-	})
+	}
+
+	SetAPIClient(m)
 
 	if node.Start("../../markdown-to-confluence") {
 		node.Delete()
 	}
+
+	m.Print()
 }

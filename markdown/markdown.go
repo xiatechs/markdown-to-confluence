@@ -91,7 +91,7 @@ type author struct {
 	howmany int
 }
 
-type authors []author
+type authors []author // not using a map so the order of authors can be maintained
 
 func (a *authors) append(item string) {
 	au := *a
@@ -125,12 +125,12 @@ func (a *authors) sort() {
 }
 
 //nolint: gosec // is fine
-// use git to capture authoriship (best way atm TODO: use shortlog)
+// use git to capture authors by username & email & commits
 func capGit(path string) string {
-	sem <- true // race block
+	sem <- true // race block as we're calling an external application (git)
 	here, _ := os.Getwd()
 	log.Println("collecting authorship for ", path)
-	git := exec.Command("git", "log", `--format='%ae'`, "--", here)
+	git := exec.Command("git", "log", `--format='%an | %ae'`, "--", here)
 
 	out, err := git.CombinedOutput()
 	if err != nil {
@@ -148,7 +148,7 @@ func capGit(path string) string {
 
 	// to let the output be displayed in confluence - wrapping it in code block
 	output := `<pre><code>
-[authors - email addresses]
+[authors | email addresses | how many commits]
 `
 
 	index := 0
@@ -285,6 +285,30 @@ func flip(b bool) bool {
 	return !b
 }
 
+type fpage struct {
+	distance       int
+	sim            int
+	confluencepage string
+	url            string
+}
+
+type pages []fpage
+
+func (p pages) filter() fpage {
+	max := p[0].sim
+	i := 0
+	for index := range p {
+		if p[index].distance == p[0].distance {
+			if p[index].sim > max {
+				i = index
+				max = p[index].sim
+			}
+		}
+	}
+
+	return p[i]
+}
+
 // fuzzy logic for local links - it'll try and match the link to a generated confluence page
 // if this fails, it will just return a template
 func fuzzyLogicURLdetector(item string, page map[string]string) string {
@@ -305,39 +329,40 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	}
 
 	url := strings.Split(sliceOne[1], `"`)[0] // the local/relative URL for the page
-	minimum := 0
 	simMinimum := 0
-	likelypage := ""
-	likelyURL := ""
-	first := true
+
+	p := pages{}
 	for localURL, confluencepage := range page {
 		similarity := exists(localURL, url) // how many similar fields are in the two links we are looking at
 
-		if similarity != 0 && similarity > simMinimum {
+		if similarity != 0 && similarity >= simMinimum {
 			simMinimum = similarity
 
 			// if a page link is more similar than previous page link, let's use that page
 			// and use levenshtein algorithm to determine which is most similar out of a group
 			check := levenshtein([]rune(url), []rune(localURL))
 
-			if first {
-				first = false
-				minimum = check
-				likelypage = confluencepage
-				likelyURL = localURL
-			}
-
-			if check < minimum {
-				minimum = check
-				likelypage = confluencepage
-				likelyURL = localURL
-			}
+			p = append(p, fpage{
+				distance:       check,
+				confluencepage: confluencepage,
+				url:            localURL,
+				sim:            similarity,
+			})
 		}
 	}
 
-	if likelypage == "" {
+	sort.Slice(p, func(i, j int) bool {
+		return p[i].distance < p[j].distance
+	})
+
+	if len(p) == 0 {
 		return fail
 	}
+
+	thepage := p.filter()
+
+	likelyURL := thepage.url
+	likelypage := thepage.confluencepage
 
 	log.Println("relative link -> ", url, "is LIKELY to be this page:", likelyURL, likelypage)
 
@@ -355,20 +380,84 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	return a + b + c + d + e
 }
 
+type fielditem struct {
+	item   string
+	index1 int
+	index2 int
+}
+
+type fielditems []fielditem
+
+func (f *fielditems) sort() {
+	au := *f
+
+	sort.Slice(au, func(i, j int) bool {
+		return au[i].index1 < au[j].index1
+	})
+
+	*f = au
+}
+
+func (f *fielditems) validate() bool {
+	au := *f
+
+	if len(au) == 1 {
+		return true
+	}
+
+	for index := len(au) - 1; index > 0; index-- {
+		if au[index].index1-au[index-1].index1 != 1 {
+			return false
+		}
+
+		if au[index].index2-au[index-1].index2 != 1 {
+			return false
+		}
+	}
+
+	return true
+}
+
 // check how many fields exist in two strings (split by '/')
 func exists(a, b string) int {
+	var f fielditems
 	similarity := 0
+	a = strings.ReplaceAll(a, "../", "")
+	b = strings.ReplaceAll(b, "../", "")
+	a = strings.ReplaceAll(a, ".", "")
+	b = strings.ReplaceAll(b, ".", "")
 	aa := strings.Split(a, "/")
 	bb := strings.Split(b, "/")
-	for _, line := range aa {
-		for _, line2 := range bb {
+	for index, line := range aa {
+		for index2, line2 := range bb {
 			if line == line2 {
 				similarity++
+				f = append(f, fielditem{
+					item:   line,
+					index1: index,
+					index2: index2,
+				})
 			}
 		}
 	}
 
-	return similarity
+	f.sort()
+
+	/*
+		INVALID
+		a) ../node/testfolder/folder
+		b ../node/folder/testfolder
+
+		VALID
+		a) ../../node/testfolder/folder
+		b) node/testfolder/folder
+	*/
+
+	if f.validate() {
+		return similarity
+	}
+
+	return 0
 }
 
 // levenshtein fuzzy logic algorithm to determine similarity of two strings

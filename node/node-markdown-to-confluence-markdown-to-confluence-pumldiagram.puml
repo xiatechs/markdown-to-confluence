@@ -63,16 +63,28 @@ namespace node {
     class iterator << (S,Aquamarine) >> {
         - mockiter int
         - isroot bool
+        - pages []*page
+
+        - append(root int, contents *markdown.FileContents, isroot bool) int
 
     }
     class mockclient << (S,Aquamarine) >> {
         - i *iterator
 
-        + CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error)
+        + Print() 
+        + CreatePage(root int, contents *markdown.FileContents, _ bool) (int, error)
         + DeletePage(pageID int) error
         + UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents, originalPage confluence.PageResults) (bool, error)
         + FindPage(title string, many bool) (*confluence.PageResults, error)
         + UploadAttachment(filename string, id int, index bool, indexid int) error
+
+    }
+    class page << (S,Aquamarine) >> {
+        - title string
+        - isroot bool
+        - body string
+        - root int
+        - id int
 
     }
 }
