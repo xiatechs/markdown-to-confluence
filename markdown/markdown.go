@@ -20,7 +20,10 @@ import (
 // GrabAuthors - do we want to collect authors?
 var GrabAuthors bool
 
-var sem = make(chan bool, 1)
+var (
+	sem  = make(chan bool, 1)
+	fsem = make(chan bool, 1)
+)
 
 // FileContents contains information from a file after being parsed from markdown.
 // `Metadata` in the format of a `map[string]interface{}` this can contain title, description, slug etc.
@@ -312,12 +315,14 @@ func (p pages) filter() fpage {
 // fuzzy logic for local links - it'll try and match the link to a generated confluence page
 // if this fails, it will just return a template
 func fuzzyLogicURLdetector(item string, page map[string]string) string {
+	fsem <- true
 	const fail = `<p>[please start your links with https://]</p>`
 
 	urlLink := strings.Split(item, `</a>`)
 
 	originalURLslice := strings.Split(strings.ReplaceAll(urlLink[0], "<p>", ""), `>`)
 	if len(originalURLslice) <= 1 {
+		<-fsem
 		return fail
 	}
 
@@ -325,6 +330,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 
 	sliceOne := strings.Split(item, `<p><a href="`)
 	if len(sliceOne) <= 1 {
+		<-fsem
 		return fail
 	}
 
@@ -356,6 +362,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	})
 
 	if len(p) == 0 {
+		<-fsem
 		return fail
 	}
 
@@ -376,7 +383,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	d := originalURL
 
 	e := `</a></p>`
-
+	<-fsem
 	return a + b + c + d + e
 }
 
