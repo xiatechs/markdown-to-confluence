@@ -141,6 +141,7 @@ func (node *Node) iterate(justChecking, foldersOnly bool) bool {
 		if node.withinDirectory(node.path, fpath) {
 			if strings.ToLower(filepath.Base(fpath)) == indexName {
 				node.hasIndex = true
+				node.alive = true
 			}
 
 			validFile := node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
