@@ -46,6 +46,7 @@ func (node *Node) processMarkDownIndex(path string, subindex int) (*markdown.Fil
 	}
 
 	mapSem <- struct{}{}
+
 	parsedContents, err := markdown.ParseMarkdown(func() int {
 		if node.root == nil {
 			return 0
@@ -56,10 +57,13 @@ func (node *Node) processMarkDownIndex(path string, subindex int) (*markdown.Fil
 		subindex, node.treeLink.branches, node.path)
 	if err != nil {
 		<-mapSem
+
 		return nil, fmt.Errorf("absolute path [%s] - file [%s] - parse markdown error: %w",
 			abs, path, err)
 	}
+
 	<-mapSem
+
 	parsedContents.MetaData["title"] = fpath
 
 	return parsedContents, nil
@@ -76,7 +80,9 @@ func (node *Node) processMarkDown(path string) error {
 		return fmt.Errorf("absolute path [%s] - file [%s] - read file error: %w",
 			abs, path, err)
 	}
+
 	mapSem <- struct{}{}
+
 	parsedContents, err := markdown.ParseMarkdown(func() int {
 		if node.root == nil {
 			return 0
@@ -90,7 +96,9 @@ func (node *Node) processMarkDown(path string) error {
 		return fmt.Errorf("absolute path [%s] - file [%s] - parse markdown error: %w",
 			abs, path, err)
 	}
+
 	<-mapSem
+
 	parsedContents.MetaData["title"] = parsedContents.MetaData["title"].(string) + "-" + fpath
 
 	err = node.checkConfluencePages(parsedContents)
