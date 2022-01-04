@@ -20,7 +20,7 @@ import (
 // GrabAuthors - do we want to collect authors?
 var (
 	GrabAuthors bool
-	fsem        = make(chan struct{}, 0)
+	fsem        = make(chan struct{}, 1)
 )
 
 // FileContents contains information from a file after being parsed from markdown.
