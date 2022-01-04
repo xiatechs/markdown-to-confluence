@@ -20,7 +20,6 @@ import (
 // GrabAuthors - do we want to collect authors?
 var (
 	GrabAuthors bool
-	fsem        = make(chan struct{}, 1)
 )
 
 // FileContents contains information from a file after being parsed from markdown.
@@ -311,11 +310,6 @@ func (p pages) filter() fpage {
 // fuzzy logic for local links - it'll try and match the link to a generated confluence page
 // if this fails, it will just return a template
 func fuzzyLogicURLdetector(item string, page map[string]string) string {
-	fsem <- struct{}{}
-	defer func() {
-		<-fsem
-	}()
-
 	const fail = `<p>[please start your links with https://]</p>`
 
 	urlLink := strings.Split(item, `</a>`)
