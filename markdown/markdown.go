@@ -179,8 +179,6 @@ func capGit(path string) string {
 // and return a filecontents object
 func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
 	pages map[string]string, path string) (*FileContents, error) {
-	fsem <- struct{}{}
-
 	r := bytes.NewReader(content)
 	f := newFileContents()
 	fmc, err := pageparser.ParseFrontMatterAndContent(r)
@@ -198,12 +196,10 @@ func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
 
 	value, ok := f.MetaData["title"]
 	if !ok {
-		<-fsem
 		return nil, fmt.Errorf("markdown page parsing error - page title is not assigned via toml or # section")
 	}
 
 	if value == "" {
-		<-fsem
 		return nil, fmt.Errorf("markdown page parsing error - page title is empty")
 	}
 
@@ -221,8 +217,6 @@ func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
 	if GrabAuthors {
 		f.Body = append(f.Body, []byte(capGit(path))...)
 	}
-
-	<-fsem
 
 	return f, nil
 }
@@ -317,6 +311,11 @@ func (p pages) filter() fpage {
 // fuzzy logic for local links - it'll try and match the link to a generated confluence page
 // if this fails, it will just return a template
 func fuzzyLogicURLdetector(item string, page map[string]string) string {
+	fsem <- struct{}{}
+	defer func() {
+		<-fsem
+	}()
+
 	const fail = `<p>[please start your links with https://]</p>`
 
 	urlLink := strings.Split(item, `</a>`)
