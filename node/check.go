@@ -252,8 +252,6 @@ func (node *Node) addContents(newPageContents *markdown.FileContents) {
 		defer node.root.mu.Unlock()
 
 		node.root.titles = append(node.root.titles, newPageContents.MetaData["title"].(string))
-
-		return
 	}
 
 	node.mu.Lock()
