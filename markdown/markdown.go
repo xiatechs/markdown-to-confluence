@@ -18,7 +18,10 @@ import (
 )
 
 // GrabAuthors - do we want to collect authors?
-var GrabAuthors bool
+var (
+	GrabAuthors bool
+	fsem        = make(chan struct{}, 0)
+)
 
 // FileContents contains information from a file after being parsed from markdown.
 // `Metadata` in the format of a `map[string]interface{}` this can contain title, description, slug etc.
@@ -176,6 +179,8 @@ func capGit(path string) string {
 // and return a filecontents object
 func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
 	pages map[string]string, path string) (*FileContents, error) {
+	fsem <- struct{}{}
+
 	r := bytes.NewReader(content)
 	f := newFileContents()
 	fmc, err := pageparser.ParseFrontMatterAndContent(r)
@@ -214,6 +219,8 @@ func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
 	if GrabAuthors {
 		f.Body = append(f.Body, []byte(capGit(path))...)
 	}
+
+	<-fsem
 
 	return f, nil
 }
