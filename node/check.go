@@ -216,6 +216,13 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 }
 
 func (node *Node) newPage(newPageContents *markdown.FileContents) error {
+	_, abs := node.generateTitles()
+
+	if newPageContents == nil {
+		return fmt.Errorf("newPage error for folder path [%s]: the markdown file was nil",
+			abs)
+	}
+
 	err := node.generatePage(newPageContents)
 	if err != nil {
 		return err
@@ -228,6 +235,18 @@ func (node *Node) newPage(newPageContents *markdown.FileContents) error {
 
 func (node *Node) createOrUpdatePage(newPageContents *markdown.FileContents,
 	pageResult *confluence.PageResults) error {
+	_, abs := node.generateTitles()
+
+	if newPageContents == nil {
+		return fmt.Errorf("createOrUpdatePage error for folder path [%s]: the newPageContents param was nil",
+			abs)
+	}
+
+	if pageResult == nil {
+		return fmt.Errorf("createOrUpdatePage pageResult error for folder path [%s]: the pageResult param was nil",
+			abs)
+	}
+
 	err := node.checkPageID(*pageResult)
 	if err != nil {
 		return err
