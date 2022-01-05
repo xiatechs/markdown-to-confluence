@@ -273,7 +273,7 @@ func (node *Node) addContents(newPageContents *markdown.FileContents) {
 	_, abs := node.generateTitles()
 
 	if newPageContents.MetaData == nil {
-		log.Println("createOrUpdatePage error for folder path [%s]: metadata was nil", abs)
+		log.Printf("createOrUpdatePage warning for folder path [%s]: metadata was nil", abs)
 		
 		return
 	}

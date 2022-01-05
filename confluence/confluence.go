@@ -87,6 +87,10 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 		return 0, fmt.Errorf("createpage error: %w", err)
 	}
 
+	if newPageContentsJSON == nil {
+		return 0, fmt.Errorf("createpage error: newPageContentsJSON is nil")	
+	}
+
 	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL)
 
 	req, err := retryablehttp.NewRequest(http.MethodPost, URL, newPageContentsJSON)
