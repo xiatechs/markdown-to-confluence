@@ -85,6 +85,7 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 	}
 
 	dir, fullDir := node.generateTitles()
+	log.Printf("START processing file [%s]", fullDir)
 
 	if hasIndex {
 		log.Printf("this location [%s] has a [%s] file so will use that as index at this location",
@@ -116,13 +117,13 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 			return err
 		}
 
-		log.Printf("processed bespoke index file - id: [%d]", subindex)
+		log.Printf("processed bespoke index file - id: [%d]", node.id)
 
 		return nil
 	}
 
 	node.indexPage = false
-	log.Printf("no [%s] located here [%s], will generated generic folderpage",
+	log.Printf("no [%s] located here [%s], will generate a generic folderpage",
 		indexName, node.path)
 
 	masterpagecontents := &markdown.FileContents{
