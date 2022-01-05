@@ -270,6 +270,14 @@ func (node *Node) createOrUpdatePage(newPageContents *markdown.FileContents,
 // addContents adds the page title to either the parent page titles slice, or the node slice
 // multiple goroutines could access same titles (or node.root.titles) slice so locking is required
 func (node *Node) addContents(newPageContents *markdown.FileContents) {
+	_, abs := node.generateTitles()
+
+	if newPageContents.MetaData == nil {
+		log.Println("createOrUpdatePage error for folder path [%s]: metadata was nil", abs)
+		
+		return
+	}
+
 	if node.root != nil {
 		node.root.mu.Lock()
 
