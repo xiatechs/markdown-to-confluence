@@ -165,6 +165,11 @@ func (node *Node) checkNodeRootIsNil(name string) {
 func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) error {
 	_, abs := node.generateTitles()
 
+	if newPageContents == nil {
+		return fmt.Errorf("checkConfluencePages error for folder path [%s]: the markdown file was nil",
+			abs)
+	}
+
 	pageTitle := strings.Join(strings.Split(newPageContents.MetaData["title"].(string), " "), "+")
 
 	pageResult, err := nodeAPIClient.FindPage(pageTitle, false)
