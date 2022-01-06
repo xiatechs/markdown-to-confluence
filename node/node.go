@@ -52,6 +52,7 @@ type Node struct {
 	titles    []string      // titles of pages created by node (for deleting)
 	mu        *sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
 	indexPage bool
+	indexName string
 }
 
 // Start method begins the generation of a tree of the repo for confluence
@@ -142,6 +143,7 @@ func (node *Node) iterate(justChecking, foldersOnly bool) bool {
 			if strings.ToLower(filepath.Base(fpath)) == indexName {
 				node.hasIndex = true
 				node.alive = true
+				node.indexName = filepath.Base(fpath)
 			}
 
 			validFile := node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)

@@ -89,11 +89,11 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 
 	if hasIndex {
 		log.Printf("this location [%s] has a [%s] file so will use that as index at this location",
-			node.path, indexName)
+			node.path, node.indexName)
 
 		node.indexPage = true
 
-		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, indexName), subindex)
+		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, node.indexName), subindex)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 		// have to do it twice...
 
 		masterpagecontents, err = node.processMarkDownIndex(filepath.Join(node.path,
-			indexName), node.id)
+			node.indexName), node.id)
 		if err != nil {
 			return err
 		}
