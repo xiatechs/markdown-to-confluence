@@ -143,7 +143,9 @@ func (node *Node) iterate(justChecking, foldersOnly bool) bool {
 			if strings.ToLower(filepath.Base(fpath)) == indexName {
 				node.hasIndex = true
 				node.alive = true
-				node.indexName = filepath.Base(fpath)
+				if node.root != nil {
+					node.root.indexName = filepath.Base(fpath)
+				}
 			}
 
 			validFile := node.fileInDirectoryCheck(fpath, justChecking, foldersOnly)
