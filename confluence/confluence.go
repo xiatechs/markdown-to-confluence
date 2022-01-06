@@ -82,13 +82,18 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 		return 0, fmt.Errorf("createpage error: contents parameter is nil")
 	}
 
+	title, ok := contents.MetaData["title"]
+	if ok {
+		log.Printf("start creating page with title [%s]", title.(string))
+	}
+
 	newPageContentsJSON, err := a.grabPageContents(contents, root, isroot)
 	if err != nil {
 		return 0, fmt.Errorf("createpage error: %w", err)
 	}
 
 	if newPageContentsJSON == nil {
-		return 0, fmt.Errorf("createpage error: newPageContentsJSON is nil")	
+		return 0, fmt.Errorf("createpage error: newPageContentsJSON is nil")
 	}
 
 	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL)
@@ -105,14 +110,13 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		log.Println("error was: ", resp.Status, err)
 		return 0, fmt.Errorf("failed to do the request: %w", err)
 	}
 
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			log.Println(fmt.Errorf("body close error: %w", err))
+			fmt.Printf("body close error: %w", err)
 		}
 	}()
 
@@ -128,13 +132,11 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 
 	err = decoder.Decode(&output)
 	if err != nil {
-		log.Println("json decoder error was: ", resp.Status, err)
 		return 0, err
 	}
 
 	id, err := strconv.Atoi(output.ID)
 	if err != nil {
-		log.Println("strconv error was: ", resp.Status, err)
 		return 0, err
 	}
 
