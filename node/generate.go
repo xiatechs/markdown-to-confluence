@@ -80,10 +80,6 @@ func (node *Node) generateChildPages() {
 
 // generateFolderPage method creates a folder page in confluence for a folder
 func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
-	if node.root == nil {
-		return nil
-	}
-
 	dir, fullDir := node.generateTitles()
 	log.Printf("START processing file [%s]", fullDir)
 

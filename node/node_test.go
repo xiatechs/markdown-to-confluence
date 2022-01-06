@@ -11,7 +11,7 @@ import (
 // this test lets you see visually how all the content is generated in case you want to debug the output locally
 // basically run it against any path you want and you'll see the pages generated at the end - after logging
 func TestStartDebugEverything(t *testing.T) {
-	markdown.GrabAuthors = false
+	markdown.GrabAuthors = true
 
 	node := Node{
 		mu: &sync.RWMutex{},
@@ -23,7 +23,7 @@ func TestStartDebugEverything(t *testing.T) {
 
 	SetAPIClient(m)
 
-	if node.Start("../node") {
+	if node.Start("../node/testfolder") {
 		node.Delete()
 	}
 

@@ -19,6 +19,7 @@ namespace node {
         - titles []string
         - mu *sync.RWMutex
         - indexPage bool
+        - indexName string
 
         - checkIfRootAlive(fpath string) 
         - fileInDirectoryCheck(fpath string, checking bool, folders bool) bool

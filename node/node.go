@@ -145,6 +145,8 @@ func (node *Node) iterate(justChecking, foldersOnly bool) bool {
 				node.alive = true
 				if node.root != nil {
 					node.root.indexName = filepath.Base(fpath)
+				} else {
+					node.indexName = filepath.Base(fpath)
 				}
 			}
 
