@@ -129,7 +129,7 @@ func (a *authors) sort() {
 func capGit(path string) string {
 	here, _ := os.Getwd()
 	log.Println("collecting authorship for ", path)
-	git := exec.Command("git", "log", `--format='%an | %ae'`, "--", here)
+	git := exec.Command("git", "log", "--all", `--format='%an | %ae'`, "--", here)
 
 	out, err := git.CombinedOutput()
 	if err != nil {
