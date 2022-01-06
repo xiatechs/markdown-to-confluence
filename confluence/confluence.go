@@ -75,6 +75,7 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 	return newPageContentsJSON, nil
 }
 
+//nolint: gocyclo // 11 is just about fine
 // CreatePage method takes root (root page id) and page contents and bool (is page root?)
 // and generates a page in confluence and returns the generated page ID
 func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
@@ -116,7 +117,7 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			fmt.Printf("body close error: %w", err)
+			fmt.Printf("body close error: %v", err)
 		}
 	}()
 
