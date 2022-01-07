@@ -5,6 +5,7 @@ package node
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -20,6 +21,7 @@ import (
 func (node *Node) checkIfRootAlive(fpath string) {
 	if node.path != fpath {
 		subNode := newNode()
+		subNode.treeLink = node.treeLink
 		subNode.path = fpath
 
 		if node.alive {
@@ -74,8 +76,14 @@ func (node *Node) checkIfMarkDown(fpath string, checking bool) bool {
 // checking bool is for whether we are just checking returning bool, or
 // if we are doing work on file
 func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
-	if strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".MD") {
+	fileName := filepath.Base(name)
+
+	if strings.HasSuffix(strings.ToLower(fileName), ".md") {
 		if !checking {
+			if strings.ToLower(fileName) == indexName { // we don't want to process index.md here
+				return true
+			}
+
 			err := node.processMarkDown(name)
 			if err != nil {
 				log.Println(err)
@@ -149,13 +157,18 @@ func (node *Node) checkForImages(name string) {
 // node root is nil before calling uploadFile method
 func (node *Node) checkNodeRootIsNil(name string) {
 	if node.root != nil {
-		node.uploadFile(name)
+		node.uploadFile(name, node.indexPage)
 	}
 }
 
 // checkConfluencePages method runs through the CRUD operations for confluence
-func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) error {
+func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents, filepath string) error {
 	_, abs := node.generateTitles()
+
+	if newPageContents == nil {
+		return fmt.Errorf("checkConfluencePages error for folder path [%s]: the markdown file was nil",
+			abs)
+	}
 
 	pageTitle := strings.Join(strings.Split(newPageContents.MetaData["title"].(string), " "), "+")
 
@@ -172,6 +185,15 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 				abs, pageTitle, err)
 		}
 
+		mapSem <- struct{}{}
+
+		id := strconv.Itoa(node.id)
+
+		node.treeLink.branches[filepath] = id
+
+		log.Printf("processed file - id: [%d]", node.id)
+		<-mapSem
+
 		return nil
 	}
 
@@ -181,10 +203,26 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 			abs, pageTitle, err)
 	}
 
+	mapSem <- struct{}{}
+
+	id := strconv.Itoa(node.id)
+
+	node.treeLink.branches[filepath] = id
+
+	log.Printf("processed file - id: [%d]", node.id)
+	<-mapSem
+
 	return nil
 }
 
 func (node *Node) newPage(newPageContents *markdown.FileContents) error {
+	_, abs := node.generateTitles()
+
+	if newPageContents == nil {
+		return fmt.Errorf("newPage error for folder path [%s]: the markdown file was nil",
+			abs)
+	}
+
 	err := node.generatePage(newPageContents)
 	if err != nil {
 		return err
@@ -197,6 +235,18 @@ func (node *Node) newPage(newPageContents *markdown.FileContents) error {
 
 func (node *Node) createOrUpdatePage(newPageContents *markdown.FileContents,
 	pageResult *confluence.PageResults) error {
+	_, abs := node.generateTitles()
+
+	if newPageContents == nil {
+		return fmt.Errorf("createOrUpdatePage error for folder path [%s]: the newPageContents param was nil",
+			abs)
+	}
+
+	if pageResult == nil {
+		return fmt.Errorf("createOrUpdatePage pageResult error for folder path [%s]: the pageResult param was nil",
+			abs)
+	}
+
 	err := node.checkPageID(*pageResult)
 	if err != nil {
 		return err
@@ -220,14 +270,20 @@ func (node *Node) createOrUpdatePage(newPageContents *markdown.FileContents,
 // addContents adds the page title to either the parent page titles slice, or the node slice
 // multiple goroutines could access same titles (or node.root.titles) slice so locking is required
 func (node *Node) addContents(newPageContents *markdown.FileContents) {
+	_, abs := node.generateTitles()
+
+	if newPageContents.MetaData == nil {
+		log.Printf("createOrUpdatePage warning for folder path [%s]: metadata was nil", abs)
+
+		return
+	}
+
 	if node.root != nil {
 		node.root.mu.Lock()
 
 		defer node.root.mu.Unlock()
 
 		node.root.titles = append(node.root.titles, newPageContents.MetaData["title"].(string))
-
-		return
 	}
 
 	node.mu.Lock()

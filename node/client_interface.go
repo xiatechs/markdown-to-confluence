@@ -14,5 +14,5 @@ type APIClienter interface {
 	UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents,
 		originalPage confluence.PageResults) (bool, error)
 	FindPage(title string, many bool) (*confluence.PageResults, error)
-	UploadAttachment(filename string, id int) error
+	UploadAttachment(filename string, id int, index bool, indexid int) error
 }

@@ -1,0 +1,42 @@
+on:
+  push:
+    branches: 'master'
+
+name: mtc
+jobs:
+  markdown-to-confluence:
+    name: Markdown to Confluence
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Get branch details
+        shell: bash
+        run: |
+             if [ -z "${GITHUB_HEAD_REF}" ]
+             then
+              echo NOT pull request, branch = $(echo ${GITHUB_REF#refs/heads/})
+              echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+             else
+              echo pull request, branch = $(echo ${GITHUB_HEAD_REF})
+              echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF})" >> $GITHUB_ENV
+             fi
+        id: extract_branch          
+      - name: Checkout branch
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          path: './'
+          fetch-depth: 0
+      - name: example repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          path: './markdown-to-confluence'
+          fetch-depth: 0
+      - name: run markdown to confluence action
+        uses: ./
+        with:
+          key: ${{ secrets.CONFLUENCE_KEY }}
+          space: "XKB"
+          username: ${{ secrets.CONFLUENCE_USERNAME }}
+          repo: "markdown-to-confluence"
+          url: "https://xiatech.atlassian.net" 
