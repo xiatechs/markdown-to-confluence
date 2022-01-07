@@ -8,6 +8,7 @@ import (
 
 	"github.com/xiatechs/markdown-to-confluence/common"
 	"github.com/xiatechs/markdown-to-confluence/confluence"
+	"github.com/xiatechs/markdown-to-confluence/markdown"
 	"github.com/xiatechs/markdown-to-confluence/node"
 )
 
@@ -28,7 +29,7 @@ func setArgs() bool {
 		common.ConfluenceSpace = vars[1]
 		common.ConfluenceUsername = vars[2]
 		common.ProjectPathEnv = vars[3]
-		
+
 		if vars[4] != "" {
 			common.ConfluenceBaseURL = vars[4]
 		}
@@ -42,6 +43,8 @@ func setArgs() bool {
 // the node.Start method
 // if node.Start returns true, then calls node.Delete method
 func Start() {
+	markdown.GrabAuthors = true
+
 	if setArgs() {
 		root := node.Node{}
 

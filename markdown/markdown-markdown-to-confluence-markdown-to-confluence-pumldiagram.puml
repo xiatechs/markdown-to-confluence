@@ -1,0 +1,51 @@
+@startuml
+namespace markdown {
+    class FileContents << (S,Aquamarine) >> {
+        + MetaData <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+        + Body []byte
+
+    }
+    class author << (S,Aquamarine) >> {
+        - name string
+        - howmany int
+
+    }
+    class authors << (S,Aquamarine) >> {
+        - append(item string) 
+        - sort() 
+
+    }
+    class fielditem << (S,Aquamarine) >> {
+        - item string
+        - index1 int
+        - index2 int
+
+    }
+    class fielditems << (S,Aquamarine) >> {
+        - validate() bool
+
+    }
+    class fpage << (S,Aquamarine) >> {
+        - distance int
+        - sim int
+        - confluencepage string
+        - url string
+
+    }
+    class markdown.authors << (T, #FF7700) >>  {
+    }
+    class markdown.fielditems << (T, #FF7700) >>  {
+    }
+    class markdown.pages << (T, #FF7700) >>  {
+    }
+    class pages << (S,Aquamarine) >> {
+        - filter() fpage
+
+    }
+}
+
+
+"markdown.[]author" #.. "markdown.authors"
+"markdown.[]fielditem" #.. "markdown.fielditems"
+"markdown.[]fpage" #.. "markdown.pages"
+@enduml

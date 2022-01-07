@@ -46,3 +46,9 @@ against just using the # / ## titles.
 ## This action uses the [Confluence REST API](https://developer.atlassian.com/cloud/confluence/rest/intro/)
 
 - Tom
+
+let's try some local links...
+
+ * [A](confluence/readme.md)
+ * [B](markdown/readme.md)
+ * [C](node/readme.md)

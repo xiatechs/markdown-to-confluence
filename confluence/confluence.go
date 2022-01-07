@@ -77,10 +77,24 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 
 // CreatePage method takes root (root page id) and page contents and bool (is page root?)
 // and generates a page in confluence and returns the generated page ID
+//nolint: gocyclo // 11 is just about fine
 func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
+	if contents == nil {
+		return 0, fmt.Errorf("createpage error: contents parameter is nil")
+	}
+
+	title, ok := contents.MetaData["title"]
+	if ok {
+		log.Printf("start creating page with title [%s]", title.(string))
+	}
+
 	newPageContentsJSON, err := a.grabPageContents(contents, root, isroot)
 	if err != nil {
 		return 0, fmt.Errorf("createpage error: %w", err)
+	}
+
+	if newPageContentsJSON == nil {
+		return 0, fmt.Errorf("createpage error: newPageContentsJSON is nil")
 	}
 
 	URL := fmt.Sprintf("%s/wiki/rest/api/content", a.BaseURL)
@@ -97,14 +111,13 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 
 	resp, err := a.Client.Do(req)
 	if err != nil {
-		log.Println("error was: ", resp.Status, err)
 		return 0, fmt.Errorf("failed to do the request: %w", err)
 	}
 
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			log.Println(fmt.Errorf("body close error: %w", err))
+			fmt.Printf("body close error: %v", err)
 		}
 	}()
 
@@ -120,13 +133,11 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 
 	err = decoder.Decode(&output)
 	if err != nil {
-		log.Println("json decoder error was: ", resp.Status, err)
 		return 0, err
 	}
 
 	id, err := strconv.Atoi(output.ID)
 	if err != nil {
-		log.Println("strconv error was: ", resp.Status, err)
 		return 0, err
 	}
 
@@ -382,8 +393,14 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 
 // UploadAttachment to a page identify by page ID
 // you need the page ID to upload the attachment(file path)
-func (a *APIClient) UploadAttachment(filename string, id int) error {
-	targetURL := fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", id)
+func (a *APIClient) UploadAttachment(filename string, id int, isindex bool, indexid int) error {
+	var targetURL string
+
+	if isindex {
+		targetURL = fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", indexid)
+	} else {
+		targetURL = fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", id)
+	}
 
 	req, err := newfileUploadRequest(targetURL, "file", filename)
 	if err != nil {
