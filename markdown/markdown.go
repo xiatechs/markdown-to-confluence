@@ -316,13 +316,15 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 
 	originalURLslice := strings.Split(strings.ReplaceAll(urlLink[0], "<p>", ""), `>`)
 	if len(originalURLslice) <= 1 {
+		log.Println(item, "failed to be processed during fuzzy logic")
 		return fail
 	}
 
 	originalURL := originalURLslice[1]
 
-	sliceOne := strings.Split(item, `<p><a href="`)
+	sliceOne := strings.Split(item, `<a href="`)
 	if len(sliceOne) <= 1 {
+		log.Println(item, "failed to be processed during fuzzy logic")
 		return fail
 	}
 
@@ -331,6 +333,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 
 	p := pages{}
 	for localURL, confluencepage := range page {
+		url := strings.ReplaceAll(url, "%20", " ")
 		similarity := exists(localURL, url) // how many similar fields are in the two links we are looking at
 
 		if similarity != 0 && similarity >= simMinimum {

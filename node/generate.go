@@ -121,7 +121,7 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 
 	node.indexPage = false
 	log.Printf("no [%s] located here [%s], will generate a generic folderpage",
-		node.indexName, node.path)
+		indexName, node.path)
 
 	masterpagecontents := &markdown.FileContents{
 		MetaData: map[string]interface{}{
