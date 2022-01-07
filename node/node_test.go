@@ -23,7 +23,7 @@ func TestStartDebugEverything(t *testing.T) {
 
 	SetAPIClient(m)
 
-	if node.Start("../../engineering-handbook") {
+	if node.Start("../node") {
 		node.Delete()
 	}
 
