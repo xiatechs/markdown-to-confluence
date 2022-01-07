@@ -162,7 +162,7 @@ func (node *Node) checkNodeRootIsNil(name string) {
 }
 
 // checkConfluencePages method runs through the CRUD operations for confluence
-func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) error {
+func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents, filepath string) error {
 	_, abs := node.generateTitles()
 
 	if newPageContents == nil {
@@ -189,7 +189,7 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 
 		id := strconv.Itoa(node.id)
 
-		node.treeLink.branches[node.path] = id
+		node.treeLink.branches[filepath] = id
 
 		log.Printf("processed file - id: [%d]", node.id)
 		<-mapSem
@@ -207,7 +207,7 @@ func (node *Node) checkConfluencePages(newPageContents *markdown.FileContents) e
 
 	id := strconv.Itoa(node.id)
 
-	node.treeLink.branches[node.path] = id
+	node.treeLink.branches[filepath] = id
 
 	log.Printf("processed file - id: [%d]", node.id)
 	<-mapSem
@@ -274,7 +274,7 @@ func (node *Node) addContents(newPageContents *markdown.FileContents) {
 
 	if newPageContents.MetaData == nil {
 		log.Printf("createOrUpdatePage warning for folder path [%s]: metadata was nil", abs)
-		
+
 		return
 	}
 

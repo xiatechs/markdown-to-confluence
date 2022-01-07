@@ -101,7 +101,7 @@ func (node *Node) processMarkDown(path string) error {
 
 	parsedContents.MetaData["title"] = parsedContents.MetaData["title"].(string) + "-" + fpath
 
-	err = node.checkConfluencePages(parsedContents)
+	err = node.checkConfluencePages(parsedContents, path)
 	if err != nil {
 		return fmt.Errorf("absolute path [%s] - file [%s] - confluence check error: %w",
 			abs, path, err)

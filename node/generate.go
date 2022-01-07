@@ -94,7 +94,7 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 			return err
 		}
 
-		err = node.checkConfluencePages(masterpagecontents)
+		err = node.checkConfluencePages(masterpagecontents, node.path)
 		if err != nil {
 			log.Printf("[generate folderpage] generation error for path [%s]: %v", node.path, err)
 			return err
@@ -107,7 +107,8 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 			return err
 		}
 
-		err = node.checkConfluencePages(masterpagecontents)
+		err = node.checkConfluencePages(masterpagecontents, filepath.Join(node.path,
+			node.indexName))
 		if err != nil {
 			log.Printf("[generate folderpage] generation error for path [%s]: %v", node.path, err)
 			return err
@@ -120,7 +121,7 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 
 	node.indexPage = false
 	log.Printf("no [%s] located here [%s], will generate a generic folderpage",
-		indexName, node.path)
+		node.indexName, node.path)
 
 	masterpagecontents := &markdown.FileContents{
 		MetaData: map[string]interface{}{
@@ -132,7 +133,7 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 <p>Any markdown or subfolders is available in children pages under this page.</p>`),
 	}
 
-	err := node.checkConfluencePages(masterpagecontents)
+	err := node.checkConfluencePages(masterpagecontents, node.path)
 	if err != nil {
 		log.Printf("[generate folderpage] generation error for path [%s]: %v", node.path, err)
 		return err
@@ -231,7 +232,7 @@ func (node *Node) generatePlantuml(fpath string) {
 			Body: buf.Bytes(),
 		}
 
-		err = node.checkConfluencePages(&masterpagecontents)
+		err = node.checkConfluencePages(&masterpagecontents, node.path+"/"+filename+".png")
 		if err != nil {
 			log.Printf("check confluence page error for path [%s]: %v", abs, err)
 		}
