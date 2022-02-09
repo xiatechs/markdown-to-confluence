@@ -43,7 +43,7 @@ func setArgs() bool {
 // the node.Start method
 // if node.Start returns true, then calls node.Delete method
 func Start() {
-	markdown.GrabAuthors = true
+	markdown.GrabAuthors = false
 
 	if setArgs() {
 		root := node.Node{}
