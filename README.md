@@ -1,5 +1,7 @@
 # Markdown to Confluence Action
-[PLEASE READ THIS GUIDE ON HOW TO USE THIS TOOL CORRECTLY](https://github.com/xiatechs/markdown-to-confluence/blob/master/GUIDE.md)
+[PLEASE READ THIS GUIDE ON HOW TO USE THIS TOOL CORRECTLY](GUIDE.md)
+[CONTRIBUTIONS](CONTRIBUTING.md)
+[HOW TO USE](Configuration-Guide.md)
 
 - This Action will crawl through a repository on github and create a tree of pages on confluence for all markdown / images:
 

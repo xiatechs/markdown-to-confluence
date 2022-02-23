@@ -19,7 +19,8 @@ import (
 
 // GrabAuthors - do we want to collect authors?
 var (
-	GrabAuthors bool
+	GrabAuthors   bool
+	SkipTestPages bool
 )
 
 // FileContents contains information from a file after being parsed from markdown.
@@ -190,6 +191,16 @@ func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
 			f.MetaData = fmc.FrontMatter
 		} else {
 			f.MetaData["title"] = grabtitle(string(content))
+		}
+	}
+
+	if SkipTestPages {
+		log.Println("skip test pages")
+		testStr, ok := f.MetaData["test"]
+		if ok {
+			if strings.ToLower(testStr.(string)) == "yes" {
+				return nil, fmt.Errorf("false error - this is a TEST page")
+			}
 		}
 	}
 

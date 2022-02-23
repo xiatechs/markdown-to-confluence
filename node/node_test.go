@@ -12,6 +12,7 @@ import (
 // basically run it against any path you want and you'll see the pages generated at the end - after logging
 func TestStartDebugEverything(t *testing.T) {
 	markdown.GrabAuthors = false
+	markdown.SkipTestPages = true
 
 	node := Node{
 		mu: &sync.RWMutex{},

@@ -44,6 +44,7 @@ func setArgs() bool {
 // if node.Start returns true, then calls node.Delete method
 func Start() {
 	markdown.GrabAuthors = false
+	markdown.SkipTestPages = true
 
 	if setArgs() {
 		root := node.Node{}

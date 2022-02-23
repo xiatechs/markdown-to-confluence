@@ -30,7 +30,7 @@ namespace node {
         - checkIfGoFile(name string) 
         - checkForImages(name string) 
         - checkNodeRootIsNil(name string) 
-        - checkConfluencePages(newPageContents *markdown.FileContents) error
+        - checkConfluencePages(newPageContents *markdown.FileContents, filepath string) error
         - newPage(newPageContents *markdown.FileContents) error
         - createOrUpdatePage(newPageContents *markdown.FileContents, pageResult *confluence.PageResults) error
         - addContents(newPageContents *markdown.FileContents) 
