@@ -17,8 +17,8 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/xiatechs/fh-to-confluence/common"
-	fh "github.com/xiatechs/fh-to-confluence/filehandler"
+	"github.com/xiatechs/markdown-to-confluence/common"
+	fh "github.com/xiatechs/markdown-to-confluence/filehandler"
 )
 
 // newPageResults function takes in a http response and

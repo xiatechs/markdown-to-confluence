@@ -71,27 +71,20 @@ func (node *Node) validate(c *Controller) (alive bool) {
 }
 
 func (node *Node) checkFolderPageGeneration(c *Controller) error {
-	var apiErr error
-
 	pageTitle, _ := node.generatePaths()
 
-	if isFolder(node.filePath) { // if this is a folder...
-		if node.readMeFile != nil { // if this folder has a README - let's create an index page from it
-			node.responseMetaData, apiErr = c.API.CRUD(node.readMeFile, node.parentMetaData)
-			if apiErr != nil {
-				return apiErr
-			}
-		} else {
-			folderContents, fiErr := c.FH.ConvertFolder(node.filePath, pageTitle, node.parentMetaData) // else, let's create a 'generic folder page' for indexing
-			if fiErr != nil {
-				return fiErr
-			}
-
-			node.fileContents = folderContents
-
-			node.responseMetaData, apiErr = c.API.CRUD(folderContents, node.parentMetaData)
-			if apiErr != nil {
-				return apiErr
+	if node.hasMarkDown { // if the page is alive...
+		if isFolder(node.filePath) { // if this is a folder...
+			if node.readMeFile != nil { // if this folder has a README - let's create an index page from it
+				err := node.generateReadMeIndexPage(c)
+				if err != nil {
+					return err
+				}
+			} else {
+				err := node.generateGenericIndexPage(c)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -108,23 +101,16 @@ func (node *Node) checkFolderPageGeneration(c *Controller) error {
 		}
 
 		if isImage(fpath) { // we process images at the folder level
-			otherFileNode := node.createChildNode(fpath, c)
-
-			otherFileNodeTitle, _ := otherFileNode.generatePaths()
-
-			fileContents, fiErr := c.FH.ProcessOtherFile(fpath, otherFileNodeTitle, node.responseMetaData)
-			if fiErr != nil {
-				return fiErr
-			}
-
-			otherFileNode.responseMetaData, apiErr = c.API.CRUD(fileContents, node.responseMetaData)
-			if apiErr != nil {
-				return apiErr
+			err := node.processImage(c, fpath)
+			if err != nil {
+				return err
 			}
 		}
 
 		if isFolder(fpath) { // if this subpath is a folder, we'll rinse and repeat
 			childNode := node.createChildNode(fpath, c)
+
+			node.scanUpForParent(childNode)
 
 			childNode.checkFolderPageGeneration(c)
 
@@ -135,11 +121,74 @@ func (node *Node) checkFolderPageGeneration(c *Controller) error {
 	})
 	if err != nil {
 		if err != io.EOF {
-			node.usefulLogError("node.start", err)
+			node.usefulLogError("checkFolderPageGeneration", err)
 		}
 	}
 
 	node.end()
+
+	return nil
+}
+
+func (node *Node) processImage(c *Controller, fpath string) error {
+	otherFileNode := node.createChildNode(fpath, c)
+
+	node.scanUpForParent(otherFileNode)
+
+	otherFileNodeTitle, _ := otherFileNode.generatePaths()
+
+	fileContents, err := c.FH.ProcessOtherFile(fpath, otherFileNodeTitle, node.responseMetaData)
+	if err != nil {
+		return err
+	}
+
+	otherFileNode.fileContents = fileContents
+
+	otherFileNode.responseMetaData, err = c.API.CRUD(fileContents, node.responseMetaData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (node *Node) generateReadMeIndexPage(c *Controller) error {
+	node.readMeFile.MetaData["indexPage"] = true
+
+	if node.lastAliveParentFolder == nil {
+		node.readMeFile.MetaData["root"] = true
+	}
+
+	var err error
+
+	node.responseMetaData, err = c.API.CRUD(node.readMeFile, node.parentMetaData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (node *Node) generateGenericIndexPage(c *Controller) error {
+	pageTitle, _ := node.generatePaths()
+
+	var err error
+
+	folderContents, err := c.FH.ConvertFolder(node.filePath, pageTitle, node.parentMetaData) // else, let's create a 'generic folder page' for indexing
+	if err != nil {
+		return err
+	}
+
+	node.fileContents = folderContents
+
+	if node.lastAliveParentFolder == nil {
+		node.fileContents.MetaData["root"] = true
+	}
+
+	node.responseMetaData, err = c.API.CRUD(folderContents, node.parentMetaData)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -162,6 +211,8 @@ func (node *Node) checkForFiles(c *Controller) error {
 
 		if isMarkdownFile(fpath) && !isReadMeFile(fpath) {
 			otherFileNode := node.createChildNode(fpath, c)
+
+			node.scanUpForParent(otherFileNode)
 
 			otherFileNodeTitle, _ := otherFileNode.generatePaths()
 

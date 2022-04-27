@@ -3,9 +3,9 @@ package confluence
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/xiatechs/markdown-to-confluence/common"
 )
 
 //go:generate mockgen --source=api.go -package confluencemocks -destination=test/confluencemocks/api.go
@@ -39,10 +39,10 @@ func CreateAPIClient() (*APIClient, error) {
 // APIClientWithAuths returns an APIClient with dependencies defaulted to sane values
 func APIClientWithAuths(httpClient HTTPClient) *APIClient {
 	return &APIClient{
-		BaseURL:  common.ConfluenceBaseURL,
-		Space:    common.ConfluenceSpace,
-		Username: common.ConfluenceUsername,
-		Password: common.ConfluenceAPIKey,
+		BaseURL:  os.Getenv("CONFLUENCE_BASE_URL"),
+		Space:    os.Getenv("CONFLUENCE_SPACE"),
+		Username: os.Getenv("CONFLUENCE_USERNAME"),
+		Password: os.Getenv("CONFLUENCE_API_KEY"),
 		Client:   httpClient,
 	}
 }
