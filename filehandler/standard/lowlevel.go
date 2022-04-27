@@ -1,38 +1,22 @@
-// Package markdown provides a method for working with and parsing markdown documents
-//nolint: wsl // is fine
-package markdown
+package standard
 
 import (
 	"bytes"
 	"fmt"
 	"log"
-	"os"
-	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/gohugoio/hugo/parser/pageparser"
 	"github.com/xiatechs/markdown-to-confluence/common"
+	fh "github.com/xiatechs/markdown-to-confluence/filehandler"
 	m "gitlab.com/golang-commonmark/markdown"
 )
 
-// GrabAuthors - do we want to collect authors?
-var (
-	GrabAuthors bool
-)
-
-// FileContents contains information from a file after being parsed from markdown.
-// `Metadata` in the format of a `map[string]interface{}` this can contain title, description, slug etc.
-// `Body` a `[]byte` that contains the resulting HTML after parsing the markdown and converting to HTML using Goldmark.
-type FileContents struct {
-	MetaData map[string]interface{}
-	Body     []byte
-}
-
 // grabtitle function collects the title of a markdown file
 // and returns it as a string
-func grabtitle(content string) string {
+func grabTitle(content string) string {
 	content = strings.ReplaceAll(content, "\r\n", "\n")
 	content = strings.ReplaceAll(content, "\r", "\n")
 	lines := strings.Split(content, "\n")
@@ -48,148 +32,21 @@ func grabtitle(content string) string {
 	return ""
 }
 
-// newFileContents function creates a new filecontents object
-func newFileContents() *FileContents {
-	f := FileContents{}
-	f.MetaData = make(map[string]interface{})
-
-	return &f
-}
-
-// Paragraphify takes in a .puml file contents and returns
-// a formatted HTML page as a string
-func Paragraphify(content string) string {
-	var pre string
-	pre += "### To view this try copy&paste to this site: [PlainText UML Editor](https://www.planttext.com/) \n"
-	pre += "### Alternatively please install a _PlantUML Visualizer plugin_ for Chrome or Firefox \n"
-	pre += "``` + \n"
-	content = strings.ReplaceAll(content, "\r\n", "\n")
-	content = strings.ReplaceAll(content, "\r", "\n")
-	lines := strings.Split(content, "\n")
-
-	for index := range lines {
-		pre += lines[index] + "\n"
-	}
-
-	pre += "```"
-
-	md := m.New(
-		m.HTML(true),
-		m.Tables(true),
-		m.Linkify(true),
-		m.Typographer(false),
-		m.XHTMLOutput(true),
-	)
-
-	preformatted := md.RenderToString([]byte(pre))
-
-	return preformatted
-}
-
-type author struct {
-	name    string
-	howmany int
-}
-
-type authors []author // not using a map so the order of authors can be maintained
-
-func (a *authors) append(item string) {
-	au := *a
-	var exists bool
-	for index := range au {
-		if au[index].name == item {
-			au[index].howmany++
-			exists = true
-			break
-		}
-	}
-
-	if !exists {
-		au = append(au, author{
-			name:    item,
-			howmany: 1,
-		})
-	}
-
-	*a = au
-}
-
-func (a *authors) sort() {
-	au := *a
-
-	sort.Slice(au, func(i, j int) bool {
-		return au[i].howmany > au[j].howmany
-	})
-
-	*a = au
-}
-
-//nolint: gosec // is fine
-// use git to capture authors by username & email & commits
-func capGit(path string) string {
-	here, _ := os.Getwd()
-	log.Println("collecting authorship for ", path)
-	git := exec.Command("git", "log", "--all", `--format='%an | %ae'`, "--", here)
-
-	out, err := git.CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	a := authors{}
-	lines := strings.Split(string(out), "\n")
-	for _, line := range lines {
-		l := strings.ReplaceAll(line, `'`, "")
-		a.append(l)
-	}
-
-	a.sort()
-
-	// to let the output be displayed in confluence - wrapping it in code block
-	output := `<pre><code>
-[authors | email addresses | how many commits]
-`
-
-	index := 0
-	for _, author := range a {
-		if author.name == "" {
-			continue
-		}
-
-		no := strconv.Itoa(author.howmany)
-
-		if index == 0 {
-			output += author.name + " - total commits: " + no
-		} else {
-			output += `
-` + author.name + " - total commits: " + no
-		}
-
-		index++
-	}
-
-	output += `
-</code></pre>`
-
-	return output
-}
-
-// ParseMarkdown function uses external parsing library to grab markdown contents
-// and return a filecontents object
-func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
-	pages map[string]string, path string) (*FileContents, error) {
+func convertMarkdownToHTML(content []byte, parentFolderMetaData map[string]interface{}) (*fh.FileContents, error) {
 	r := bytes.NewReader(content)
-	f := newFileContents()
+
+	f := fh.NewFileContents()
+
 	fmc, err := pageparser.ParseFrontMatterAndContent(r)
 	if err != nil {
 		log.Println("issue parsing frontmatter - (using # title instead): %w", err)
 
-		f.MetaData["title"] = grabtitle(string(content))
+		f.MetaData["title"] = grabTitle(string(content))
 	} else {
 		if len(fmc.FrontMatter) != 0 {
 			f.MetaData = fmc.FrontMatter
 		} else {
-			f.MetaData["title"] = grabtitle(string(content))
+			f.MetaData["title"] = grabTitle(string(content))
 		}
 	}
 
@@ -211,11 +68,14 @@ func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
 	)
 
 	preformatted := md.RenderToString(content)
-	f.Body = stripFrontmatterReplaceURL(rootID, preformatted, isIndex, id, pages)
 
-	if GrabAuthors {
-		f.Body = append(f.Body, []byte(capGit(path))...)
+	var rootID int
+
+	if _, ok := parentFolderMetaData["id"]; ok {
+		rootID = parentFolderMetaData["id"].(int)
 	}
+
+	f.Body = stripFrontmatterReplaceURL(rootID, preformatted)
 
 	return f, nil
 }
@@ -244,8 +104,7 @@ func linkFilterLogic(item string) bool {
 // stripFrontmatterReplaceURL function takes in parent page ID and
 // markdown file contents and removes TOML frontmatter, and replaces
 // local URL with relative confluence URL
-func stripFrontmatterReplaceURL(rootID int, content string,
-	isIndex bool, id int, pages map[string]string) []byte {
+func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 	var pre string
 
 	var frontmatter bool
@@ -260,12 +119,12 @@ func stripFrontmatterReplaceURL(rootID int, content string,
 
 		// temporary solution to local url path issue - try and identify them with fuzzy logic
 		if strings.Contains(lines[index], "<a href=") && !linkFilterLogic(lines[index]) {
-			lines[index] = fuzzyLogicURLdetector(lines[index], pages)
+			// forget it
 		}
 
 		// can't use local links yet for images
 		if strings.Contains(lines[index], "<img src=") {
-			lines[index] = URLConverter(rootID, lines[index], isIndex, id)
+			lines[index] = URLConverter(rootID, lines[index])
 		}
 
 		if !frontmatter {
@@ -363,6 +222,7 @@ func fuzzyLogicURLdetector(item string, page map[string]string) string {
 	thepage := p.filter()
 
 	likelyURL := thepage.url
+
 	likelypage := thepage.confluencepage
 
 	log.Println("relative link -> ", url, "is LIKELY to be this page:", likelyURL, likelypage)
@@ -434,16 +294,6 @@ func exists(a, b string) int {
 		return f[i].index1 < f[j].index1
 	})
 
-	/*
-		INVALID
-		a) ../node/testfolder/folder
-		b ../node/folder/testfolder
-
-		VALID
-		a) ../../node/testfolder/folder
-		b) node/testfolder/folder
-	*/
-
 	if f.validate() {
 		return similarity
 	}
@@ -494,7 +344,7 @@ func minimum(a, b, c int) int {
 // (they must be in same directory as markdown to work)
 // this function replaces local url paths in html img links
 // with a confluence path for folder page attachments on parent page
-func URLConverter(rootID int, item string, isindex bool, id int) string {
+func URLConverter(rootID int, item string) string {
 	sliceOne := strings.Split(item, `<p><img src="`)
 	var c string
 	if len(sliceOne) > 1 {
@@ -503,14 +353,9 @@ func URLConverter(rootID int, item string, isindex bool, id int) string {
 		if len(sliceTwo) > 1 {
 			attachmentFileName := sliceTwo[0]
 			rootPageID := strconv.Itoa(rootID)
-			ID := strconv.Itoa(id)
 			a := `<p><span class="confluence-embedded-file-wrapped">`
 			b := `<img src="` + common.ConfluenceBaseURL + `/wiki/download/attachments/`
-			if isindex {
-				c = ID + `/` + attachmentFileName + `"></img>`
-			} else {
-				c = rootPageID + `/` + attachmentFileName + `"></img>`
-			}
+			c = rootPageID + `/` + attachmentFileName + `"></img>`
 			d := `</span></p>`
 
 			return a + b + c + d

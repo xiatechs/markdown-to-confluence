@@ -1,26 +1,14 @@
-package node
-
-// helper & factory functions
+package foldercrawler
 
 import (
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 )
 
-// newNode function creates a new node object
-func newNode() *Node {
-	node := Node{}
-
-	node.mu = &sync.RWMutex{}
-
-	return &node
-}
-
 // withinDirectory function checks to see if the file (base) is within the folder (path)
-func (node *Node) withinDirectory(base, path string) bool {
+func withinDirectory(base, path string) bool {
 	return strings.Count(path, "/")-strings.Count(base, "/") == 1
 }
 
@@ -56,4 +44,12 @@ func isFolder(name string) bool {
 	}
 
 	return fileInfo.IsDir()
+}
+
+func isReadMeFile(fpath string) bool {
+	return strings.Contains(strings.ToLower(filepath.Base(fpath)), "readme")
+}
+
+func isMarkdownFile(fpath string) bool {
+	return strings.HasSuffix(strings.ToLower(fpath), ".md")
 }

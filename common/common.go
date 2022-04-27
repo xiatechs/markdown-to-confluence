@@ -16,4 +16,6 @@ var (
 
 	// ProjectPathEnv is to collect external arg for project path
 	ProjectPathEnv string
+
+	GitHubPrefix = "/github/workspace/"
 )

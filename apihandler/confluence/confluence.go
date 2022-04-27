@@ -17,8 +17,8 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/xiatechs/markdown-to-confluence/common"
-	"github.com/xiatechs/markdown-to-confluence/markdown"
+	"github.com/xiatechs/fh-to-confluence/common"
+	fh "github.com/xiatechs/fh-to-confluence/filehandler"
 )
 
 // newPageResults function takes in a http response and
@@ -46,7 +46,7 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 // grabPageContents method takes in page contents, the parent page id (root) and boolean
 // confirming whether or not the page is a parent page folder (isroot)
 // and returns byte of page contents
-func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, isroot bool) ([]byte, error) {
+func (a *APIClient) grabPageContents(contents *fh.FileContents, root int, isroot bool) ([]byte, error) {
 	title, ok := contents.MetaData["title"]
 
 	if !ok {
@@ -78,7 +78,7 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 // CreatePage method takes root (root page id) and page contents and bool (is page root?)
 // and generates a page in confluence and returns the generated page ID
 //nolint: gocyclo // 11 is just about fine
-func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
+func (a *APIClient) CreatePage(root int, contents *fh.FileContents, isroot bool) (int, error) {
 	if contents == nil {
 		return 0, fmt.Errorf("createpage error: contents parameter is nil")
 	}
@@ -145,7 +145,7 @@ func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot
 }
 
 // updatePageContents method updates the page contents and return as a []byte JSON to be used
-func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.FileContents) ([]byte, *Page, error) {
+func (a *APIClient) updatePageContents(pageVersion int64, contents *fh.FileContents) ([]byte, *Page, error) {
 	newPageContent := Page{
 		Type:  "page",
 		Title: contents.MetaData["title"].(string),
@@ -203,7 +203,7 @@ func (a *APIClient) DeletePage(pageID int) error {
 
 // UpdatePage updates a confluence page with our newly created data and increases the
 // version by 1 each time.
-func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *markdown.FileContents,
+func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *fh.FileContents,
 	originalPage PageResults) (bool, error) {
 	newPageContentsJSON, newPage, err := a.updatePageContents(pageVersion, pageContents)
 	if err != nil {
@@ -356,7 +356,7 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 	}
 
 	params := map[string]string{
-		"comment":   "file uploaded using markdown-github-action",
+		"comment":   "file uploaded using fh-github-action",
 		"minorEdit": "true",
 	}
 
