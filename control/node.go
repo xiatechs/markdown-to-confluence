@@ -48,7 +48,7 @@ func (node *Node) validate(c *Controller) (alive bool) {
 			if isReadMeFile(fpath) {
 				fileContents, fiErr := c.FH.ConvertMarkdown(fpath, pageTitle, node.parentMetaData)
 				if fiErr != nil {
-					c.ingestError(fiErr)
+					return err
 				}
 
 				node.readMeFile = fileContents

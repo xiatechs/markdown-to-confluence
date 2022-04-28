@@ -12,17 +12,10 @@ import (
 var rootDir string // will contain the root folderpath of the repo
 
 type Controller struct {
-	mu     *sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
-	Root   *Node
-	FH     filehandler.FileHandler
-	API    apihandler.ApiController
-	errors []error
-}
-
-func (c *Controller) ingestError(err error) {
-	c.mu.RLock()
-	c.errors = append(c.errors, err)
-	c.mu.RUnlock()
+	mu   *sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
+	Root *Node
+	FH   filehandler.FileHandler
+	API  apihandler.ApiController
 }
 
 func (c *Controller) Start(projectPath string) {

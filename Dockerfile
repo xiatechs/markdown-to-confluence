@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine AS builder 
+FROM golang:1.18-alpine AS builder 
 
 ENV PLANTUML_VERSION 1.2020.14
 ENV LANG en_US.UTF-8
