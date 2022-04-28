@@ -1,4 +1,5 @@
 name: Markdown to Confluence
+description: "syncs github with confluence"
 inputs:
   key:
     description: 'the api key'
@@ -23,9 +24,9 @@ inputs:
 runs:
   using: docker
   image: Dockerfile
-  args:
-    - ${{ inputs.key }} 
-    - ${{ inputs.space }} 
-    - ${{ inputs.username }} 
-    - ${{ inputs.repo }} 
-    - ${{ inputs.url }}
+  env:
+      CONFLUENCE_BASE_URL: ${{ inputs.url }}
+      CONFLUENCE_SPACE: ${{ inputs.space }}
+      CONFLUENCE_USERNAME: ${{ inputs.username }}
+      CONFLUENCE_API_KEY: ${{ inputs.key }}
+      PROJECT_PATH: ${{ inputs.repo }}

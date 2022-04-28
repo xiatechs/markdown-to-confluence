@@ -1,6 +1,6 @@
 module github.com/xiatechs/markdown-to-confluence
 
-go 1.15
+go 1.17
 
 require (
 	github.com/alecthomas/kong v0.2.4 // indirect

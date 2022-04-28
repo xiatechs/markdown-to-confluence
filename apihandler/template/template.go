@@ -36,11 +36,11 @@ func (e *Example) CRUD(file *filehandler.FileContents, parentMetaData map[string
 
 	state.OutputPageID = iter
 
-	log.Println(state)
-
 	output := make(map[string]interface{})
 
 	output["id"] = iter
+
+	log.Printf("API CALL: generatedPageID: %d - parent: %d - title: %s - indexPage:%t - root:%t", state.OutputPageID, state.ParentPageID, state.CurrentPageTitle, state.IsIndexPage, state.IsRoot)
 
 	return output, nil
 }

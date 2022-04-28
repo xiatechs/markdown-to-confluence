@@ -1,6 +1,8 @@
 package standard
 
 import (
+	"log"
+
 	fh "github.com/xiatechs/markdown-to-confluence/filehandler"
 )
 
@@ -10,6 +12,7 @@ type Basic struct {
 }
 
 func (l *Basic) ConvertMarkdown(filePath, pageTitle string, parentMetadata map[string]interface{}) (*fh.FileContents, error) {
+	log.Println("MARKDOWN:", filePath)
 	bytes, err := returnBytes(filePath)
 	if err != nil {
 		return nil, err
@@ -30,6 +33,7 @@ func (l *Basic) ConvertMarkdown(filePath, pageTitle string, parentMetadata map[s
 // ConvertFolder - convert a Folder
 
 func (l *Basic) ConvertFolder(filePath, pageTitle string, parentMetadata map[string]interface{}) (*fh.FileContents, error) {
+	log.Println("FOLDER:", filePath)
 	return &fh.FileContents{
 		MetaData: map[string]interface{}{
 			"type":     "folderpage",
@@ -46,6 +50,8 @@ func (l *Basic) ConvertFolder(filePath, pageTitle string, parentMetadata map[str
 // ProcessOtherFile - process & convert other file types
 
 func (l *Basic) ProcessOtherFile(filePath, pageTitle string, parentMetadata map[string]interface{}) (*fh.FileContents, error) {
+	log.Println("FILE:", filePath)
+
 	f := fh.NewFileContents()
 
 	if isAcceptedImageFile(filePath) {

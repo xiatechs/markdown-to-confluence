@@ -61,7 +61,7 @@ func (node *Node) validate(c *Controller) (alive bool) {
 	})
 	if err != nil {
 		if err != io.EOF {
-			node.usefulLogError("checkHasMarkDown", err)
+			node.usefulLogError("validate", err)
 		}
 
 		return false
@@ -97,6 +97,10 @@ func (node *Node) checkFolderPageGeneration(c *Controller) error {
 		}
 
 		if isVendorOrGit(fpath) {
+			return nil
+		}
+
+		if isMarkdownFile(fpath) {
 			return nil
 		}
 
@@ -315,19 +319,19 @@ func (node *Node) scanUpForParent(theChildNode *Node) {
 
 func (node *Node) end() {
 	if !node.hasMarkDown {
-		log.Printf("isFolder: [%t] - [%s] and has no markdown i.e dead",
+		log.Printf("NODE: isFolder: [%t] - [%s] and has no markdown i.e dead",
 			node.isFolder, node.filePath)
 		return
 	}
 
 	if node.lastAliveParentFolder == nil {
-		log.Printf("isFolder: [%t] - [%s] has [%d] sub files and is the ROOT folder",
+		log.Printf("NODE: isFolder: [%t] - [%s] has [%d] sub files and is the ROOT folder",
 			node.isFolder, node.filePath, len(node.subFiles))
 
 		return
 	}
 
-	log.Printf("isFolder: [%t] - [%s] has [%d] sub files and the last living parent folder is [%s]",
+	log.Printf("NODE: isFolder: [%t] - [%s] has [%d] sub files and the last living parent folder is [%s]",
 		node.isFolder, node.filePath, len(node.subFiles), node.lastAliveParentFolder.filePath)
 }
 
