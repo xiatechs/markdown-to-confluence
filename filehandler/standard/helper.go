@@ -26,3 +26,15 @@ func isAcceptedImageFile(name string) bool {
 
 	return false
 }
+
+func isGoFile(name string) bool {
+	validFiles := []string{".go"}
+
+	for _, ext := range validFiles {
+		if strings.HasSuffix(strings.ToLower(name), ext) {
+			return true
+		}
+	}
+
+	return false
+}

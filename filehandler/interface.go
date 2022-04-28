@@ -13,6 +13,8 @@ func NewFileContents() *FileContents {
 	}
 }
 
+//go:generate mockgen -destination=./filehandler_mocks.go -package=filehandler -source=interface.go
+
 type FileHandler interface {
 	ConvertMarkdown(filePath, pageTitle string, parentMetadata map[string]interface{}) (*FileContents, error)
 	ConvertFolder(filePath, pageTitle string, parentMetadata map[string]interface{}) (*FileContents, error)

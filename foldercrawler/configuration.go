@@ -1,10 +1,12 @@
-package foldercrawler
+package control
 
 import (
 	"strings"
 
+	"github.com/xiatechs/markdown-to-confluence/apihandler"
 	"github.com/xiatechs/markdown-to-confluence/apihandler/confluence"
-	apitest "github.com/xiatechs/markdown-to-confluence/apihandler/test"
+	"github.com/xiatechs/markdown-to-confluence/apihandler/template"
+	"github.com/xiatechs/markdown-to-confluence/filehandler"
 	"github.com/xiatechs/markdown-to-confluence/filehandler/standard"
 )
 
@@ -14,7 +16,7 @@ func New(api, fileConverter string) *Controller {
 	/////////////////////// collect the API Handler ///////////////
 	switch strings.ToLower(api) {
 	case "test":
-		c.API = &apitest.Local{}
+		c.API = &template.Example{}
 
 	case "confluence":
 		c.API = confluence.NewAPIClient()
@@ -24,6 +26,15 @@ func New(api, fileConverter string) *Controller {
 	switch strings.ToLower(fileConverter) {
 	case "standard":
 		c.FH = &standard.Basic{}
+	}
+
+	return c
+}
+
+func NewDI(fh filehandler.FileHandler, api apihandler.ApiController) *Controller {
+	c := &Controller{
+		FH:  fh,
+		API: api,
 	}
 
 	return c

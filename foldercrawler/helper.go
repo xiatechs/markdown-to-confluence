@@ -1,4 +1,4 @@
-package foldercrawler
+package control
 
 import (
 	"log"

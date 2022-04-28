@@ -22,6 +22,7 @@ func (l *Basic) ConvertMarkdown(filePath, pageTitle string, parentMetadata map[s
 
 	fileContents.MetaData["type"] = "markdown"
 	fileContents.MetaData["filepath"] = filePath
+	fileContents.MetaData["title"] = pageTitle
 
 	return fileContents, nil
 }
@@ -35,7 +36,10 @@ func (l *Basic) ConvertFolder(filePath, pageTitle string, parentMetadata map[str
 			"title":    pageTitle,
 			"filepath": filePath,
 		},
-		Body: []byte(filePath),
+		Body: []byte(`<p>Welcome to the '<b>` + pageTitle + `</b>' folder of this Xiatech code repo.</p>
+		<p>This folder full path in the repo is: ` + filePath + `</p>
+<p>You will find attachments/images for this folder via the ellipsis at the top right.</p>
+<p>Any markdown or subfolders is available in children pages under this page.</p>`),
 	}, nil
 }
 
@@ -45,7 +49,13 @@ func (l *Basic) ProcessOtherFile(filePath, pageTitle string, parentMetadata map[
 	f := fh.NewFileContents()
 
 	if isAcceptedImageFile(filePath) {
-		f.MetaData["type"] = "attachment"
+		f.MetaData["type"] = "image"
+		f.MetaData["filepath"] = filePath
+		f.MetaData["title"] = pageTitle
+	}
+
+	if isGoFile(filePath) {
+		f.MetaData["type"] = "go"
 		f.MetaData["filepath"] = filePath
 		f.MetaData["title"] = pageTitle
 	}

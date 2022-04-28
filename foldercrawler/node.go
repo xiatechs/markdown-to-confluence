@@ -1,4 +1,4 @@
-package foldercrawler
+package control
 
 import (
 	"io"
@@ -22,7 +22,7 @@ type Node struct {
 	isFolder              bool                      // is the file a folder?
 	hasMarkDown           bool                      // does the folder have markdown
 	lastAliveParentFolder *Node                     // this will be the last folder above this folder that had markdown in it
-	subFolders            []*Node                   // any (live) subfolders will be contained in this folder
+	subFiles              map[*Node]struct{}        // any (live) files underneath will be mapped here by filePath
 	readMeFile            *filehandler.FileContents // if the folder had a README.md in it - this will be the file contents
 	fileContents          *filehandler.FileContents // if it's any file - this will be the file contents
 }
@@ -100,13 +100,6 @@ func (node *Node) checkFolderPageGeneration(c *Controller) error {
 			return nil
 		}
 
-		if isImage(fpath) { // we process images at the folder level
-			err := node.processImage(c, fpath)
-			if err != nil {
-				return err
-			}
-		}
-
 		if isFolder(fpath) { // if this subpath is a folder, we'll rinse and repeat
 			childNode := node.createChildNode(fpath, c)
 
@@ -115,6 +108,13 @@ func (node *Node) checkFolderPageGeneration(c *Controller) error {
 			childNode.checkFolderPageGeneration(c)
 
 			childNode.checkForFiles(c)
+
+			return nil
+		}
+
+		err = node.processOtherFiles(c, fpath)
+		if err != nil {
+			return err
 		}
 
 		return nil
@@ -130,7 +130,7 @@ func (node *Node) checkFolderPageGeneration(c *Controller) error {
 	return nil
 }
 
-func (node *Node) processImage(c *Controller, fpath string) error {
+func (node *Node) processOtherFiles(c *Controller, fpath string) error {
 	otherFileNode := node.createChildNode(fpath, c)
 
 	node.scanUpForParent(otherFileNode)
@@ -140,6 +140,11 @@ func (node *Node) processImage(c *Controller, fpath string) error {
 	fileContents, err := c.FH.ProcessOtherFile(fpath, otherFileNodeTitle, node.responseMetaData)
 	if err != nil {
 		return err
+	}
+
+	if _, ok := fileContents.MetaData["type"]; !ok {
+		// this file is not being handled by the current filehandler so ignore it
+		return nil
 	}
 
 	otherFileNode.fileContents = fileContents
@@ -155,8 +160,14 @@ func (node *Node) processImage(c *Controller, fpath string) error {
 func (node *Node) generateReadMeIndexPage(c *Controller) error {
 	node.readMeFile.MetaData["indexPage"] = true
 
+	node.readMeFile.MetaData["alive"] = true
+
 	if node.lastAliveParentFolder == nil {
 		node.readMeFile.MetaData["root"] = true
+
+		pageTitle, _ := node.generatePaths()
+
+		node.readMeFile.MetaData["title"] = pageTitle
 	}
 
 	var err error
@@ -179,6 +190,8 @@ func (node *Node) generateGenericIndexPage(c *Controller) error {
 		return err
 	}
 
+	folderContents.MetaData["alive"] = true
+
 	node.fileContents = folderContents
 
 	if node.lastAliveParentFolder == nil {
@@ -193,9 +206,32 @@ func (node *Node) generateGenericIndexPage(c *Controller) error {
 	return nil
 }
 
-func (node *Node) checkForFiles(c *Controller) error {
-	var apiErr error
+func (node *Node) processMarkdown(fpath string, c *Controller) error {
+	var err error
 
+	otherFileNode := node.createChildNode(fpath, c)
+
+	node.scanUpForParent(otherFileNode)
+
+	otherFileNodeTitle, _ := otherFileNode.generatePaths()
+
+	fileContents, err := c.FH.ConvertMarkdown(fpath, otherFileNodeTitle, node.responseMetaData)
+	if err != nil {
+		return err
+	}
+
+	otherFileNode.fileContents = fileContents
+
+	// create a webpage using the parent node meta data (i.e link this page to the parent page)
+	otherFileNode.responseMetaData, err = c.API.CRUD(fileContents, node.responseMetaData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (node *Node) checkForFiles(c *Controller) error {
 	err := filepath.Walk(node.filePath, func(fpath string, info os.FileInfo, err error) error {
 		if !withinDirectory(node.filePath, fpath) {
 			return nil
@@ -209,25 +245,13 @@ func (node *Node) checkForFiles(c *Controller) error {
 			return nil
 		}
 
-		if isMarkdownFile(fpath) && !isReadMeFile(fpath) {
-			otherFileNode := node.createChildNode(fpath, c)
+		if !(isMarkdownFile(fpath) && !isReadMeFile(fpath)) {
+			return nil
+		}
 
-			node.scanUpForParent(otherFileNode)
-
-			otherFileNodeTitle, _ := otherFileNode.generatePaths()
-
-			fileContents, fiErr := c.FH.ConvertMarkdown(fpath, otherFileNodeTitle, node.responseMetaData)
-			if fiErr != nil {
-				return fiErr
-			}
-
-			otherFileNode.fileContents = fileContents
-
-			// create a webpage using the parent node meta data (i.e link this page to the parent page)
-			otherFileNode.responseMetaData, apiErr = c.API.CRUD(fileContents, node.responseMetaData)
-			if apiErr != nil {
-				return apiErr
-			}
+		err = node.processMarkdown(fpath, c)
+		if err != nil {
+			return err
 		}
 
 		return nil
@@ -245,6 +269,7 @@ func (node *Node) createChildNode(fpath string, c *Controller) *Node {
 	childNode := &Node{
 		mu:       &sync.RWMutex{},
 		filePath: fpath,
+		subFiles: make(map[*Node]struct{}),
 	}
 
 	alive := childNode.validate(c)
@@ -263,44 +288,47 @@ func (node *Node) scanUpForParent(theChildNode *Node) {
 
 		theChildNode.parentMetaData = node.responseMetaData
 
-		node.mu.Lock()
+		node.mu.RLock()
 
-		node.subFolders = append(node.subFolders, theChildNode)
+		node.subFiles[theChildNode] = struct{}{}
 
-		node.mu.Unlock()
-	} else {
-		if node.lastAliveParentFolder != nil {
-			node.lastAliveParentFolder.scanUpForParent(theChildNode)
-		} else { // if we're at the root
-			theChildNode.lastAliveParentFolder = node
+		node.mu.RUnlock()
 
-			theChildNode.parentMetaData = node.responseMetaData
-
-			node.mu.Lock()
-
-			node.subFolders = append(node.subFolders, theChildNode)
-
-			node.mu.Unlock()
-		}
+		return
 	}
+
+	if node.lastAliveParentFolder != nil {
+		node.lastAliveParentFolder.scanUpForParent(theChildNode)
+		return
+	}
+
+	theChildNode.lastAliveParentFolder = node
+
+	theChildNode.parentMetaData = node.responseMetaData
+
+	node.mu.RLock()
+
+	node.subFiles[theChildNode] = struct{}{}
+
+	node.mu.RUnlock()
 }
 
 func (node *Node) end() {
-	return
-	/*
-		if !node.hasMarkDown {
-			return
-		}
+	if !node.hasMarkDown {
+		log.Printf("isFolder: [%t] - [%s] and has no markdown i.e dead",
+			node.isFolder, node.filePath)
+		return
+	}
 
-		if node.lastAliveParentFolder == nil {
-			log.Printf("folder: [%t] - [%s] has [%d] alive subfolders and is the ROOT folder",
-				node.isFolder, node.filePath, len(node.subFolders))
+	if node.lastAliveParentFolder == nil {
+		log.Printf("isFolder: [%t] - [%s] has [%d] sub files and is the ROOT folder",
+			node.isFolder, node.filePath, len(node.subFiles))
 
-			return
-		}
+		return
+	}
 
-		log.Printf("folder: [%t] - [%s] has [%d] alive subfolders and the last living parent folder is [%s]",
-			node.isFolder, node.filePath, len(node.subFolders), node.lastAliveParentFolder.filePath)*/
+	log.Printf("isFolder: [%t] - [%s] has [%d] sub files and the last living parent folder is [%s]",
+		node.isFolder, node.filePath, len(node.subFiles), node.lastAliveParentFolder.filePath)
 }
 
 // generateTitles returns two strings

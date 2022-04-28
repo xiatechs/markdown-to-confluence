@@ -1,5 +1,5 @@
-//Package foldercrawler is the object that handles the iterating through files in a github repository
-package foldercrawler
+//Package control is the object that handles the iterating through files in a github repository
+package control
 
 import (
 	"strings"
@@ -12,6 +12,7 @@ import (
 var rootDir string // will contain the root folderpath of the repo
 
 type Controller struct {
+	mu     *sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
 	Root   *Node
 	FH     filehandler.FileHandler
 	API    apihandler.ApiController
@@ -19,7 +20,9 @@ type Controller struct {
 }
 
 func (c *Controller) ingestError(err error) {
+	c.mu.RLock()
 	c.errors = append(c.errors, err)
+	c.mu.RUnlock()
 }
 
 func (c *Controller) Start(projectPath string) {
@@ -31,8 +34,9 @@ func (c *Controller) Start(projectPath string) {
 
 	Root := &Node{
 		mu:       &sync.RWMutex{},
-		filePath: projectPath,
+		filePath: rootDir,
 		isFolder: true,
+		subFiles: make(map[*Node]struct{}),
 	}
 
 	if Root.validate(c) {
