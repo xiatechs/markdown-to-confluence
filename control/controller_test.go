@@ -11,7 +11,7 @@ func TestCrawl(t *testing.T) {
 	_ = os.Setenv("CONFLUENCE_BASE_URL", "https://xiatech.atlassian.net")
 	_ = os.Setenv("CONFLUENCE_SPACE", "MTW")
 	_ = os.Setenv("CONFLUENCE_USERNAME", "apps.markdown@xiatech.co.uk")
-	_ = os.Setenv("CONFLUENCE_API_KEY", "mt08rVldAKT0Rh9n0NALE606")
+	_ = os.Setenv("CONFLUENCE_API_KEY", "")
 
 	common.Refresh()
 
