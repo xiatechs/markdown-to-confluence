@@ -3,6 +3,9 @@ package common
 import "github.com/xiatechs/markdown-to-confluence/filehandler"
 
 // FileState - during the generation of files, these fields refer to different states of files
+
+// TODO: remove maps of interfaces with just this filestate so that the API is simpler to understand
+
 type FileState struct {
 	CurrentPageID    int // the currentpage ID - if it already has an ID & has been created before - it'll be stored here
 	OutputPageID     int // the OutputPageID
