@@ -22,7 +22,7 @@ type Node struct {
 	isFolder              bool                      // is the file a folder?
 	hasMarkDown           bool                      // does the folder have markdown
 	lastAliveParentFolder *Node                     // this will be the last folder above this folder that had markdown in it
-	subFiles              map[*Node]struct{}        // any (live) files underneath will be mapped here by filePath
+	subFiles              []*Node                   // any (live) files underneath will be mapped here by filePath
 	readMeFile            *filehandler.FileContents // if the folder had a README.md in it - this will be the file contents
 	fileContents          *filehandler.FileContents // if it's any file - this will be the file contents
 }
@@ -105,14 +105,17 @@ func (node *Node) checkFolderPageGeneration(c *Controller) error {
 		}
 
 		if isFolder(fpath) { // if this subpath is a folder, we'll rinse and repeat
-			childNode := node.createChildNode(fpath, c)
+			wg.Add() // concurrently
+			go func() {
+				defer wg.Done()
+				childNode := node.createChildNode(fpath, c)
 
-			node.scanUpForParent(childNode)
+				node.scanUpForParent(childNode)
 
-			childNode.checkFolderPageGeneration(c)
+				childNode.checkFolderPageGeneration(c)
 
-			childNode.checkForFiles(c)
-
+				childNode.checkForFiles(c)
+			}()
 			return nil
 		}
 
@@ -158,6 +161,14 @@ func (node *Node) processOtherFiles(c *Controller, fpath string) error {
 		return err
 	}
 
+	if _, ok := otherFileNode.responseMetaData["title"]; !ok {
+		return nil
+	}
+
+	c.mu.RLock()
+	c.titles[otherFileNode.responseMetaData["title"].(string)] = struct{}{}
+	c.mu.RUnlock()
+
 	return nil
 }
 
@@ -181,6 +192,17 @@ func (node *Node) generateReadMeIndexPage(c *Controller) error {
 		return err
 	}
 
+	if node.responseMetaData == nil {
+		return nil
+	}
+
+	if _, ok := node.responseMetaData["title"]; !ok {
+		return nil
+	}
+
+	c.mu.RLock()
+	c.titles[node.responseMetaData["title"].(string)] = struct{}{}
+	c.mu.RUnlock()
 	return nil
 }
 
@@ -207,6 +229,17 @@ func (node *Node) generateGenericIndexPage(c *Controller) error {
 		return err
 	}
 
+	if node.responseMetaData == nil {
+		return nil
+	}
+
+	if _, ok := node.responseMetaData["title"]; !ok {
+		return nil
+	}
+
+	c.mu.RLock()
+	c.titles[node.responseMetaData["title"].(string)] = struct{}{}
+	c.mu.RUnlock()
 	return nil
 }
 
@@ -231,6 +264,18 @@ func (node *Node) processMarkdown(fpath string, c *Controller) error {
 	if err != nil {
 		return err
 	}
+
+	if otherFileNode.responseMetaData == nil {
+		return nil
+	}
+
+	if _, ok := otherFileNode.responseMetaData["title"]; !ok {
+		return nil
+	}
+
+	c.mu.RLock()
+	c.titles[otherFileNode.responseMetaData["title"].(string)] = struct{}{}
+	c.mu.RUnlock()
 
 	return nil
 }
@@ -273,7 +318,6 @@ func (node *Node) createChildNode(fpath string, c *Controller) *Node {
 	childNode := &Node{
 		mu:       &sync.RWMutex{},
 		filePath: fpath,
-		subFiles: make(map[*Node]struct{}),
 	}
 
 	alive := childNode.validate(c)
@@ -294,7 +338,7 @@ func (node *Node) scanUpForParent(theChildNode *Node) {
 
 		node.mu.RLock()
 
-		node.subFiles[theChildNode] = struct{}{}
+		node.subFiles = append(node.subFiles, theChildNode)
 
 		node.mu.RUnlock()
 
@@ -312,7 +356,7 @@ func (node *Node) scanUpForParent(theChildNode *Node) {
 
 	node.mu.RLock()
 
-	node.subFiles[theChildNode] = struct{}{}
+	node.subFiles = append(node.subFiles, theChildNode)
 
 	node.mu.RUnlock()
 }

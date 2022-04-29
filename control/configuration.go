@@ -15,7 +15,7 @@ func New(api, fileConverter string) *Controller {
 
 	/////////////////////// collect the API Handler ///////////////
 	switch strings.ToLower(api) {
-	case "test":
+	case "template":
 		c.API = &template.Example{}
 
 	case "confluence":

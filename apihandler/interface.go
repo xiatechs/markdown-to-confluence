@@ -6,14 +6,33 @@ import (
 
 //go:generate mockgen -destination=./api_mocks.go -package=apihandler -source=interface.go
 
-/* there's three areas where you can interface with metadata between the different layers:
-file.MetaData - this can contain data about the file but also the current state
-parentMetaData - this contains data about the parent i.e the parent ID
-returned MetaData (map[string]interface{}) - this data is captured by the foldercrawler i.e the returned ID from page that is created
+/*
+
+inside CRUD use the method use common.CaptureState() i.e
+
+state := common.CaptureState(file, parentMetaData)
+
+and you'll be returned:
+
+// FileState - during the generation of files, these fields refer to different states of files
+type FileState struct {
+	CurrentPageID    int
+	OutputPageID     int
+	ParentPageID     int
+	CurrentPageTitle string
+	IsRoot           bool
+	IsIndexPage      bool
+	FileType         string
+	FilePath         string
+	Alive            bool
+	Delete           bool
+}
+
 */
 
 // ApiController - interface for the API
-type ApiController interface { // API just takes in public CRUD method - from there you can create an API to deal with file contents
+type ApiController interface {
 	CRUD(file *filehandler.FileContents,
 		parentMetaData map[string]interface{}) (map[string]interface{}, error)
+	Delete(titles map[string]struct{}, id string)
 }

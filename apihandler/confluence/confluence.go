@@ -212,7 +212,6 @@ func (a *APIClient) UpdatePage(pageID int, pageVersion int64, pageContents *fh.F
 
 	if len(originalPage.Results) > 0 {
 		if originalPage.Results[0].Body.Storage == newPage.Body.Storage {
-			log.Println("No changes to this page")
 			return true, nil
 		}
 	}
@@ -393,14 +392,10 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 
 // UploadAttachment to a page identify by page ID
 // you need the page ID to upload the attachment(file path)
-func (a *APIClient) UploadAttachment(filename string, id int, isindex bool, indexid int) error {
+func (a *APIClient) UploadAttachment(filename string, id int) error {
 	var targetURL string
 
-	if isindex {
-		targetURL = fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", indexid)
-	} else {
-		targetURL = fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", id)
-	}
+	targetURL = fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", id)
 
 	req, err := newfileUploadRequest(targetURL, "file", filename)
 	if err != nil {

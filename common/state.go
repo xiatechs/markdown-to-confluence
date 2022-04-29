@@ -4,14 +4,16 @@ import "github.com/xiatechs/markdown-to-confluence/filehandler"
 
 // FileState - during the generation of files, these fields refer to different states of files
 type FileState struct {
-	CurrentPageID    int
-	OutputPageID     int
+	CurrentPageID    int // the currentpage ID - if it already has an ID & has been created before - it'll be stored here
+	OutputPageID     int // the OutputPageID
 	ParentPageID     int
 	CurrentPageTitle string
 	IsRoot           bool
 	IsIndexPage      bool
 	FileType         string
+	FilePath         string
 	Alive            bool
+	Delete           bool
 }
 
 func CaptureState(file *filehandler.FileContents, parentMetaData map[string]interface{}) *FileState {
@@ -66,6 +68,22 @@ func CaptureState(file *filehandler.FileContents, parentMetaData map[string]inte
 
 	fileState.Alive = func() bool {
 		if value, ok := file.MetaData["alive"].(bool); ok { // what is the parent page ID?
+			return value
+		}
+
+		return false
+	}()
+
+	fileState.FilePath = func() string {
+		if value, ok := file.MetaData["filepath"].(string); ok { // what is the parent page ID?
+			return value
+		}
+
+		return ""
+	}()
+
+	fileState.Delete = func() bool {
+		if value, ok := parentMetaData["delete"].(bool); ok { // we deleting?
 			return value
 		}
 

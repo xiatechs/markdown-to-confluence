@@ -8,3 +8,8 @@ var (
 	ConfluenceSpace   = os.Getenv("CONFLUENCE_SPACE")
 	ConfluenceBaseURL = os.Getenv("CONFLUENCE_BASE_URL")
 )
+
+func Refresh() {
+	ConfluenceSpace = os.Getenv("CONFLUENCE_SPACE")
+	ConfluenceBaseURL = os.Getenv("CONFLUENCE_BASE_URL")
+}

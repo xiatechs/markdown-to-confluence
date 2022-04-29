@@ -8,13 +8,18 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/filehandler"
 )
 
+var mockPageIDgenerator = 0
+
 type Example struct {
-	// client HALOclient
 }
 
-var iter = 0
+func (l *Example) Delete(titles map[string]struct{}, id string) {
+	// logic here will be:
 
-// CRUD - Create, Update, Delete
+	// delete any pages on website where the title is not in the 'titles' map.
+}
+
+// CRUD - Create, Update - do other stuff (process files locally? generate docs for go files? etc)
 // - if exist: update, if not: create, else delete.
 func (e *Example) CRUD(file *filehandler.FileContents, parentMetaData map[string]interface{}) (map[string]interface{}, error) {
 	if file == nil { // this means the filehandler step returned a nil file somehow
@@ -22,25 +27,38 @@ func (e *Example) CRUD(file *filehandler.FileContents, parentMetaData map[string
 	}
 
 	state := common.CaptureState(file, parentMetaData)
-	/*
-		type FileState struct {
-			CurrentPageID    int // the page ID of the current page (if it's an INDEX page)
-			ParentPageID     int // the page ID of the parent page
-			OutputPageID     int // the page ID of created page
-			CurrentPageTitle string // the page title of current page
-			IsRoot           bool // if this the root page
-			IsIndexPage      bool // is this an INDEX page (an index page is a page created for a folder using the README.MD file)
-		}
-	*/
-	iter++
 
-	state.OutputPageID = iter
+	/////////////////////////////////////////////////// check if the file already exists
+	//pageResults, err := e.Example.client.FindPage(file *filehandler.FileContents)
 
-	output := make(map[string]interface{})
+	/////////////////////////////////////////////////// upload an attachment or create / update a file
+	switch state.FileType {
+	case "image":
+		//id, err := e.Example.client.UploadImage(file *filehandler.FileContents, parentMetaData)
+		//state.OutputPageID = id
+	case "markdown":
+		//id, err := e.Example.client.CreateOrUpdateMarkdown(file *filehandler.FileContents, parentMetaData)
+		//state.OutputPageID = id
+	case "folderpage":
+		//id, err := e.Example.client.CreateOrUpdateFolderPage(file *filehandler.FileContents, parentMetaData)
+		//state.OutputPageID = id
+	}
 
-	output["id"] = iter
+	mockPageIDgenerator++
 
-	log.Printf("API CALL: generatedPageID: %d - parent: %d - title: %s - indexPage:%t - root:%t", state.OutputPageID, state.ParentPageID, state.CurrentPageTitle, state.IsIndexPage, state.IsRoot)
+	state.OutputPageID = mockPageIDgenerator
+
+	log.Println(state.FileType, state)
+
+	output := returnOutputs(state, file)
 
 	return output, nil
+}
+
+func returnOutputs(state *common.FileState, file *filehandler.FileContents) map[string]interface{} {
+	output := make(map[string]interface{})
+	output["title"] = file.MetaData["title"]
+	output["id"] = state.OutputPageID
+
+	return output
 }

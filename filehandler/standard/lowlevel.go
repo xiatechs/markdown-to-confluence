@@ -119,7 +119,7 @@ func stripFrontmatterReplaceURL(rootID int, content string) []byte {
 
 		// temporary solution to local url path issue - try and identify them with fuzzy logic
 		if strings.Contains(lines[index], "<a href=") && !linkFilterLogic(lines[index]) {
-			// forget it
+			lines[index] = "[please use absolute links]"
 		}
 
 		// can't use local links yet for images
