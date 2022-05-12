@@ -7,16 +7,15 @@ import "github.com/xiatechs/markdown-to-confluence/filehandler"
 // TODO: remove maps of interfaces with just this filestate so that the API is simpler to understand
 
 type FileState struct {
-	CurrentPageID    int // the currentpage ID - if it already has an ID & has been created before - it'll be stored here
-	OutputPageID     int // the OutputPageID
-	ParentPageID     int
-	CurrentPageTitle string
-	IsRoot           bool
-	IsIndexPage      bool
-	FileType         string
-	FilePath         string
-	Alive            bool
-	Delete           bool
+	CurrentPageID    int    // the currentpage ID - if it already has an ID & has been created before - it'll be stored here
+	OutputPageID     int    // the OutputPageID
+	ParentPageID     int    // the parent page ID - if this page has a parent page, this is it's ID
+	CurrentPageTitle string // the page title of the page you are creating
+	IsRoot           bool   // is this the root page? true = yes
+	IsIndexPage      bool   // is this an 'index page' (a page that will be used as an index that is a readme.md)
+	FileType         string // type of file (current types are: indexPage, markdown, image, folderpage)
+	FilePath         string // the file path of the file in question
+	Alive            bool   // if this is a folderpage - is it alive i.e does it have markdown contained in it
 }
 
 func CaptureState(file *filehandler.FileContents, parentMetaData map[string]interface{}) *FileState {
@@ -83,14 +82,6 @@ func CaptureState(file *filehandler.FileContents, parentMetaData map[string]inte
 		}
 
 		return ""
-	}()
-
-	fileState.Delete = func() bool {
-		if value, ok := parentMetaData["delete"].(bool); ok { // we deleting?
-			return value
-		}
-
-		return false
 	}()
 
 	return fileState

@@ -15,7 +15,7 @@ func TestCrawl(t *testing.T) {
 
 	common.Refresh()
 
-	c := New("confluence", "standard")
+	c := New("template", "standard")
 
 	c.Start("./testRoot")
 }
