@@ -25,7 +25,6 @@ type FileState struct {
 	FileType         string
 	FilePath         string
 	Alive            bool
-	Delete           bool
 }
 
 */
