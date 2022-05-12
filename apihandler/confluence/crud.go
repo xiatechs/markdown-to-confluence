@@ -90,6 +90,11 @@ func (l *Local) CRUD(file *filehandler.FileContents, parentMetaData map[string]i
 		if err != nil {
 			return nil, err
 		}
+	case "indexPage":
+		err = l.handleMarkDownFile(pageResults, state, file, parentMetaData)
+		if err != nil {
+			return nil, err
+		}
 	case "folderpage":
 		err = l.handleFolderPage(pageResults, state, file, parentMetaData)
 		if err != nil {

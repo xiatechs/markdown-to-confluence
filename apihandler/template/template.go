@@ -29,18 +29,18 @@ func (e *Example) CRUD(file *filehandler.FileContents, parentMetaData map[string
 	state := common.CaptureState(file, parentMetaData)
 
 	/////////////////////////////////////////////////// check if the file already exists
-	//pageResults, err := e.Example.client.FindPage(file *filehandler.FileContents)
+	//pageResults, err := e.client.FindPage(file *filehandler.FileContents)
 
 	/////////////////////////////////////////////////// upload an attachment or create / update a file
 	switch state.FileType {
 	case "image":
-		//id, err := e.Example.client.UploadImage(file *filehandler.FileContents, parentMetaData)
+		//id, err := e.client.UploadImage(file *filehandler.FileContents, parentMetaData)
 		//state.OutputPageID = id
 	case "markdown":
-		//id, err := e.Example.client.CreateOrUpdateMarkdown(file *filehandler.FileContents, parentMetaData)
+		//id, err := e.client.CreateOrUpdateMarkdown(file *filehandler.FileContents, parentMetaData)
 		//state.OutputPageID = id
 	case "folderpage":
-		//id, err := e.Example.client.CreateOrUpdateFolderPage(file *filehandler.FileContents, parentMetaData)
+		//id, err := e.client.CreateOrUpdateFolderPage(file *filehandler.FileContents, parentMetaData)
 		//state.OutputPageID = id
 	}
 

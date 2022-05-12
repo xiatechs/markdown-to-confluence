@@ -15,10 +15,9 @@ func TestCrawl(t *testing.T) {
 
 	common.Refresh()
 
-	c := New("template", "standard")
+	c := New("confluence", "standard")
 
 	c.Start("./testRoot")
-
 }
 
 /* TODO: create mock test using interfaces

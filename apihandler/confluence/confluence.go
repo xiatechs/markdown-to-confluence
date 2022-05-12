@@ -26,6 +26,10 @@ import (
 func newPageResults(resp *http.Response) (*PageResults, error) {
 	pageResultVar := PageResults{}
 
+	if resp.StatusCode >= http.StatusBadRequest {
+		return nil, fmt.Errorf("newPageResults statuscode error - not good request: status code [%d]", resp.StatusCode)
+	}
+
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("newPageResults decode error: %w", err)
@@ -296,7 +300,7 @@ func (a *APIClient) findPageRequest(title string, many bool) (*retryablehttp.Req
 		}
 	}
 
-	return req, err
+	return req, nil
 }
 
 // FindPage in confluence
