@@ -1,6 +1,6 @@
 module github.com/xiatechs/markdown-to-confluence
 
-go 1.18
+go 1.17
 
 require (
 	github.com/gohugoio/hugo v0.98.0
