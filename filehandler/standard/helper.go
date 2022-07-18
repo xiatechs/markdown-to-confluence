@@ -1,3 +1,4 @@
+// Package standard is standard / basic / generic file handler
 package standard
 
 import (

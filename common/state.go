@@ -2,12 +2,11 @@ package common
 
 import "github.com/xiatechs/markdown-to-confluence/filehandler"
 
-// FileState - during the generation of files, these fields refer to different states of files
-
 // TODO: remove maps of interfaces with just this filestate so that the API is simpler to understand
 
+// FileState - during the generation of files, these fields refer to different states of files
 type FileState struct {
-	CurrentPageID    int    // the currentpage ID - if it already has an ID & has been created before - it'll be stored here
+	CurrentPageID    int    // the currentpage ID - if it already has an ID & has been created before
 	OutputPageID     int    // the OutputPageID
 	ParentPageID     int    // the parent page ID - if this page has a parent page, this is it's ID
 	CurrentPageTitle string // the page title of the page you are creating
@@ -18,6 +17,7 @@ type FileState struct {
 	Alive            bool   // if this is a folderpage - is it alive i.e does it have markdown contained in it
 }
 
+// CaptureState - capture the state to be used within interfaces easier
 func CaptureState(file *filehandler.FileContents, parentMetaData map[string]interface{}) *FileState {
 	fileState := &FileState{}
 
@@ -33,6 +33,7 @@ func CaptureState(file *filehandler.FileContents, parentMetaData map[string]inte
 		if str, ok := file.MetaData["title"].(string); ok { // what is the current page title
 			return str
 		}
+		
 		return ""
 	}()
 

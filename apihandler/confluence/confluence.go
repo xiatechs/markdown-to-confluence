@@ -81,7 +81,6 @@ func (a *APIClient) grabPageContents(contents *fh.FileContents, root int, isroot
 
 // CreatePage method takes root (root page id) and page contents and bool (is page root?)
 // and generates a page in confluence and returns the generated page ID
-//nolint: gocyclo // 11 is just about fine
 func (a *APIClient) CreatePage(root int, contents *fh.FileContents, isroot bool) (int, error) {
 	if contents == nil {
 		return 0, fmt.Errorf("createpage error: contents parameter is nil")
@@ -397,9 +396,7 @@ func newfileUploadRequest(uri string, paramName, path string) (*retryablehttp.Re
 // UploadAttachment to a page identify by page ID
 // you need the page ID to upload the attachment(file path)
 func (a *APIClient) UploadAttachment(filename string, id int) error {
-	var targetURL string
-
-	targetURL = fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", id)
+	targetURL := fmt.Sprintf(common.ConfluenceBaseURL+"/wiki/rest/api/content/%d/child/attachment", id)
 
 	req, err := newfileUploadRequest(targetURL, "file", filename)
 	if err != nil {

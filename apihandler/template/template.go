@@ -1,3 +1,4 @@
+// Package template is just a template API
 package template
 
 import (
@@ -10,10 +11,12 @@ import (
 
 var mockPageIDgenerator = 0
 
+// Example - an example API template
 type Example struct {
 }
 
-func (l *Example) Delete(titles map[string]struct{}, id string) {
+// Delete - delete files
+func (e *Example) Delete(titles map[string]struct{}, id string) {
 	// logic here will be:
 
 	// delete any pages on website where the title is not in the 'titles' map.
@@ -21,7 +24,8 @@ func (l *Example) Delete(titles map[string]struct{}, id string) {
 
 // CRUD - Create, Update - do other stuff (process files locally? generate docs for go files? etc)
 // - if exist: update, if not: create, else delete.
-func (e *Example) CRUD(file *filehandler.FileContents, parentMetaData map[string]interface{}) (map[string]interface{}, error) {
+func (e *Example) CRUD(file *filehandler.FileContents, 
+	parentMetaData map[string]interface{}) (map[string]interface{}, error) {
 	if file == nil { // this means the filehandler step returned a nil file somehow
 		return nil, fmt.Errorf("a nil file was passed to the API")
 	}
@@ -29,19 +33,22 @@ func (e *Example) CRUD(file *filehandler.FileContents, parentMetaData map[string
 	state := common.CaptureState(file, parentMetaData)
 
 	/////////////////////////////////////////////////// check if the file already exists
-	//pageResults, err := e.client.FindPage(file *filehandler.FileContents)
+	// pageResults, err := e.client.FindPage(file *filehandler.FileContents)
 
 	/////////////////////////////////////////////////// upload an attachment or create / update a file
 	switch state.FileType {
 	case "image":
-		//id, err := e.client.UploadImage(file *filehandler.FileContents, parentMetaData)
-		//state.OutputPageID = id
+		// id, err := e.client.UploadImage(file *filehandler.FileContents, parentMetaData)
+		// state.OutputPageID = id
+		log.Println(state.FileType)
 	case "markdown":
-		//id, err := e.client.CreateOrUpdateMarkdown(file *filehandler.FileContents, parentMetaData)
-		//state.OutputPageID = id
+		// id, err := e.client.CreateOrUpdateMarkdown(file *filehandler.FileContents, parentMetaData)
+		// state.OutputPageID = id
+		log.Println(state.FileType)
 	case "folderpage":
-		//id, err := e.client.CreateOrUpdateFolderPage(file *filehandler.FileContents, parentMetaData)
-		//state.OutputPageID = id
+		// id, err := e.client.CreateOrUpdateFolderPage(file *filehandler.FileContents, parentMetaData)
+		// state.OutputPageID = id
+		log.Println(state.FileType)
 	}
 
 	mockPageIDgenerator++

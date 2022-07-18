@@ -10,13 +10,16 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/filehandler"
 )
 
+// Iterator is global counter for confluence API
 var Iterator = 0
 
+// Local - local client
 type Local struct {
 	client *APIClient
 	mu     *sync.RWMutex
 }
 
+// NewAPIClient creates a local API client for confluence
 func NewAPIClient() *Local {
 	client, err := CreateAPIClient()
 	if err != nil {
@@ -31,6 +34,7 @@ func NewAPIClient() *Local {
 	return l
 }
 
+// Delete - delete pages in confluence
 func (l *Local) Delete(titles map[string]struct{}, id string) {
 	children, err := l.client.FindPage(id, true)
 	if err != nil {
@@ -39,9 +43,12 @@ func (l *Local) Delete(titles map[string]struct{}, id string) {
 
 	if children != nil {
 		l.mu.RLock()
+
 		defer l.mu.RUnlock()
+
 		for index := range children.Results {
 			log.Println(children.Results[index].Title)
+
 			if _, ok := titles[children.Results[index].Title]; ok {
 				l.Delete(titles, children.Results[index].ID)
 			} else {
@@ -63,7 +70,8 @@ func (l *Local) Delete(titles map[string]struct{}, id string) {
 
 // CRUD - Create, Update - do other stuff (process files locally? generate docs for go files? etc)
 // - if exist: update, if not: create, else delete.
-func (l *Local) CRUD(file *filehandler.FileContents, parentMetaData map[string]interface{}) (map[string]interface{}, error) {
+func (l *Local) CRUD(file *filehandler.FileContents, 
+	parentMetaData map[string]interface{}) (map[string]interface{}, error) {
 	if file == nil { // this means the filehandler step returned a nil file somehow
 		return nil, fmt.Errorf("a nil file was passed to the API")
 	}
@@ -143,6 +151,7 @@ func (l *Local) handleFolderPage(pageResults *PageResults,
 	file *filehandler.FileContents,
 	parentMetaData map[string]interface{}) error {
 	log.Println("folderpage", state.ParentPageID, file.MetaData, state.IsRoot)
+
 	var err error
 
 	if pageResults == nil {
@@ -177,6 +186,7 @@ func (l *Local) handleMarkDownFile(pageResults *PageResults,
 	parentMetaData map[string]interface{}) error {
 	log.Println("markdown", state.ParentPageID,
 		file.MetaData, state.IsRoot, state.CurrentPageID)
+
 	var err error
 
 	if pageResults == nil {

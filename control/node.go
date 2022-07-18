@@ -1,3 +1,5 @@
+// Package control is the object that handles the iterating through files in a github repository
+//nolint: staticcheck // err shadowing isn't always bad
 package control
 
 import (
@@ -14,17 +16,38 @@ import (
 
 // Node - a folder in the repository
 type Node struct {
-	mu                    *sync.RWMutex             // for locking/unlocking when multiple goroutines are working on same node
-	responseMetaData      map[string]interface{}    // you can return anything from API resposne here
-	parentMetaData        map[string]interface{}    // the parent node meta data will be stored here & passed through to the API
-	indexName             string                    // the name of the page (for confluence - page names have to be unique)
-	filePath              string                    // the full path to the file
-	isFolder              bool                      // is the file a folder?
-	hasMarkDown           bool                      // does the folder have markdown
-	lastAliveParentFolder *Node                     // this will be the last folder above this folder that had markdown in it
-	subFiles              []*Node                   // any (live) files underneath will be mapped here by filePath
-	readMeFile            *filehandler.FileContents // if the folder had a README.md in it - this will be the file contents
-	fileContents          *filehandler.FileContents // if it's any file - this will be the file contents
+	// for locking/unlocking when multiple goroutines are working on same node
+	mu                    *sync.RWMutex    
+
+	// you can return anything from API response here         
+	responseMetaData      map[string]interface{}   
+	
+	// the parent node meta data will be stored here & passed through to the API
+	parentMetaData        map[string]interface{}   
+	
+	// the name of the page (for confluence - page names have to be unique)
+	indexName             string      
+	
+	// the full path to the file
+	filePath              string
+	
+	// is the file a folder?
+	isFolder              bool   
+
+	// does the folder have markdown                 
+	hasMarkDown           bool   
+
+	// this will be the last folder above this folder that had markdown in it                   
+	lastAliveParentFolder *Node   
+	
+	// any (live) files underneath will be mapped here by filePath
+	subFiles              []*Node
+	
+	// if the folder had a README.md in it - this will be the file contents
+	readMeFile            *filehandler.FileContents 
+
+	// if it's any other file - this will be the file contents i.e images... whatever really
+	fileContents          *filehandler.FileContents 
 }
 
 func (node *Node) validate(c *Controller) (alive bool) {
@@ -70,6 +93,7 @@ func (node *Node) validate(c *Controller) (alive bool) {
 	return alive
 }
 
+//nolint: gocognit // keep all logic in one place
 func (node *Node) checkFolderPageGeneration(c *Controller) error {
 	pageTitle, _ := node.generatePaths()
 
@@ -112,9 +136,15 @@ func (node *Node) checkFolderPageGeneration(c *Controller) error {
 
 				node.scanUpForParent(childNode)
 
-				childNode.checkFolderPageGeneration(c)
+				err := childNode.checkFolderPageGeneration(c)
+				if err != nil {
+					node.usefulLogError("childNode.checkFolderPageGeneration", err)
+				}
 
-				childNode.checkForFiles(c)
+				err = childNode.checkForFiles(c)
+				if err != nil {
+					node.usefulLogError("childNode.checkForFiles", err)
+				}
 			}()
 			return nil
 		}
@@ -201,8 +231,11 @@ func (node *Node) generateReadMeIndexPage(c *Controller) error {
 	}
 
 	c.mu.RLock()
+
 	c.titles[node.responseMetaData["title"].(string)] = struct{}{}
+
 	c.mu.RUnlock()
+
 	return nil
 }
 
@@ -211,7 +244,8 @@ func (node *Node) generateGenericIndexPage(c *Controller) error {
 
 	var err error
 
-	folderContents, err := c.FH.ConvertFolder(node.filePath, pageTitle, node.parentMetaData) // else, let's create a 'generic folder page' for indexing
+	// else, let's create a 'generic folder page' for indexing
+	folderContents, err := c.FH.ConvertFolder(node.filePath, pageTitle, node.parentMetaData) 
 	if err != nil {
 		return err
 	}
@@ -238,8 +272,11 @@ func (node *Node) generateGenericIndexPage(c *Controller) error {
 	}
 
 	c.mu.RLock()
+
 	c.titles[node.responseMetaData["title"].(string)] = struct{}{}
+
 	c.mu.RUnlock()
+	
 	return nil
 }
 
@@ -421,16 +458,4 @@ func (node *Node) usefulLogError(functionName string, err error) {
 	path, fullPath := node.generatePaths()
 	log.Printf("within func [%s] - error at [%s] - path [%s]: %v",
 		functionName, path, fullPath, err)
-}
-
-func isImage(name string) bool {
-	validFiles := []string{".png", ".jpg", ".jpeg", ".gif"}
-
-	for index := range validFiles {
-		if strings.HasSuffix(strings.ToLower(name), validFiles[index]) {
-			return true
-		}
-	}
-
-	return false
 }

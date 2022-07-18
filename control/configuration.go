@@ -1,3 +1,5 @@
+// Package control is for handling the service
+//nolint: gocritic // is fine
 package control
 
 import (
@@ -10,6 +12,7 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/filehandler/standard"
 )
 
+// New - create a controller using strategy architecture
 func New(api, fileConverter string) *Controller {
 	c := &Controller{}
 
@@ -31,7 +34,8 @@ func New(api, fileConverter string) *Controller {
 	return c
 }
 
-func NewDI(fh filehandler.FileHandler, api apihandler.ApiController) *Controller {
+// NewDI - create a controller using dependency injection
+func NewDI(fh filehandler.FileHandler, api apihandler.APIController) *Controller {
 	c := &Controller{
 		FH:  fh,
 		API: api,

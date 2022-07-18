@@ -6,13 +6,17 @@ import (
 	fh "github.com/xiatechs/markdown-to-confluence/filehandler"
 )
 
-// Basic - a basic filehandler that converts markdown files into HTML files, folders into 'generic folder HTML files'
+// Basic - a basic filehandler that converts markdown files into HTML files, 
+// folders into 'generic folder HTML files'
 // and images are passed back to API as metadata so the API can choose to handle them
 type Basic struct {
 }
 
-func (l *Basic) ConvertMarkdown(filePath, pageTitle string, parentMetadata map[string]interface{}) (*fh.FileContents, error) {
+// ConvertMarkdown - convert a file into a markdown file
+func (l *Basic) ConvertMarkdown(filePath, pageTitle string, 
+	parentMetadata map[string]interface{}) (*fh.FileContents, error) {
 	log.Println("MARKDOWN:", filePath)
+
 	bytes, err := returnBytes(filePath)
 	if err != nil {
 		return nil, err
@@ -24,16 +28,19 @@ func (l *Basic) ConvertMarkdown(filePath, pageTitle string, parentMetadata map[s
 	}
 
 	fileContents.MetaData["type"] = "markdown"
+
 	fileContents.MetaData["filepath"] = filePath
+
 	fileContents.MetaData["title"] = pageTitle
 
 	return fileContents, nil
 }
 
 // ConvertFolder - convert a Folder
-
-func (l *Basic) ConvertFolder(filePath, pageTitle string, parentMetadata map[string]interface{}) (*fh.FileContents, error) {
+func (l *Basic) ConvertFolder(filePath, pageTitle string, 
+	parentMetadata map[string]interface{}) (*fh.FileContents, error) {
 	log.Println("FOLDER:", filePath)
+	
 	return &fh.FileContents{
 		MetaData: map[string]interface{}{
 			"type":     "folderpage",
@@ -48,8 +55,8 @@ func (l *Basic) ConvertFolder(filePath, pageTitle string, parentMetadata map[str
 }
 
 // ProcessOtherFile - process & convert other file types
-
-func (l *Basic) ProcessOtherFile(filePath, pageTitle string, parentMetadata map[string]interface{}) (*fh.FileContents, error) {
+func (l *Basic) ProcessOtherFile(filePath, pageTitle string, 
+	parentMetadata map[string]interface{}) (*fh.FileContents, error) {
 	log.Println("FILE:", filePath)
 
 	f := fh.NewFileContents()

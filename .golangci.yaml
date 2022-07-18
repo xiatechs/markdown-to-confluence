@@ -117,7 +117,7 @@ linters-settings:
     #local-prefixes: github.com/xiatechs/moxie
   gocognit:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
-    min-complexity: 15
+    min-complexity: 20
   nestif:
     # minimal complexity of if statements to report, 5 by default
     min-complexity: 5
@@ -148,7 +148,7 @@ linters-settings:
         paramsOnly: true
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
-    min-complexity: 10
+    min-complexity: 15
   godot:
     # check all top-level comments, not only declarations
     check-all: false

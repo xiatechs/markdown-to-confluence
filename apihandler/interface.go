@@ -29,8 +29,8 @@ type FileState struct {
 
 */
 
-// ApiController - interface for the API
-type ApiController interface {
+// APIController - interface for the API
+type APIController interface {
 	CRUD(file *filehandler.FileContents,
 		parentMetaData map[string]interface{}) (map[string]interface{}, error)
 	Delete(titles map[string]struct{}, id string)
