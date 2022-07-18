@@ -139,6 +139,8 @@ func (node *Node) checkFolderPageGeneration(c *Controller) error {
 
 func (node *Node) processOtherFiles(c *Controller, fpath string) error {
 	otherFileNode := node.createChildNode(fpath, c)
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 
 	node.scanUpForParent(otherFileNode)
 
@@ -165,10 +167,8 @@ func (node *Node) processOtherFiles(c *Controller, fpath string) error {
 		return nil
 	}
 
-	c.mu.RLock()
 	c.titles[otherFileNode.responseMetaData["title"].(string)] = struct{}{}
-	c.mu.RUnlock()
-
+	
 	return nil
 }
 
@@ -319,6 +319,8 @@ func (node *Node) createChildNode(fpath string, c *Controller) *Node {
 		mu:       &sync.RWMutex{},
 		filePath: fpath,
 	}
+	childNode.mu.Lock()
+	defer childNode.mu.Unlock()
 
 	alive := childNode.validate(c)
 	if alive {
@@ -362,6 +364,9 @@ func (node *Node) scanUpForParent(theChildNode *Node) {
 }
 
 func (node *Node) end() {
+	node.mu.Lock()
+	defer node.mu.Unlock()
+	
 	if !node.hasMarkDown {
 		log.Printf("NODE: isFolder: [%t] - [%s] and has no markdown i.e dead",
 			node.isFolder, node.filePath)
