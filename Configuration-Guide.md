@@ -13,8 +13,10 @@ jobs:
     name: Markdown To Confluence Action
     runs-on: ubuntu-latest
     env: 
-      PAGE-NAME: "START-HERE"
       SPACE: "XKB"
+      PARENT-ROOT-ID: "123456789"
+      PAGE-NAME: "{repo name} GitHub Docs"
+      ONLY-DOCS: "true"
     steps:
       - name: gather branch details
         shell: bash
@@ -46,7 +48,9 @@ jobs:
           space: "${{ env.SPACE }}"
           username: ${{ secrets.CONFLUENCE_USERNAME }}
           repo: "${{ env.PAGE-NAME }}"
+          parentID: "${{ env.PARENT-ROOT-ID }}"
           url: "https://xiatech.atlassian.net"
+          onlyDocs: "${{ env.ONLY-DOCS }}"
 
 ```
 
@@ -55,8 +59,10 @@ jobs:
 The bits you need to edit:
 
     env: 
-      PAGE-NAME: "START-HERE" #page name is the name of the page you want created in confluence
-      SPACE: "XKB"            #space is the name of the space in confluence you want the page to be in
+      SPACE: "XKB"                #space is the name of the space in confluence you want the page to be in
+      PARENT-ROOT-ID: "123456789" #parent root ID is the page ID of the root page to create the new mtc generated pages in (if 0 then pages don't get a parent and are generated to a root)
+      PAGE-NAME: "{repo name} GitHub Docs"     #page name is the name of the page you want created in confluence (normally "{repo name} Github Docs")
+      ONLY-DOCS: "true"              #only docs is a flag to decide whether it is only the /docs folder which will be copied to confluence (default should be true)
 ```
 
 You can add tests/lint to the configuration if you want. 

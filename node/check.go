@@ -23,6 +23,7 @@ func (node *Node) checkIfRootAlive(fpath string) {
 		subNode := newNode()
 		subNode.treeLink = node.treeLink
 		subNode.path = fpath
+		subNode.images = node.images
 
 		if node.alive {
 			subNode.root = node.root
@@ -41,17 +42,21 @@ func (node *Node) checkIfRootAlive(fpath string) {
 }
 
 // fileInDirectoryCheck method takes file path and two bools (checking / folders)
+//
 // if folders is false & checking is true then it returns true if it finds a markdown file in a folder
+//
 // if folders is false & checking is false then it processes markdown files via checkIfMarkDown method
-// if folders is true then it processes other file types via checkOtherFileTypes method
+//
+// if folders is true & checking is true then it returns true if it finds an image file in a folder
+//
+// if folders is true and checking is false then it processes uploads images and processes
+// other file types via checkOtherFileTypes method
 func (node *Node) fileInDirectoryCheck(fpath string, checking, folders bool) bool {
 	if folders {
-		node.checkOtherFileTypes(fpath) // you can process other file types inside this method
-
-		return false
+		return node.checkOtherFileTypes(fpath, checking) // you can process other file types inside this method
 	}
 
-	validFile := node.checkIfMarkDown(fpath, checking) // for checking & processing markdown files / images etc
+	validFile := node.checkIfMarkDown(fpath, checking) // for checking & processing markdown files
 
 	return validFile && checking
 }
@@ -84,7 +89,7 @@ func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
 				return true
 			}
 
-			err := node.processMarkDown(name)
+			err := node.processMarkDown(name, fileName)
 			if err != nil {
 				log.Println(err)
 			}
@@ -116,11 +121,13 @@ func (node *Node) checkIfFolder(fpath string) bool {
 
 // checkOtherFileTypes method checks if file is a folder
 // and if not, checks for if it is a go or image file
-func (node *Node) checkOtherFileTypes(fpath string) {
+func (node *Node) checkOtherFileTypes(fpath string, checking bool) bool {
 	if !node.checkIfFolder(fpath) {
 		node.checkIfGoFile(fpath)
-		node.checkForImages(fpath)
+		return node.checkForImages(fpath, checking)
 	}
+
+	return false
 }
 
 // checkIfGoFile method checks to see if the file is
@@ -136,29 +143,44 @@ func (node *Node) checkIfGoFile(name string) {
 	}
 }
 
-// checkForImages method checks to see if the file is
-// an image file
-func (node *Node) checkForImages(name string) {
-	if !node.alive {
-		return
-	}
-
+// checkForImages method checks to see if the file is an image file
+func (node *Node) checkForImages(name string, checking bool) bool {
 	validFiles := []string{".png", ".jpg", ".jpeg", ".gif"}
 
 	for index := range validFiles {
 		if strings.HasSuffix(strings.ToLower(name), validFiles[index]) {
-			node.checkNodeRootIsNil(name)
-			return
+			if checking {
+				node.alive = true
+			} else {
+				node.checkNodeRootIsNil(name)
+			}
+
+			return true
 		}
 	}
+
+	return false
 }
 
 // checkNodeRootIsNil method checks whether the
 // node root is nil before calling uploadFile method
 func (node *Node) checkNodeRootIsNil(name string) {
 	if node.root != nil {
-		node.uploadFile(name, node.indexPage)
+		if node.imageToBeUploaded(name) {
+			node.uploadFile(name, node.indexPage)
+		}
 	}
+}
+
+// imageToBeUploaded method checks if this imag ewas previously uploaded
+func (node *Node) imageToBeUploaded(name string) bool {
+	if _, exists := node.images[name]; exists {
+		return false
+	}
+
+	node.images[name] = true
+
+	return true
 }
 
 // checkConfluencePages method runs through the CRUD operations for confluence

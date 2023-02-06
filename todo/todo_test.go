@@ -1,7 +1,7 @@
 package todo
 
 //notodo: this is the TODO PACKAGE so we don't need to pick this up
-//nolint:all // exclude test from lint due to long lines
+
 import (
 	"testing"
 

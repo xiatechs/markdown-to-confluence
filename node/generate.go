@@ -18,47 +18,62 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/markdown"
 )
 
-// generateMaster method checks whether the folder is alive (has markdown files in it)
-// and if it is, creates a page for the folder. Also, then checks whether the folder
-// has subfolders in it, and then begins the process of checking those folders (recursively)
+// generateMaster method checks if the OnlyDocs flag is true and if so then checks
+// if the folder is in the /repo/docs folder,
+// whether the folder is alive (has markdown files in it) and if it is, creates a page for the folder.
+// Also, then checks whether the folder has subfolders in it,
+// and then begins the process of checking those folders (recursively)
 func (node *Node) generateMaster() {
+	if common.OnlyDocs {
+		listOfFolders := strings.Split(node.path, "/")
+
+		// we only want to read from the repo/docs folder
+		// so if there is at least 1 sub folder and it is not /docs ignore
+		if len(listOfFolders) > 1 && !strings.Contains(node.path, "/docs") {
+			log.Printf("skipping this folder [%s] because not in the /docs folder", node.path)
+
+			return
+		}
+	}
+
 	// these constants are to aid navigation of iterate method lower down
-	const checking = true
-
-	const processing = false
-
-	const folders = true
-
-	const files = false
+	const (
+		checking   = true
+		processing = false
+		folders    = true
+		files      = false
+	)
 
 	subNode := newNode()
 	subNode.path = node.path
 	subNode.root = node
 	subNode.treeLink = node.treeLink
+	subNode.images = node.images
 	node.branches = append(node.branches, subNode)
 
-	thereAreValidFiles := subNode.iterate(checking, files)
+	thereAreValidMDFiles := subNode.iterate(checking, files)
+	thereAreValidImageFiles := subNode.iterate(checking, folders)
 
-	if !thereAreValidFiles {
-		log.Printf("skipping this folder [%s] because no valid files here", node.path)
-		subNode.iterate(processing, folders)
+	if !thereAreValidMDFiles && !thereAreValidImageFiles {
+		log.Printf("no valid files here [%s]", node.path)
 
 		return
 	}
 
 	log.Printf("generating a folder page here [%s] this page is alive", node.path)
 
-	err := node.generateFolderPage(subNode.hasIndex, subNode.id)
+	err := node.generateFolderPage(subNode.hasIndex)
 	if err != nil {
 		log.Println(fmt.Errorf("generate folder page error: %w", err))
+
 		return
 	}
 
 	node.alive = true
 
-	subNode.iterate(processing, folders)
-
 	subNode.generateChildPages()
+
+	node.images = subNode.images
 }
 
 // generateChildPages method generates all children pages for all parent pages
@@ -69,17 +84,20 @@ func (node *Node) generateChildPages() {
 
 	const files = false
 
+	const folders = true
+
 	wg.Add()
 
 	go func() {
 		defer wg.Done()
-		node.generatePlantuml(node.path) // generate plantuml in folders with markdown in it only
-		node.iterate(processing, files)  // generate child pages for any valid files in parent page
+		node.generatePlantuml(node.path)  // generate plantuml in folders with markdown in it only
+		node.iterate(processing, files)   // generate child pages for any valid files in parent page
+		node.iterate(processing, folders) // attach any image files for any valid files in parent page
 	}()
 }
 
 // generateFolderPage method creates a folder page in confluence for a folder
-func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
+func (node *Node) generateFolderPage(hasIndex bool) error {
 	dir, fullDir := node.generateTitles()
 	log.Printf("START processing file [%s]", fullDir)
 
@@ -89,7 +107,7 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 
 		node.indexPage = true
 
-		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, node.indexName), subindex)
+		masterpagecontents, err := node.processMarkDownIndex(filepath.Join(node.path, node.indexName))
 		if err != nil {
 			return err
 		}
@@ -101,8 +119,7 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 		}
 		// have to do it twice...
 
-		masterpagecontents, err = node.processMarkDownIndex(filepath.Join(node.path,
-			node.indexName), node.id)
+		masterpagecontents, err = node.processMarkDownIndex(filepath.Join(node.path, node.indexName))
 		if err != nil {
 			return err
 		}
@@ -125,7 +142,7 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 
 	masterpagecontents := &markdown.FileContents{
 		MetaData: map[string]interface{}{
-			"title": dir,
+			"title": dir + " (" + fullDir + ")",
 		},
 		Body: []byte(`<p>Welcome to the '<b>` + dir + `</b>' folder of this Xiatech code repo.</p>
 		<p>This folder full path in the repo is: ` + fullDir + `</p>
@@ -148,23 +165,12 @@ func (node *Node) generateFolderPage(hasIndex bool, subindex int) error {
 // string 1 - folder of the node
 // string 2 - the absolute filepath to the node dir from root dir
 func (node *Node) generateTitles() (string, string) {
-	const nestedDepth = 2
-
 	fullDir := strings.ReplaceAll(node.path, "/github/workspace/", "")
 	fullDir = strings.ReplaceAll(fullDir, ".", "")
 	fullDir = strings.TrimPrefix(fullDir, "/")
+
 	dirList := strings.Split(fullDir, "/")
 	dir := dirList[len(dirList)-1]
-
-	if len(dirList) > nestedDepth {
-		dir += "-"
-		dir += dirList[len(dirList)-2]
-	}
-
-	if node.root != nil {
-		dir += "-"
-		dir += rootDir
-	}
 
 	return dir, fullDir
 }
@@ -198,19 +204,13 @@ func (node *Node) generatePlantuml(fpath string) {
 
 		var buf bytes.Buffer
 
-		var headerstring = `<p><img src="` + filename + ".png" + `"/></img></p>`
-
-		headerstring = markdown.URLConverter(node.root.id, headerstring, node.indexPage, node.id)
-
 		var writer io.Writer
 
-		writer, err = os.Create(node.path + "/" + filename + ".puml")
+		writer, err = os.Create(node.path + "/" + filename + ".puml") //nolint:gosec // file created
 		if err != nil {
 			log.Printf("[create file] plantuml file generation error for path [%s]: %v", abs, err)
 			return
 		}
-
-		fmt.Fprint(&buf, headerstring)
 
 		fmt.Fprint(writer, rendered)
 
@@ -227,7 +227,7 @@ func (node *Node) generatePlantuml(fpath string) {
 
 		masterpagecontents := markdown.FileContents{
 			MetaData: map[string]interface{}{
-				"title": "plantuml-" + path,
+				"title": "plantuml-" + path + " (" + abs + ")",
 			},
 			Body: buf.Bytes(),
 		}
@@ -277,7 +277,11 @@ func (node *Node) generatePage(newPageContents *markdown.FileContents) error {
 	var err error
 
 	if node.root == nil {
-		node.id, err = nodeAPIClient.CreatePage(0, newPageContents, isParentPage)
+		if node.masterID != 0 { // if the master ID is not 0 then this is a child page
+			isParentPage = false
+		}
+
+		node.id, err = nodeAPIClient.CreatePage(node.masterID, newPageContents, isParentPage)
 		if err != nil {
 			return fmt.Errorf("create page error for folder path [%s]: %w", abs, err)
 		}

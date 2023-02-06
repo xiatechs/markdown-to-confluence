@@ -15,6 +15,8 @@ import (
 	"github.com/gohugoio/hugo/parser/pageparser"
 	"github.com/xiatechs/markdown-to-confluence/common"
 	m "gitlab.com/golang-commonmark/markdown"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // GrabAuthors - do we want to collect authors?
@@ -30,22 +32,11 @@ type FileContents struct {
 	Body     []byte
 }
 
-// grabtitle function collects the title of a markdown file
+// grabtitle function collects the filename of a markdown file
 // and returns it as a string
-func grabtitle(content string) string {
-	content = strings.ReplaceAll(content, "\r\n", "\n")
-	content = strings.ReplaceAll(content, "\r", "\n")
-	lines := strings.Split(content, "\n")
-
-	for index := range lines {
-		if len(lines[index]) > 1 {
-			if lines[index][0] == '#' {
-				return strings.TrimSpace(strings.ReplaceAll(lines[index], "#", ""))
-			}
-		}
-	}
-
-	return ""
+//nolint:deadcode,unused // not used anymore
+func grabtitle(path string) string {
+	return strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
 }
 
 // newFileContents function creates a new filecontents object
@@ -58,6 +49,7 @@ func newFileContents() *FileContents {
 
 // Paragraphify takes in a .puml file contents and returns
 // a formatted HTML page as a string
+// currently unused
 func Paragraphify(content string) string {
 	var pre string
 	pre += "### To view this try copy&paste to this site: [PlainText UML Editor](https://www.planttext.com/) \n"
@@ -176,22 +168,23 @@ func capGit(path string) string {
 
 // ParseMarkdown function uses external parsing library to grab markdown contents
 // and return a filecontents object
-func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
-	pages map[string]string, path string) (*FileContents, error) {
+func ParseMarkdown(rootID int, content []byte, isIndex bool,
+	pages map[string]string, path, abs, fileName string) (*FileContents, error) {
 	r := bytes.NewReader(content)
 	f := newFileContents()
 	fmc, err := pageparser.ParseFrontMatterAndContent(r)
 	if err != nil {
 		log.Println("issue parsing frontmatter - (using # title instead): %w", err)
-
-		f.MetaData["title"] = grabtitle(string(content))
-	} else {
-		if len(fmc.FrontMatter) != 0 {
-			f.MetaData = fmc.FrontMatter
-		} else {
-			f.MetaData["title"] = grabtitle(string(content))
-		}
+	} else if len(fmc.FrontMatter) != 0 {
+		f.MetaData = fmc.FrontMatter
 	}
+
+	// if the file name is readme.md then then the space should be named after the final folder
+	if strings.ToLower(fileName) == "readme.md" {
+		fileName = strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
+	}
+
+	f.MetaData["title"] = fileName
 
 	value, ok := f.MetaData["title"]
 	if !ok {
@@ -211,7 +204,7 @@ func ParseMarkdown(rootID int, content []byte, isIndex bool, id int,
 	)
 
 	preformatted := md.RenderToString(content)
-	f.Body = stripFrontmatterReplaceURL(rootID, preformatted, isIndex, id, pages)
+	f.Body = stripFrontmatterReplaceURL(preformatted, isIndex, pages, abs, fileName)
 
 	if GrabAuthors {
 		f.Body = append(f.Body, []byte(capGit(path))...)
@@ -244,8 +237,8 @@ func linkFilterLogic(item string) bool {
 // stripFrontmatterReplaceURL function takes in parent page ID and
 // markdown file contents and removes TOML frontmatter, and replaces
 // local URL with relative confluence URL
-func stripFrontmatterReplaceURL(rootID int, content string,
-	isIndex bool, id int, pages map[string]string) []byte {
+func stripFrontmatterReplaceURL(content string,
+	isIndex bool, pages map[string]string, abs, fileName string) []byte {
 	var pre string
 
 	var frontmatter bool
@@ -258,14 +251,31 @@ func stripFrontmatterReplaceURL(rootID int, content string,
 			continue
 		}
 
-		// temporary solution to local url path issue - try and identify them with fuzzy logic
-		if strings.Contains(lines[index], "<a href=") && !linkFilterLogic(lines[index]) {
-			lines[index] = fuzzyLogicURLdetector(lines[index], pages)
+		// make all headers be in Proper Case so local links work
+		htmlHeaders := []string{"<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>"}
+
+		for _, header := range htmlHeaders {
+			if strings.Contains(lines[index], header) {
+				caser := cases.Title(language.English)
+				lines[index] = caser.String(lines[index])
+
+				// this changes the html tags to be capitalized so reverse them back
+				lines[index] = updateHTMLHeaders(lines[index])
+
+				// drop brackets from the title
+				lines[index] = strings.ReplaceAll(lines[index], "(", "")
+				lines[index] = strings.ReplaceAll(lines[index], ")", "")
+			}
 		}
 
-		// can't use local links yet for images
+		// correct the local url paths to be absolute paths
+		if strings.Contains(lines[index], "<a href=") && !linkFilterLogic(lines[index]) {
+			lines[index] = relativeURLdetector(lines[index], pages, abs, fileName)
+		}
+
+		// set up the local url image links
 		if strings.Contains(lines[index], "<img src=") {
-			lines[index] = URLConverter(rootID, lines[index], isIndex, id)
+			lines[index] = URLConverter(pages, lines[index], isIndex, abs)
 		}
 
 		if !frontmatter {
@@ -278,11 +288,24 @@ func stripFrontmatterReplaceURL(rootID int, content string,
 	return []byte(pre)
 }
 
+// uncapitalize the 'h' in the html header tag
+func updateHTMLHeaders(line string) string {
+	line = strings.ReplaceAll(line, "H1>", "h1>")
+	line = strings.ReplaceAll(line, "H2>", "h2>")
+	line = strings.ReplaceAll(line, "H3>", "h3>")
+	line = strings.ReplaceAll(line, "H4>", "h4>")
+	line = strings.ReplaceAll(line, "H5>", "h5>")
+	line = strings.ReplaceAll(line, "H6>", "h6>")
+
+	return line
+}
+
 // flip function returns the opposite of bool
 func flip(b bool) bool {
 	return !b
 }
 
+//nolint:unused // not used anymore
 type fpage struct {
 	distance       int
 	sim            int
@@ -290,8 +313,10 @@ type fpage struct {
 	url            string
 }
 
+//nolint:unused // not used anymore
 type pages []fpage
 
+//nolint:unused // not used anymore
 func (p pages) filter() fpage {
 	max := p[0].sim
 	i := 0
@@ -307,88 +332,96 @@ func (p pages) filter() fpage {
 	return p[i]
 }
 
-// fuzzy logic for local links - it'll try and match the link to a generated confluence page
+// takes in the absolute URL and will match the relative link to a generated confluence page
 // if this fails, it will just return a template
-func fuzzyLogicURLdetector(item string, page map[string]string) string {
-	const fail = `<p>[please start your links with https://]</p>`
+func relativeURLdetector(item string, page map[string]string, abs, fileName string) string {
+	const fail = `<p>[failed during relativeURLdetector]</p>`
 
 	urlLink := strings.Split(item, `</a>`)
 
 	originalURLslice := strings.Split(strings.ReplaceAll(urlLink[0], "<p>", ""), `>`)
 	if len(originalURLslice) <= 1 {
-		log.Println(item, "failed to be processed during fuzzy logic")
 		return fail
 	}
 
-	originalURL := originalURLslice[1]
-
 	sliceOne := strings.Split(item, `<a href="`)
 	if len(sliceOne) <= 1 {
-		log.Println(item, "failed to be processed during fuzzy logic")
 		return fail
 	}
 
 	url := strings.Split(sliceOne[1], `"`)[0] // the local/relative URL for the page
-	simMinimum := 0
 
-	p := pages{}
-	for localURL, confluencepage := range page {
-		url := strings.ReplaceAll(url, "%20", " ")
-		similarity := exists(localURL, url) // how many similar fields are in the two links we are looking at
+	// create the absolute url
+	updatedURL, localLink := convertRelativeToAbsoluteURL(abs, url)
 
-		if similarity != 0 && similarity >= simMinimum {
-			simMinimum = similarity
+	// confluence is case sensitive - headers are saved using proper case (i.e. So The Title Is Always Like This)
+	caser := cases.Title(language.English)
+	localLink = caser.String(localLink)
 
-			// if a page link is more similar than previous page link, let's use that page
-			// and use levenshtein algorithm to determine which is most similar out of a group
-			check := levenshtein([]rune(url), []rune(localURL))
+	var link string
 
-			p = append(p, fpage{
-				distance:       check,
-				confluencepage: confluencepage,
-				url:            localURL,
-				sim:            similarity,
-			})
+	// if there were any local links (identified by #) then create the link for confluence
+	if localLink != "" {
+		// as there is a local link the path must be in a .md file
+		// if the updated url does not contain a .md then it must be a local link for the current .md file so add it
+		if !strings.Contains(updatedURL, ".md") {
+			updatedURL += "/" + fileName
+		}
+
+		fileName = strings.ReplaceAll(fileName, " ", "+")
+		localLinkAbs := strings.ReplaceAll(abs, "/", "+")
+
+		link = "/" + fileName
+		if !strings.HasPrefix(localLinkAbs, "+") {
+			link += "+"
+		}
+
+		link += localLinkAbs + "#" + localLink
+	}
+
+	// replace the relative url in the item with the absolute url
+	splitItem := strings.Split(item, "<a href=")
+
+	stringToReturn := splitItem[0]
+
+	for i := 1; i < len(splitItem); i++ {
+		link := generateLink(page, updatedURL, link)
+		extraParts := strings.SplitN(splitItem[i], ">", 2) //nolint:gomnd // only want to split the final part on the first >
+
+		stringToReturn += link
+
+		for ii := range extraParts {
+			if ii != 0 {
+				stringToReturn += extraParts[ii]
+			}
 		}
 	}
 
-	sort.Slice(p, func(i, j int) bool {
-		return p[i].distance < p[j].distance
-	})
-
-	if len(p) == 0 {
-		return fail
-	}
-
-	thepage := p.filter()
-
-	likelyURL := thepage.url
-	likelypage := thepage.confluencepage
-
-	log.Println("relative link -> ", url, "is LIKELY to be this page:", likelyURL, likelypage)
-
-	// to format this in confluence we must follow how confluence formats its content in the web frontend
-	a := `<p><a class="confluence-link" href="`
-
-	b := "/wiki/spaces/" + common.ConfluenceSpace + "/pages/" + likelypage + `"`
-
-	c := ` data-linked-resource-id="` + likelypage + `" data-base-url="` + common.ConfluenceBaseURL + `/wiki">`
-
-	d := originalURL
-
-	e := `</a></p>`
-
-	return a + b + c + d + e
+	return stringToReturn
 }
 
+func generateLink(page map[string]string, updatedURL string, localLink string) string {
+	// to format this in confluence we must follow how confluence formats its content in the web frontend
+	a := `<a href="/wiki/spaces/` + common.ConfluenceSpace + `/pages/` + page[updatedURL] + localLink + `" `
+
+	b := `data-linked-resource-id="` + page[updatedURL] + `" `
+
+	c := `data-linked-resource-type="page">`
+
+	return a + b + c
+}
+
+//nolint:unused // not used anymore
 type fielditem struct {
 	item   string
 	index1 int
 	index2 int
 }
 
+//nolint:unused // not used anymore
 type fielditems []fielditem
 
+//nolint:unused // not used anymore
 func (f fielditems) validate() bool {
 	if len(f) == 1 {
 		return true
@@ -408,6 +441,7 @@ func (f fielditems) validate() bool {
 }
 
 // check how many fields exist in two strings (split by '/')
+//nolint:deadcode,unused // not used anymore
 func exists(a, b string) int {
 	var f fielditems
 	similarity := 0
@@ -452,6 +486,7 @@ func exists(a, b string) int {
 }
 
 // levenshtein fuzzy logic algorithm to determine similarity of two strings
+//nolint:deadcode,unused // not used anymore
 func levenshtein(str1, str2 []rune) int {
 	s1len := len(str1)
 	s2len := len(str2)
@@ -477,6 +512,7 @@ func levenshtein(str1, str2 []rune) int {
 	return column[s1len]
 }
 
+//nolint:unused // not used anymore
 func minimum(a, b, c int) int {
 	if a < b {
 		if a < c {
@@ -494,28 +530,86 @@ func minimum(a, b, c int) int {
 // (they must be in same directory as markdown to work)
 // this function replaces local url paths in html img links
 // with a confluence path for folder page attachments on parent page
-func URLConverter(rootID int, item string, isindex bool, id int) string {
-	sliceOne := strings.Split(item, `<p><img src="`)
-	var c string
+func URLConverter(page map[string]string, item string, isindex bool, abs string) string {
+	sliceOne := strings.Split(item, `<img src="`)
+
 	if len(sliceOne) > 1 {
 		sliceTwo := strings.Split(sliceOne[1], `"`)
 
 		if len(sliceTwo) > 1 {
 			attachmentFileName := sliceTwo[0]
-			rootPageID := strconv.Itoa(rootID)
-			ID := strconv.Itoa(id)
-			a := `<p><span class="confluence-embedded-file-wrapped">`
-			b := `<img src="` + common.ConfluenceBaseURL + `/wiki/download/attachments/`
-			if isindex {
-				c = ID + `/` + attachmentFileName + `"></img>`
-			} else {
-				c = rootPageID + `/` + attachmentFileName + `"></img>`
-			}
-			d := `</span></p>`
 
-			return a + b + c + d
+			// create the absolute url
+			updatedURL, _ := convertRelativeToAbsoluteURL(abs, attachmentFileName)
+
+			// split the path so we can rip out the file name
+			splitURL := strings.Split(updatedURL, "/")
+			urlWithoutFile := strings.Join(splitURL[:len(splitURL)-1], "/")
+
+			stringToReturn := sliceOne[0]
+
+			stringToReturn += `<span class="confluence-embedded-file-wrapped">`
+
+			stringToReturn += `<img class="confluence-embedded-image" loading="lazy" `
+
+			//nolint:lll /// set text
+			stringToReturn += `src="` + common.ConfluenceBaseURL + `/wiki/download/attachments/` + page[urlWithoutFile] + `/` + splitURL[len(splitURL)-1] + `" `
+
+			//nolint:lll /// set text
+			stringToReturn += `data-image-src="` + common.ConfluenceBaseURL + `/wiki/download/attachments/` + page[urlWithoutFile] + `/` + splitURL[len(splitURL)-1] + `" `
+
+			stringToReturn += `data-linked-resource-id="` + page[urlWithoutFile] + `" `
+
+			stringToReturn += `data-linked-resource-type="attachment"></img></span>`
+
+			stringToReturn += strings.Replace(sliceTwo[len(sliceTwo)-1], " />", "", 1)
+
+			return stringToReturn
 		}
 	}
 
 	return item
+}
+
+// convertRelativeToAbsoluteURL function takes in a relative url, and generates
+// the correct absolute url based on the file path passed in
+func convertRelativeToAbsoluteURL(abs, url string) (string, string) {
+	var localLink string
+
+	// split on #
+	// length 1 means no local links
+	// length 2 means local links so save everything after the #
+	if len(strings.Split(url, "#")) == 2 { //nolint: gomnd // magic length 2
+		localLink = strings.Split(url, "#")[1]
+	}
+
+	url = strings.ReplaceAll(url, "%20", " ")
+	abs = strings.ReplaceAll(abs, "%20", " ")
+
+	splitRelativeURL := strings.Split(url, "/")
+	splitAbsoluteURL := strings.Split(abs, "/")
+
+	var firstFolder int
+
+	for i := range splitRelativeURL {
+		switch splitRelativeURL[i] {
+		case ".":
+			firstFolder = i + 1
+		case "..": // need to remove the final folder for each '..'
+			splitAbsoluteURL = splitAbsoluteURL[:len(splitAbsoluteURL)-1]
+
+			firstFolder = i + 1
+		}
+	}
+
+	// remove any trailing # links on the relative url
+	splitRelativeURL[len(splitRelativeURL)-1] = strings.Split(splitRelativeURL[len(splitRelativeURL)-1], "#")[0]
+
+	// if the last element is blank remove it so it doesn't add a trailing slash
+	if splitRelativeURL[len(splitRelativeURL)-1] == "" {
+		splitRelativeURL = splitRelativeURL[:len(splitRelativeURL)-1]
+	}
+
+	// append to the end of the absolute url
+	return strings.Join(append(splitAbsoluteURL, splitRelativeURL[firstFolder:]...), "/"), localLink
 }

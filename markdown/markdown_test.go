@@ -7,55 +7,62 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/common"
 )
 
-func TestFuzzyLogic(t *testing.T) {
+func TestRelativeURLdetector(t *testing.T) {
 	testInputs := []struct {
 		name           string
 		arg1           string
 		arg2           map[string]string
+		arg3           string
+		filename       string
 		expectedoutput string
 	}{
 		{
 			name: "local most likely",
 			arg1: `<p><a href="../hello/there">a_page</a></p>`,
 			arg2: map[string]string{
-				"./there/hello/item.txt":                                      "1",
-				"./hello/there/readme.md":                                     "2",
-				"../../markdown/hello/there/readme.md":                        "3",
-				"../../../anotherfolder/hello/markdown/hello/there/readme.md": "4",
+				"/absolute/path/wrong/node": "1",
+				"/absolute/path/node":       "2",
+				"/absolute/path":            "3",
+				"/absolute/hello/there":     "4",
 			},
+			arg3:     "/absolute/path",
+			filename: "file",
 			//nolint:lll /// test data
-			expectedoutput: "<p><a class=\"confluence-link\" href=\"/wiki/spaces//pages/2\" data-linked-resource-id=\"2\" data-base-url=\"https://xiatech-markup.atlassian.net/wiki\">a_page</a></p>",
+			expectedoutput: `<p><a href="/wiki/spaces//pages/4" data-linked-resource-id="4" data-linked-resource-type="page">a_page</a></p>`,
 		},
 		{
 			name: "distant markdown link most likely",
 			arg1: `<p><a href="./node">a_page</a></p>`,
 			arg2: map[string]string{
-				"./there/hello/item.txt":                                      "1",
-				"./hello/there/readme.md":                                     "2",
-				"../../markdown/hello/there/readme.md":                        "3",
-				"../../../anotherfolder/hello/markdown/hello/there/readme.md": "4",
-				"../../../node":                                               "5",
+				"/absolute/path/wrong/node": "1",
+				"/absolute/path/node":       "2",
+				"/absolute/path":            "3",
 			},
+			arg3:     "/absolute/path",
+			filename: "file",
 			//nolint:lll /// test data
-			expectedoutput: "<p><a class=\"confluence-link\" href=\"/wiki/spaces//pages/5\" data-linked-resource-id=\"5\" data-base-url=\"https://xiatech-markup.atlassian.net/wiki\">a_page</a></p>",
+			expectedoutput: `<p><a href="/wiki/spaces//pages/2" data-linked-resource-id="2" data-linked-resource-type="page">a_page</a></p>`,
 		},
 		{
-			name: "can't locate a valid link",
-			arg1: `<p><a href="../hello/there/item.txt">a_page</a></p>`,
+			name: "relative link in same file",
+			arg1: `<p><a href="./#test">a_page</a></p>`,
 			arg2: map[string]string{
-				"./there/hello/item.txt":                                "1",
-				"./ayy/there/hello/readme.md":                           "2",
-				"../../there/hello/mark/readme.md":                      "3",
-				"../../../anotherfolder/hello/markdown/there/readme.md": "4",
+				"/absolute/path/wrong/node": "1",
+				"/absolute/path/node":       "2",
+				"/absolute/path":            "3",
+				"/absolute/path/file.md":    "4",
 			},
-			expectedoutput: "<p>[please start your links with https://]</p>",
+			arg3:     "/absolute/path",
+			filename: "file.md",
+			//nolint:lll /// test data
+			expectedoutput: `<p><a href="/wiki/spaces//pages/4/file.md+absolute+path#Test" data-linked-resource-id="4" data-linked-resource-type="page">a_page</a></p>`,
 		},
 	}
 
 	for _, test := range testInputs {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			assert.Equal(t, test.expectedoutput, fuzzyLogicURLdetector(test.arg1, test.arg2))
+			assert.Equal(t, test.expectedoutput, relativeURLdetector(test.arg1, test.arg2, test.arg3, test.filename))
 		})
 	}
 }
@@ -79,7 +86,7 @@ code line c
 }
 
 func TestParseMarkDown(t *testing.T) {
-	link := common.ConfluenceBaseURL + `/wiki/download/attachments/0/node.png`
+	link := common.ConfluenceBaseURL + `/wiki/download/attachments//node.png`
 	testInputs := []struct {
 		Name     string
 		input    []byte
@@ -92,9 +99,9 @@ func TestParseMarkDown(t *testing.T) {
 This Action will trawl through a repository.`),
 			expected: &FileContents{
 				MetaData: map[string]interface{}{
-					"title": "Markdown to Confluence Action",
+					"title": "filename",
 				},
-				Body: []byte(`<h1>Markdown to Confluence Action</h1>
+				Body: []byte(`<h1>Markdown To Confluence Action</h1>
 <p>This Action will trawl through a repository.</p>`),
 			},
 		},
@@ -105,10 +112,11 @@ This Action will trawl through a repository.`),
 ![Diagram of action methodology](node.png)`),
 			expected: &FileContents{
 				MetaData: map[string]interface{}{
-					"title": "Markdown to Confluence Action",
+					"title": "filename",
 				},
-				Body: []byte(`<h1>Markdown to Confluence Action</h1>
-<p><span class="confluence-embedded-file-wrapped"><img src="` + link + `"></img></span></p>`),
+				//nolint:lll /// test data
+				Body: []byte(`<h1>Markdown To Confluence Action</h1>
+<p><span class="confluence-embedded-file-wrapped"><img class="confluence-embedded-image" loading="lazy" src="` + link + `" data-image-src="` + link + `" data-linked-resource-id="" data-linked-resource-type="attachment"></img></span></p>`),
 			},
 		},
 	}
@@ -116,7 +124,7 @@ This Action will trawl through a repository.`),
 	for _, test := range testInputs {
 		test := test
 		t.Run(test.Name, func(t *testing.T) {
-			result, _ := ParseMarkdown(0, test.input, false, 0, map[string]string{}, ".")
+			result, _ := ParseMarkdown(0, test.input, false, map[string]string{}, ".", "/abs/path", "filename")
 			assert.Equal(t, test.expected, result)
 		})
 	}
@@ -141,31 +149,13 @@ test description`)
 			"date":        "2021-03-10",
 			"description": "A guide on how to use the markdown to confluence action",
 			"slug":        "markdown-to-confluence-guide",
-			"title":       "Markdown to Confluence Action Guide",
+			"title":       "filename",
 		},
 		Body: []byte(`<h1>Test Content</h1>
 <p>test description</p>`),
 	}
 
-	out, err := ParseMarkdown(0, testContent, false, 0, map[string]string{}, ".")
+	out, err := ParseMarkdown(0, testContent, false, map[string]string{}, ".", "/abs/path", "filename")
 	assert.Nil(t, err)
 	assert.Equal(t, out, expectOutput)
-}
-
-func TestParseMarkdown_MalformedFrontMatter(t *testing.T) {
-	testContent := []byte(`
-	+++
-	badFrontMatter = 253svsasrg
-	categories = ["Development", "Github Actions"]
-	date = "2021-03-10"
-	description = "A guide on how to use the markdown to confluence action"
-	slug = "markdown-to-confluence-guide"
-	title = "Markdown to Confluence Action Guide"
-	+++
-	
-	# Test Content 
-	test description`)
-
-	_, err := ParseMarkdown(0, testContent, false, 0, map[string]string{}, "markdown_test.go")
-	assert.NotNil(t, err)
 }

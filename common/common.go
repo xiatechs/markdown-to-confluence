@@ -16,4 +16,10 @@ var (
 
 	// ProjectPathEnv is to collect external arg for project path
 	ProjectPathEnv string
+
+	// ProjectMasterID is to collect external arg for the correct parent page ID
+	ProjectMasterID int
+
+	// OnlyDocs is a flag to decide whether it is only the /docs folder to copy across
+	OnlyDocs bool
 )

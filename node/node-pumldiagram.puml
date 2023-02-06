@@ -9,77 +9,18 @@ namespace node {
 
     }
     class Node << (S,Aquamarine) >> {
-        - treeLink *Tree
-        - id int
-        - alive bool
-        - path string
-        - hasIndex bool
-        - root *Node
-        - branches []*Node
-        - titles []string
-        - mu *sync.RWMutex
-        - indexPage bool
-        - indexName string
-
-        - checkIfRootAlive(fpath string) 
-        - fileInDirectoryCheck(fpath string, checking bool, folders bool) bool
-        - checkIfMarkDown(fpath string, checking bool) bool
-        - checkIfMarkDownFile(checking bool, name string) bool
-        - checkIfFolder(fpath string) bool
-        - checkOtherFileTypes(fpath string) 
-        - checkIfGoFile(name string) 
-        - checkForImages(name string) 
-        - checkNodeRootIsNil(name string) 
-        - checkConfluencePages(newPageContents *markdown.FileContents) error
-        - newPage(newPageContents *markdown.FileContents) error
-        - createOrUpdatePage(newPageContents *markdown.FileContents, pageResult *confluence.PageResults) error
-        - addContents(newPageContents *markdown.FileContents) 
-        - checkPageID(pageResult confluence.PageResults) error
-        - findPagesToDelete(id string) 
-        - deletePages(children *confluence.PageResults) 
-        - deletePage(id string) 
-        - withinDirectory(base string, path string) bool
-        - generateMaster() 
-        - generateChildPages() 
-        - generateFolderPage(hasIndex bool, subindex int) error
-        - generateTitles() (string, string)
-        - generatePlantuml(fpath string) 
-        - generatePlantumlImage(fpath string) error
-        - generatePage(newPageContents *markdown.FileContents) error
-        - iterate(justChecking bool, foldersOnly bool) bool
-        - processGoFile(fpath string) error
-        - processMarkDownIndex(path string, subindex int) (*markdown.FileContents, error)
-        - processMarkDown(path string) error
-        - uploadFile(path string, isIndexPage bool) 
-
-        + Start(projectPath string) bool
+        + Start(projectMasterID int, projectPath string, onlyDocs bool) bool
         + Tree() 
         + Delete() 
 
     }
     class Page << (S,Aquamarine) >> {
-        - title string
-        - isroot bool
-        - body string
-        - root int
-        - id int
-
     }
     class Tree << (S,Aquamarine) >> {
-        - branches <font color=blue>map</font>[string]string
-
     }
     class iterator << (S,Aquamarine) >> {
-        - mockiter int
-        - isroot bool
-        - pages []*Page
-
-        - append(root int, contents *markdown.FileContents, isroot bool) int
-
     }
     class mockclient << (S,Aquamarine) >> {
-        - i *iterator
-
         + Print() 
         + GetPages() []Page
         + CreatePage(root int, contents *markdown.FileContents, _ bool) (int, error)

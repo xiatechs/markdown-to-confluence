@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine AS builder 
+FROM golang:1.18-alpine AS builder 
 
 ENV PLANTUML_VERSION 1.2020.14
 ENV LANG en_US.UTF-8
@@ -8,7 +8,7 @@ ENV LANG en_US.UTF-8
 RUN apk update && apk add --no-cache git ca-certificates && apk add openjdk11
 
 # Install plantuml dependancies
-RUN apk add --no-cache graphviz ttf-droid ttf-droid-nonlatin curl \
+RUN apk add --no-cache graphviz font-droid font-droid-nonlatin curl \
     && apk add --no-cache \
         --repository https://nl.alpinelinux.org/alpine/edge/testing \
     && mkdir /app \
