@@ -43,14 +43,16 @@ type Tree struct {
 // Node struct enables creation of a page tree
 type Node struct {
 	treeLink  *Tree
+	masterID  int    // the confluence page ID for the parent page the mtc tool should create the files in
 	id        int    // when page is created, page ID will be stored here.
 	alive     bool   // for tracking if the folder has any valid content within it asides more folders
 	path      string // file / folderpath will be stored here
 	hasIndex  bool
-	root      *Node         // the parent page node will be linked here
-	branches  []*Node       // any children page nodes will be stored here (for deleting)
-	titles    []string      // titles of pages created by node (for deleting)
-	mu        *sync.RWMutex // for locking/unlocking when multiple goroutines are working on same node
+	root      *Node           // the parent page node will be linked here
+	branches  []*Node         // any children page nodes will be stored here (for deleting)
+	titles    []string        // titles of pages created by node (for deleting)
+	images    map[string]bool // image files uploaded to prevent uploading them multiple times
+	mu        *sync.RWMutex   // for locking/unlocking when multiple goroutines are working on same node
 	indexPage bool
 	indexName string
 }
@@ -61,7 +63,7 @@ type Node struct {
 // then begins the recursive method generateMaster
 // and returns bool - if true then it means pages have been created/updated/checked on confluence
 // and there is markdown content in the folder
-func (node *Node) Start(projectPath string) bool {
+func (node *Node) Start(projectMasterID int, projectPath string, onlyDocs bool) bool {
 	if t == nil {
 		log.Println("instantiating TREE")
 
@@ -74,6 +76,10 @@ func (node *Node) Start(projectPath string) bool {
 
 	node.treeLink = t
 
+	node.mu = &sync.RWMutex{}
+
+	node.images = map[string]bool{}
+
 	/*
 		FOR RELATIVE FILE LINKS IN CONFLUENCE...
 
@@ -82,14 +88,13 @@ func (node *Node) Start(projectPath string) bool {
 		is created - bizarre i know - so the logic has to be run twice so that we can first:
 
 		- generate a tree of pages with their confluence ID's
-		- re-generate a tree of pages with the confluence ID's known to
-		  try and match RELATIVE links to confluence pages via fuzzy logic
+		- re-generate a tree of pages with the confluence ID's known
 	*/
-
-	node.mu = &sync.RWMutex{}
 
 	if isFolder(projectPath) {
 		numberOfFolders++
+
+		node.masterID = projectMasterID
 
 		node.path = projectPath
 
@@ -98,6 +103,11 @@ func (node *Node) Start(projectPath string) bool {
 		rootDir = strings.ReplaceAll(rootDir, ".", "")
 
 		rootDir = strings.ReplaceAll(rootDir, "/", "")
+
+		err := node.generateFolderPage(false) // create the main page first
+		if err != nil {
+			return false
+		}
 
 		node.generateMaster() // contains concurrency
 

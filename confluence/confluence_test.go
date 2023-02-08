@@ -3,7 +3,7 @@ package confluence
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -36,7 +36,7 @@ func TestAPIClient_UpdatePage(t *testing.T) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
 					Status:     "OKI page updated",
 					StatusCode: 200,
-					Body:       ioutil.NopCloser(strings.NewReader("some text")),
+					Body:       io.NopCloser(strings.NewReader("some text")),
 				}, nil)
 			},
 			expectedError: nil,
@@ -127,7 +127,7 @@ func TestAPIClient_FindPage(t *testing.T) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
 					Status:     "OK, Page Found",
 					StatusCode: 200,
-					Body:       ioutil.NopCloser(strings.NewReader(string(returnedJSON))),
+					Body:       io.NopCloser(strings.NewReader(string(returnedJSON))),
 				}, nil)
 			},
 			ExpectedBool:    true,
@@ -194,7 +194,7 @@ func TestAPIClient_CreatePage(t *testing.T) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
 					Status:     "OK, Page Found",
 					StatusCode: http.StatusOK,
-					Body:       ioutil.NopCloser(strings.NewReader(string(returnedJSON))),
+					Body:       io.NopCloser(strings.NewReader(string(returnedJSON))),
 				}, nil)
 			},
 			expectedError: nil,
@@ -209,7 +209,7 @@ func TestAPIClient_CreatePage(t *testing.T) {
 				m.EXPECT().Do(gomock.Any()).Return(&http.Response{
 					Status:     "Not Found",
 					StatusCode: http.StatusNotFound,
-					Body:       ioutil.NopCloser(strings.NewReader("")),
+					Body:       io.NopCloser(strings.NewReader("")),
 				}, nil)
 			},
 			expectedError: fmt.Errorf("failed to create confluence page: %s", "Not Found"),

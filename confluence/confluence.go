@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -26,7 +25,7 @@ import (
 func newPageResults(resp *http.Response) (*PageResults, error) {
 	pageResultVar := PageResults{}
 
-	contents, err := ioutil.ReadAll(resp.Body)
+	contents, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("newPageResults decode error: %w", err)
 	}
@@ -59,7 +58,7 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 		Space: SpaceObj{Key: a.Space},
 		Body: BodyObj{Storage: StorageObj{
 			Value:          string(contents.Body),
-			Representation: "storage",
+			Representation: "editor",
 		}},
 	}
 
@@ -156,7 +155,7 @@ func (a *APIClient) updatePageContents(pageVersion int64, contents *markdown.Fil
 		Body: BodyObj{
 			Storage: StorageObj{
 				Value:          string(contents.Body),
-				Representation: "storage",
+				Representation: "editor",
 			},
 		},
 	}

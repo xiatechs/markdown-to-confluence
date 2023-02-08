@@ -16,9 +16,17 @@ inputs:
     description: 'the repository foldername'
     required: true
     default: ''
+  parentID:
+    description: 'the confluence parent page ID'
+    required: true
+    default: ''
   url:
     description: 'alternative atlassian url'
     required: false
+    default: ''
+  onlyDocs:
+    description: 'copy all folders or only docs'
+    required: true
     default: ''
 runs:
   using: docker
@@ -28,4 +36,6 @@ runs:
     - ${{ inputs.space }} 
     - ${{ inputs.username }} 
     - ${{ inputs.repo }} 
+    - ${{ inputs.parentID }} 
     - ${{ inputs.url }}
+    - ${{ inputs.onlyDocs }}

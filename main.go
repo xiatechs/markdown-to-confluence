@@ -1,3 +1,4 @@
+// main - the package where the tool begins to run
 package main
 
 import (
