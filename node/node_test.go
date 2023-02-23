@@ -23,9 +23,9 @@ func TestStartDebugEverything(t *testing.T) {
 
 	SetAPIClient(m)
 
-	// t.Skip() // skip test as concurrency means it fails - only used locally for debugging
+	t.Skip() // skip test as concurrency means it fails - only used locally for debugging
 
-	if node.Start(0, "/home/cameron/go_projects/xiatechs/mossbros", false) {
+	if node.Start(0, "../node", false) {
 		node.Delete()
 	}
 

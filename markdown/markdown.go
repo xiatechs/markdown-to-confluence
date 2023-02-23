@@ -458,17 +458,11 @@ func generateLink(page map[string]string, updatedURL string, localLink string) s
 	// to format this in confluence we must follow how confluence formats its content in the web frontend
 	a := `<a href="/wiki/spaces/` + common.ConfluenceSpace + `/pages/` + page[updatedURL] + localLink + `" `
 
-	b := `title="/wiki/spaces/` + common.ConfluenceSpace + `/pages/` + page[updatedURL] + localLink + `" `
+	b := `data-linked-resource-id="` + page[updatedURL] + `" `
 
-	c := `data-linked-resource-id="` + page[updatedURL] + `" `
+	c := `data-linked-resource-type="page">`
 
-	d := `data-linked-resource-type="page" `
-
-	e := `data-renderer-mark="true" `
-
-	f := `class="css-tgp101">`
-
-	return a + b + c + d + e + f
+	return a + b + c
 }
 
 //nolint:unused // not used anymore
@@ -637,10 +631,6 @@ func URLConverter(page map[string]string, item string, isindex bool, abs string)
 // the correct absolute url based on the file path passed in
 func convertRelativeToAbsoluteURL(abs, url string) (string, string) {
 	var localLink string
-
-	if strings.Contains(url, "warehouse") && !strings.Contains(url, "diagrams") {
-		log.Printf("here")
-	}
 
 	// split on #
 	// length 1 means no local links
