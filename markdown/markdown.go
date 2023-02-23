@@ -462,9 +462,13 @@ func generateLink(page map[string]string, updatedURL string, localLink string) s
 
 	c := `data-linked-resource-id="` + page[updatedURL] + `" `
 
-	d := `data-linked-resource-type="page">`
+	d := `data-linked-resource-type="page" `
 
-	return a + b + c + d
+	e := `data-renderer-mark="true" `
+
+	f := `class="css-tgp101">`
+
+	return a + b + c + d + e + f
 }
 
 //nolint:unused // not used anymore
