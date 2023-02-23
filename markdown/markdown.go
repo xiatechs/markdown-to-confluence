@@ -1,5 +1,6 @@
 // Package markdown provides a method for working with and parsing markdown documents
-//nolint: wsl // is fine
+//
+//nolint:wsl // is fine
 package markdown
 
 import (
@@ -34,6 +35,7 @@ type FileContents struct {
 
 // grabtitle function collects the filename of a markdown file
 // and returns it as a string
+//
 //nolint:deadcode,unused // not used anymore
 func grabtitle(path string) string {
 	return strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
@@ -116,8 +118,9 @@ func (a *authors) sort() {
 	*a = au
 }
 
-//nolint: gosec // is fine
 // use git to capture authors by username & email & commits
+//
+//nolint:gosec // is fine
 func capGit(path string) string {
 	here, _ := os.Getwd()
 	log.Println("collecting authorship for ", path)
@@ -251,20 +254,12 @@ func stripFrontmatterReplaceURL(content string,
 			continue
 		}
 
-		// make all headers be in Proper Case so local links work
+		// header lines are converted to ProperCase for confluence local linking
 		htmlHeaders := []string{"<h1>", "<h2>", "<h3>", "<h4>", "<h5>", "<h6>"}
 
 		for _, header := range htmlHeaders {
 			if strings.Contains(lines[index], header) {
-				caser := cases.Title(language.English)
-				lines[index] = caser.String(lines[index])
-
-				// this changes the html tags to be capitalized so reverse them back
-				lines[index] = updateHTMLHeaders(lines[index])
-
-				// drop brackets from the title
-				lines[index] = strings.ReplaceAll(lines[index], "(", "")
-				lines[index] = strings.ReplaceAll(lines[index], ")", "")
+				lines[index] = updateHeaderToProperCase(lines[index])
 			}
 		}
 
@@ -286,6 +281,65 @@ func stripFrontmatterReplaceURL(content string,
 	pre = strings.TrimSpace(pre)
 
 	return []byte(pre)
+}
+
+// updateHeaderToProperCase makes all headers be in Proper Case so local links work
+func updateHeaderToProperCase(line string) string {
+	splitOnLinks := strings.Split(line, `<a href="`)
+	caser := cases.Title(language.English)
+
+	if len(splitOnLinks) == 1 { // means there are no links in the header
+		line = updateHeaderWithNoLinks(line, caser)
+	} else { // means there are links in the header - don't want to alter the links
+		line = updateHeaderWithLinks(splitOnLinks, caser)
+	}
+
+	return line
+}
+
+func updateHeaderWithNoLinks(line string, caser cases.Caser) string {
+	line = caser.String(line)
+
+	// this changes the html tags to be capitalized so reverse them back
+	line = updateHTMLHeaders(line)
+
+	// drop brackets from the title
+	line = strings.ReplaceAll(line, "(", "")
+	line = strings.ReplaceAll(line, ")", "")
+
+	return line
+}
+
+func updateHeaderWithLinks(splitOnLinks []string, caser cases.Caser) string {
+	line := splitOnLinks[0]
+	line = caser.String(line)
+
+	for i := 1; i < len(splitOnLinks); i++ {
+		line += `<a href="` // add the '<a href="' back in
+
+		extraParts := strings.SplitN(splitOnLinks[i], ">", 2) //nolint:gomnd // split the final part on the first >
+
+		for ii := range extraParts {
+			if ii == 0 { // add the link and the '>' back in
+				line += extraParts[ii]
+				line += `>`
+			}
+
+			if ii > 0 { // ProperCase the header and add it to the line
+				extraParts[ii] = caser.String(extraParts[ii])
+				line += extraParts[ii]
+			}
+		}
+
+		// this changes the html tags to be capitalized so reverse them back
+		line = updateHTMLHeaders(line)
+
+		// drop brackets from the title
+		line = strings.ReplaceAll(line, "(", "")
+		line = strings.ReplaceAll(line, ")", "")
+	}
+
+	return line
 }
 
 // uncapitalize the 'h' in the html header tag
@@ -441,6 +495,7 @@ func (f fielditems) validate() bool {
 }
 
 // check how many fields exist in two strings (split by '/')
+//
 //nolint:deadcode,unused // not used anymore
 func exists(a, b string) int {
 	var f fielditems
@@ -486,6 +541,7 @@ func exists(a, b string) int {
 }
 
 // levenshtein fuzzy logic algorithm to determine similarity of two strings
+//
 //nolint:deadcode,unused // not used anymore
 func levenshtein(str1, str2 []rune) int {
 	s1len := len(str1)
