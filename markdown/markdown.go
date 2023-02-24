@@ -417,9 +417,13 @@ func relativeURLdetector(item string, page map[string]string, abs, fileName stri
 	// if there were any local links (identified by #) then create the link for confluence
 	if localLink != "" {
 		// as there is a local link the path must be in a .md file
-		// if the updated url does not contain a .md then it must be a local link for the current .md file so add it
+		// can either be in a .md file OR a README.md (this would not have .md in the confluence page name)
+		// if the updated url does not contain a .md and the fileName does
+		// then it must be a local link for the current .md file so add it
 		if !strings.Contains(updatedURL, ".md") {
-			updatedURL += "/" + fileName
+			if strings.Contains(fileName, ".md") {
+				updatedURL += "/" + fileName
+			}
 		}
 
 		fileName = strings.ReplaceAll(fileName, " ", "+")
@@ -436,6 +440,10 @@ func relativeURLdetector(item string, page map[string]string, abs, fileName stri
 	// replace the relative url in the item with the absolute url
 	splitItem := strings.Split(item, "<a href=")
 
+	return generateLineToReturn(updatedURL, link, splitItem, page)
+}
+
+func generateLineToReturn(updatedURL, link string, splitItem []string, page map[string]string) string {
 	stringToReturn := splitItem[0]
 
 	for i := 1; i < len(splitItem); i++ {
