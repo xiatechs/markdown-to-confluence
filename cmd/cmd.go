@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/xiatechs/markdown-to-confluence/common"
 	"github.com/xiatechs/markdown-to-confluence/confluence"
@@ -31,7 +32,9 @@ func setArgs() bool {
 		common.ConfluenceAPIKey = vars[0]
 		common.ConfluenceSpace = vars[1]
 		common.ConfluenceUsername = vars[2]
+
 		common.ProjectPathEnv = vars[3]
+		common.ProjectPathEnv = strings.ReplaceAll(common.ProjectPathEnv, " ", "-") // replace spaces with -
 
 		common.ProjectMasterID, err = strconv.Atoi(vars[4])
 		if err != nil {
