@@ -11,6 +11,8 @@ import (
 // this test lets you see visually how all the content is generated in case you want to debug the output locally
 // basically run it against any path you want and you'll see the pages generated at the end - after logging
 func TestStartDebugEverything(t *testing.T) {
+	t.Skip() // skip test as concurrency means it fails - only used locally for debugging
+
 	markdown.GrabAuthors = false
 
 	node := Node{
@@ -22,8 +24,6 @@ func TestStartDebugEverything(t *testing.T) {
 	}
 
 	SetAPIClient(m)
-
-	t.Skip() // skip test as concurrency means it fails - only used locally for debugging
 
 	if node.Start(0, "../node", false) {
 		node.Delete()

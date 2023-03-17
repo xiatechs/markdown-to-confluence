@@ -97,8 +97,6 @@ func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
 			return true
 		}
 
-		foldersWithMarkdown++
-
 		return true
 	}
 
@@ -109,8 +107,6 @@ func (node *Node) checkIfMarkDownFile(checking bool, name string) bool {
 // and returns bool
 func (node *Node) checkIfFolder(fpath string) bool {
 	if isFolder(fpath) && !isVendorOrGit(fpath) {
-		numberOfFolders++
-
 		node.checkIfRootAlive(fpath)
 
 		return true
