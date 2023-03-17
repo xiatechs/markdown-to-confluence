@@ -29,8 +29,7 @@ func (node *Node) generateMaster() {
 
 		// we only want to read from the repo/docs folder
 		// so if there is at least 1 sub folder and it is not /docs ignore
-		if len(listOfFolders) > 1 && !strings.Contains(node.path, "/docs") &&
-			node.path != "/home/cameron/go_projects/xiatechs/mossbros" {
+		if len(listOfFolders) > 1 && !strings.Contains(node.path, "/docs") {
 			log.Printf("skipping this folder [%s] because not in the /docs folder", node.path)
 
 			return
