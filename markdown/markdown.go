@@ -437,7 +437,7 @@ func generateRelativeURLs(sliceOne []string, abs, fileName string) ([]string, []
 		if localLink != "" {
 			// as there is a local link the path must be in a .md file
 			// can either be in a .md file OR a README.md (this would not have .md in the confluence page name)
-			// if the updated url does not contain a .md and the fileName does
+			// if the updated URL does not contain a .md and the fileName does
 			// then it must be a local link for the current .md file so add it
 			if !strings.Contains(updatedURL, ".md") {
 				if strings.Contains(fileName, ".md") {
