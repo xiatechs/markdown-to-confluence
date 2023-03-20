@@ -463,11 +463,11 @@ func generateRelativeURLs(sliceOne []string, abs, fileName string) ([]string, []
 	return updatedURLs, links
 }
 
-func generateLineToReturn(updatedURL, link []string, splitItem []string, page map[string]string) string {
+func generateLineToReturn(updatedURL, links []string, splitItem []string, page map[string]string) string {
 	stringToReturn := splitItem[0]
 
 	for i := 1; i < len(splitItem); i++ {
-		link := generateLink(page, updatedURL[i-1], link[i-1])
+		link := generateLink(page, updatedURL[i-1], links[i-1])
 		extraParts := strings.SplitN(splitItem[i], ">", 2) //nolint:gomnd // only want to split the final part on the first >
 
 		stringToReturn += link
