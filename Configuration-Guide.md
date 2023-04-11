@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v2-beta
         with:
           repository: xiatechs/markdown-to-confluence
-          ref: refs/tags/v1.10
+          ref: refs/tags/v2.1.2
       - name: checkout branch
         uses: actions/checkout@v2
         with:

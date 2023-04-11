@@ -403,51 +403,71 @@ func relativeURLdetector(item string, page map[string]string, abs, fileName stri
 		return fail
 	}
 
-	url := strings.Split(sliceOne[1], `"`)[0] // the local/relative URL for the page
-
-	// create the absolute url
-	updatedURL, localLink := convertRelativeToAbsoluteURL(abs, url)
-
-	// confluence is case sensitive - headers are saved using proper case (i.e. So The Title Is Always Like This)
-	caser := cases.Title(language.English)
-	localLink = caser.String(localLink)
-
-	var link string
-
-	// if there were any local links (identified by #) then create the link for confluence
-	if localLink != "" {
-		// as there is a local link the path must be in a .md file
-		// can either be in a .md file OR a README.md (this would not have .md in the confluence page name)
-		// if the updated url does not contain a .md and the fileName does
-		// then it must be a local link for the current .md file so add it
-		if !strings.Contains(updatedURL, ".md") {
-			if strings.Contains(fileName, ".md") {
-				updatedURL += "/" + fileName
-			}
-		}
-
-		fileName = strings.ReplaceAll(fileName, " ", "+")
-		localLinkAbs := strings.ReplaceAll(abs, "/", "+")
-
-		link = "/" + fileName
-		if !strings.HasPrefix(localLinkAbs, "+") {
-			link += "+"
-		}
-
-		link += localLinkAbs + "#" + localLink
-	}
+	updatedURLs, links := generateRelativeURLs(sliceOne, abs, fileName)
 
 	// replace the relative url in the item with the absolute url
 	splitItem := strings.Split(item, "<a href=")
 
-	return generateLineToReturn(updatedURL, link, splitItem, page)
+	return generateLineToReturn(updatedURLs, links, splitItem, page)
 }
 
-func generateLineToReturn(updatedURL, link string, splitItem []string, page map[string]string) string {
+func generateRelativeURLs(sliceOne []string, abs, fileName string) ([]string, []string) {
+	var (
+		updatedURLs []string
+		links       []string
+	)
+
+	for i := range sliceOne {
+		if i == 0 {
+			continue
+		}
+
+		url := strings.Split(sliceOne[i], `"`)[0] // the local/relative URL for the page
+
+		// create the absolute url
+		updatedURL, localLink := convertRelativeToAbsoluteURL(abs, url)
+
+		// confluence is case sensitive - headers are saved using proper case (i.e. So The Title Is Always Like This)
+		caser := cases.Title(language.English)
+		localLink = caser.String(localLink)
+
+		var link string
+
+		// if there were any local links (identified by #) then create the link for confluence
+		if localLink != "" {
+			// as there is a local link the path must be in a .md file
+			// can either be in a .md file OR a README.md (this would not have .md in the confluence page name)
+			// if the updated URL does not contain a .md and the fileName does
+			// then it must be a local link for the current .md file so add it
+			if !strings.Contains(updatedURL, ".md") {
+				if strings.Contains(fileName, ".md") {
+					updatedURL += "/" + fileName
+				}
+			}
+
+			fileName = strings.ReplaceAll(fileName, " ", "+")
+			localLinkAbs := strings.ReplaceAll(abs, "/", "+")
+
+			link = "/" + fileName
+			if !strings.HasPrefix(localLinkAbs, "+") {
+				link += "+"
+			}
+
+			link += localLinkAbs + "#" + localLink
+		}
+
+		updatedURLs = append(updatedURLs, updatedURL)
+		links = append(links, link)
+	}
+
+	return updatedURLs, links
+}
+
+func generateLineToReturn(updatedURL, links []string, splitItem []string, page map[string]string) string {
 	stringToReturn := splitItem[0]
 
 	for i := 1; i < len(splitItem); i++ {
-		link := generateLink(page, updatedURL, link)
+		link := generateLink(page, updatedURL[i-1], links[i-1])
 		extraParts := strings.SplitN(splitItem[i], ">", 2) //nolint:gomnd // only want to split the final part on the first >
 
 		stringToReturn += link

@@ -20,11 +20,9 @@ const (
 )
 
 var (
-	mapSem              = make(chan struct{}, 1)                   // for controlling access to Tree map
-	wg                  = semaphore.NewSemaphore(numberOfRoutines) // for controlling number of goroutines
-	numberOfFolders     float64                                    // for counting number of folders in repo
-	foldersWithMarkdown float64                                    // for counting number of folders with markdown in repo
-	rootDir             string                                     // will contain the root folderpath of the repo
+	mapSem  = make(chan struct{}, 1)                   // for controlling access to Tree map
+	wg      = semaphore.NewSemaphore(numberOfRoutines) // for controlling number of goroutines
+	rootDir string                                     // will contain the root folderpath of the repo
 	// NodeAPIClient is interface where a confluence API client can be placed
 	nodeAPIClient APIClienter // api client will be stored here
 	t             *Tree
@@ -92,8 +90,6 @@ func (node *Node) Start(projectMasterID int, projectPath string, onlyDocs bool) 
 	*/
 
 	if isFolder(projectPath) {
-		numberOfFolders++
-
 		node.masterID = projectMasterID
 
 		node.path = projectPath
