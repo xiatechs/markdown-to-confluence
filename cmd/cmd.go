@@ -33,7 +33,7 @@ func setFlags() bool {
 		common.ProjectPathEnv = *folderPath
 		common.ProjectPathEnv = strings.ReplaceAll(common.ProjectPathEnv, " ", "-") // replace spaces with -
 	}
-	masterPageId := flag.String("master-page-id", "0", "the id of the master page - default is 0 (root)")
+	masterPageId := flag.String("id", "0", "the id of the master page - default is 0 (root)")
 	if masterPageId != nil {
 		common.ProjectMasterID, err = strconv.Atoi(*masterPageId)
 		if err != nil {
@@ -41,7 +41,7 @@ func setFlags() bool {
 			return false
 		}
 	}
-	url := flag.String("confluence-URL", "https://xiatech.atlassian.net", "the url for confluence")
+	url := flag.String("url", "https://xiatech.atlassian.net", "the url for confluence")
 	if url != nil {
 		common.ConfluenceBaseURL = *url
 	}
