@@ -17,31 +17,23 @@ import (
 func setFlags() bool {
 	var err error
 	apiKey := flag.String("key", "", "the confluence API Key")
-	if apiKey != nil {
-		common.ConfluenceAPIKey = *apiKey
-	} else {
-		log.Println("key flag is missing")
-	}
 	apiSpace := flag.String("space", "", "the confluence API Space")
-	if apiSpace != nil {
-		common.ConfluenceSpace = *apiSpace
-	} else {
-		log.Println("space flag is missing")
-	}
 	userName := flag.String("username", "", "the confluence API username")
-	if userName != nil {
-		common.ConfluenceUsername = *userName
-	} else {
-		log.Println("username flag is missing")
-	}
 	folderPath := flag.String("folderpath", "", "the source of the documentation")
-	if folderPath != nil {
-		common.ProjectPathEnv = *folderPath
-		common.ProjectPathEnv = strings.ReplaceAll(common.ProjectPathEnv, " ", "-") // replace spaces with -
-	} else {
-		log.Println("folderpath flag is missing")
-	}
 	masterPageId := flag.String("id", "0", "the id of the master page - default is 0 (root)")
+	url := flag.String("url", "https://xiatech.atlassian.net", "the url for confluence")
+	onlyDocs := flag.Bool("docs", true, "parse only the /docs folder")
+	flag.Parse()
+	if onlyDocs != nil {
+		common.OnlyDocs = *onlyDocs
+	} else {
+		log.Println("docs flag is missing")
+	}
+	if url != nil {
+		common.ConfluenceBaseURL = *url
+	} else {
+		log.Println("url flag is missing")
+	}
 	if masterPageId != nil {
 		common.ProjectMasterID, err = strconv.Atoi(*masterPageId)
 		if err != nil {
@@ -51,19 +43,27 @@ func setFlags() bool {
 	} else {
 		log.Println("id flag is missing")
 	}
-	url := flag.String("url", "https://xiatech.atlassian.net", "the url for confluence")
-	if url != nil {
-		common.ConfluenceBaseURL = *url
+	if folderPath != nil {
+		common.ProjectPathEnv = *folderPath
+		common.ProjectPathEnv = strings.ReplaceAll(common.ProjectPathEnv, " ", "-") // replace spaces with -
 	} else {
-		log.Println("url flag is missing")
+		log.Println("folderpath flag is missing")
 	}
-	onlyDocs := flag.Bool("docs", true, "parse only the /docs folder")
-	if onlyDocs != nil {
-		common.OnlyDocs = *onlyDocs
+	if userName != nil {
+		common.ConfluenceUsername = *userName
 	} else {
-		log.Println("docs flag is missing")
+		log.Println("username flag is missing")
 	}
-	flag.Parse()
+	if apiSpace != nil {
+		common.ConfluenceSpace = *apiSpace
+	} else {
+		log.Println("space flag is missing")
+	}
+	if apiKey != nil {
+		common.ConfluenceAPIKey = *apiKey
+	} else {
+		log.Println("key flag is missing")
+	}
 	// if lengths are 0 then it's being passed in wrong - good for debug
 	log.Println("secrets - lengths")
 	log.Println("username",len(common.ConfluenceUsername))
