@@ -32,7 +32,8 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 
 	err = json.Unmarshal(contents, &pageResultVar)
 	if err != nil {
-		return nil, fmt.Errorf("newPageresults json unmarshal error: %w", err)
+		// ignore this error for now
+		return nil, nil//fmt.Errorf("newPageresults json unmarshal error: %w", err)
 	}
 
 	if len(pageResultVar.Results) == 0 { // we want to return nil to skip this result
