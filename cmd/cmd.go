@@ -3,8 +3,8 @@
 package cmd
 
 import (
+	"flag"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 
@@ -14,44 +14,42 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/node"
 )
 
-// setArgs function takes in cmd line arguments
-// and sets common variables (api key / space / username / project path / master page ID / confluenceURL / only docs)
-func setArgs() bool {
-	var argLength = 8
-
-	if len(os.Args) < argLength-1 {
-		log.Println("usage: app key space username repopath masterpageID confluenceURL onlyDocs")
-		return false
-	}
-
-	vars := os.Args[1:]
-
+func setFlags() bool {
 	var err error
-
-	if len(vars) == argLength-1 {
-		common.ConfluenceAPIKey = vars[0]
-		common.ConfluenceSpace = vars[1]
-		common.ConfluenceUsername = vars[2]
-
-		common.ProjectPathEnv = vars[3]
+	apiKey := flag.String("key", "", "the confluence API Key")
+	if apiKey != nil {
+		common.ConfluenceAPIKey = *apiKey
+	}
+	apiSpace := flag.String("space", "", "the confluence API Space")
+	if apiSpace != nil {
+		common.ConfluenceSpace = *apiSpace
+	}
+	userName := flag.String("username", "", "the confluence API username")
+	if userName != nil {
+		common.ConfluenceUsername = *userName
+	}
+	folderPath := flag.String("folderpath", "", "the source of the documentation")
+	if folderPath != nil {
+		common.ProjectPathEnv = *folderPath
 		common.ProjectPathEnv = strings.ReplaceAll(common.ProjectPathEnv, " ", "-") // replace spaces with -
-
-		common.ProjectMasterID, err = strconv.Atoi(vars[4])
+	}
+	masterPageId := flag.String("master-page-id", "0", "the id of the master page - default is 0 (root)")
+	if masterPageId != nil {
+		common.ProjectMasterID, err = strconv.Atoi(*masterPageId)
 		if err != nil {
-			log.Println("masterpageID should be an int. If mtc is to be the root enter 0")
-			return false
-		}
-
-		if vars[5] != "" {
-			common.ConfluenceBaseURL = vars[5]
-		}
-
-		common.OnlyDocs, err = strconv.ParseBool(vars[6])
-		if err != nil {
-			log.Println("onlyDocs should be a bool")
+			log.Println("masterpageID should be an int. If MTC is to be the root enter 0")
 			return false
 		}
 	}
+	url := flag.String("confluence-URL", "https://xiatech.atlassian.net", "the url for confluence")
+	if url != nil {
+		common.ConfluenceBaseURL = *url
+	}
+	onlyDocs := flag.Bool("docs", true, "parse only the /docs folder")
+	if onlyDocs != nil {
+		common.OnlyDocs = *onlyDocs
+	}
+	flag.Parse()
 
 	return true
 }
@@ -63,7 +61,7 @@ func setArgs() bool {
 func Start() {
 	markdown.GrabAuthors = false
 
-	if setArgs() {
+	if setFlags() {
 		root := node.Node{}
 
 		client, err := confluence.CreateAPIClient()
