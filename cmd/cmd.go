@@ -14,16 +14,26 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/node"
 )
 
+// nolint: gocognit // keep all logic together
 func setFlags() bool {
 	var err error
+
 	apiKey := flag.String("key", "", "the confluence API Key")
+
 	apiSpace := flag.String("space", "", "the confluence API Space")
+
 	userName := flag.String("username", "", "the confluence API username")
+
 	folderPath := flag.String("folderpath", "", "the source of the documentation")
-	masterPageId := flag.String("id", "0", "the id of the master page - default is 0 (root)")
+
+	masterPageID := flag.String("id", "0", "the id of the master page - default is 0 (root)")
+
 	url := flag.String("url", "https://xiatech.atlassian.net", "the url for confluence")
+
 	onlyDocs := flag.Bool("docs", true, "parse only the /docs folder")
+
 	flag.Parse()
+
 	if onlyDocs != nil {
 		common.OnlyDocs = *onlyDocs
 	} else {
@@ -36,8 +46,8 @@ func setFlags() bool {
 		log.Println("url flag is missing")
 	}
 
-	if masterPageId != nil {
-		common.ProjectMasterID, err = strconv.Atoi(*masterPageId)
+	if masterPageID != nil {
+		common.ProjectMasterID, err = strconv.Atoi(*masterPageID)
 		if err != nil {
 			log.Println("masterpageID should be an int. If MTC is to be the root enter 0")
 			return false
