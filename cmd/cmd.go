@@ -14,7 +14,7 @@ import (
 	"github.com/xiatechs/markdown-to-confluence/node"
 )
 
-// nolint: gocognit // keep all logic together
+//nolint: gocognit // keep all logic together
 func setFlags() bool {
 	var err error
 

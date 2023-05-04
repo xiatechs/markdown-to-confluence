@@ -32,8 +32,7 @@ func newPageResults(resp *http.Response) (*PageResults, error) {
 
 	err = json.Unmarshal(contents, &pageResultVar)
 	if err != nil {
-		// ignore this error for now
-		return nil, nil//fmt.Errorf("newPageresults json unmarshal error: %w", err)
+		return nil, fmt.Errorf("newPageresults json unmarshal error: %w", err)
 	}
 
 	if len(pageResultVar.Results) == 0 { // we want to return nil to skip this result
@@ -77,7 +76,7 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 
 // CreatePage method takes root (root page id) and page contents and bool (is page root?)
 // and generates a page in confluence and returns the generated page ID
-//nolint: gocyclo // 11 is just about fine
+// nolint: gocyclo // 11 is just about fine
 func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
 	if contents == nil {
 		return 0, fmt.Errorf("createpage error: contents parameter is nil")
