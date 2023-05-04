@@ -29,11 +29,13 @@ func setFlags() bool {
 	} else {
 		log.Println("docs flag is missing")
 	}
+
 	if url != nil {
 		common.ConfluenceBaseURL = *url
 	} else {
 		log.Println("url flag is missing")
 	}
+
 	if masterPageId != nil {
 		common.ProjectMasterID, err = strconv.Atoi(*masterPageId)
 		if err != nil {
@@ -43,37 +45,42 @@ func setFlags() bool {
 	} else {
 		log.Println("id flag is missing")
 	}
+
 	if folderPath != nil {
 		common.ProjectPathEnv = *folderPath
 		common.ProjectPathEnv = strings.ReplaceAll(common.ProjectPathEnv, " ", "-") // replace spaces with -
 	} else {
 		log.Println("folderpath flag is missing")
 	}
+
 	if userName != nil {
 		common.ConfluenceUsername = *userName
 	} else {
 		log.Println("username flag is missing")
 	}
+
 	if apiSpace != nil {
 		common.ConfluenceSpace = *apiSpace
 	} else {
 		log.Println("space flag is missing")
 	}
+
 	if apiKey != nil {
 		common.ConfluenceAPIKey = *apiKey
 	} else {
 		log.Println("key flag is missing")
 	}
+
 	// if lengths are 0 then it's being passed in wrong - good for debug
 	log.Println("secrets - lengths")
-	log.Println("username",len(common.ConfluenceUsername))
-	log.Println("key",len(common.ConfluenceAPIKey))
-	log.Println("space",len(common.ConfluenceSpace))
+	log.Println("username", len(common.ConfluenceUsername))
+	log.Println("key", len(common.ConfluenceAPIKey))
+	log.Println("space", len(common.ConfluenceSpace))
 	log.Println("contents - string")
-	log.Println("folderpath",common.ProjectPathEnv)
-	log.Println("url",common.ConfluenceBaseURL)
-	log.Println("docs",common.OnlyDocs)
-	log.Println("rootid",common.ProjectMasterID)
+	log.Println("folderpath", common.ProjectPathEnv)
+	log.Println("url", common.ConfluenceBaseURL)
+	log.Println("docs", common.OnlyDocs)
+	log.Println("rootid", common.ProjectMasterID)
 
 	return true
 }
