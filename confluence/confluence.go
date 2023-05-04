@@ -76,7 +76,7 @@ func (a *APIClient) grabPageContents(contents *markdown.FileContents, root int, 
 
 // CreatePage method takes root (root page id) and page contents and bool (is page root?)
 // and generates a page in confluence and returns the generated page ID
-// nolint: gocyclo // 11 is just about fine
+//nolint: gocyclo // 11 is just about fine
 func (a *APIClient) CreatePage(root int, contents *markdown.FileContents, isroot bool) (int, error) {
 	if contents == nil {
 		return 0, fmt.Errorf("createpage error: contents parameter is nil")
